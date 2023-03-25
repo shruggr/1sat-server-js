@@ -3,7 +3,7 @@
   "scripts": {
     "build": "tsoa spec-and-routes && tsc",
     "dev": "nodemon src/server.ts",
-    "start": "node lib/server.js"
+    "start": "node dist/server.js"
   },
   "engines": {
     "node": "18"
