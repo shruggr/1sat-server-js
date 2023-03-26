@@ -8,6 +8,11 @@ export class InscriptionsController extends Controller {
         return Inscription.loadByOrigin(Origin.fromString(origin));
     }
 
+    @Get("origin/{origin}/latest")
+    public async getOneByOrigin(@Path() origin: string): Promise<Inscription> {
+        return Inscription.loadOneByOrigin(Origin.fromString(origin));
+    }
+
     @Get("txid/{txid}")
     public async getByTxid(@Path() txid: string): Promise<Inscription[]> {
         return Inscription.loadByTxid(Buffer.from(txid, 'hex'));

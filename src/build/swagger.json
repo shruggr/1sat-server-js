@@ -174,6 +174,34 @@
 				]
 			}
 		},
+		"/api/inscriptions/origin/{origin}/latest": {
+			"get": {
+				"operationId": "GetOneByOrigin",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Inscription"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "origin",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/inscriptions/txid/{txid}": {
 			"get": {
 				"operationId": "GetByTxid",
