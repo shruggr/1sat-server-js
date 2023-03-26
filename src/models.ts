@@ -32,6 +32,26 @@ export class Txo {
         return Txo.loadUtxosByLock(lock);
     }
 
+    static async loadInscriptionsByLock(lock: string): Promise<Inscription[]> {
+        const { rows } = await pool.query(`
+            SELECT i.* 
+            FROM txos t
+            JOIN inscriptions i ON i.origin=t.origin
+            WHERE t.lock = $1 AND t.spend IS NULL`,
+            [Buffer.from(lock, 'hex')],
+        );
+        return rows.map((r: any) => Inscription.fromRow(r));
+    }
+
+    static async loadInscriptionsByAddress(address: string): Promise<Inscription[]> {
+        const lock = Hash.sha256(
+            Address.fromString(address).toTxOutScript().toBuffer()
+        )
+            .reverse()
+            .toString('hex');
+        return Txo.loadInscriptionsByLock(lock);
+    }
+    
     static fromRow(row: any) {
         const txo = new Txo();
         txo.txid = row.txid.toString('hex');

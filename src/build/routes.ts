@@ -244,6 +244,56 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/utxos/lock/:lock/inscriptions',
+            ...(fetchMiddlewares<RequestHandler>(UtxosController)),
+            ...(fetchMiddlewares<RequestHandler>(UtxosController.prototype.getInscriptionsByLock)),
+
+            function UtxosController_getInscriptionsByLock(request: any, response: any, next: any) {
+            const args = {
+                    lock: {"in":"path","name":"lock","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new UtxosController();
+
+
+              const promise = controller.getInscriptionsByLock.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/utxos/address/:address/inscriptions',
+            ...(fetchMiddlewares<RequestHandler>(UtxosController)),
+            ...(fetchMiddlewares<RequestHandler>(UtxosController.prototype.getInscriptionsByAddress)),
+
+            function UtxosController_getInscriptionsByAddress(request: any, response: any, next: any) {
+            const args = {
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new UtxosController();
+
+
+              const promise = controller.getInscriptionsByAddress.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
