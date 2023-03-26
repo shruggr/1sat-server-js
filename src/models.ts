@@ -160,7 +160,7 @@ export class Inscription {
     static async count(): Promise<number> {
         const { rows } = await pool.query(`SELECT MAX(id) as count 
             FROM inscriptions`);
-        return rows[0].count;
+        return parseInt(rows[0].count, 10);
     }
 
     static parseOutputScript(script: Script): InscriptionData {
