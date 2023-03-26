@@ -149,6 +149,20 @@ export class Inscription {
         return Inscription.fromRow(rows[0]);
     }
 
+    static async loadByOrigin(origin: Origin): Promise<Inscription[]> {
+        const { rows } = await pool.query(`SELECT * 
+            FROM inscriptions 
+            WHERE origin = $1
+            ORDER BY id DESC`,
+            [
+                origin.toBuffer()
+            ]
+        )
+        if (!rows.length) throw new NotFound('not-found');
+
+        return rows.map(row => Inscription.fromRow(row));
+    }
+
     static async loadByTxid(txid: Buffer): Promise<Inscription[]> {
         const { rows } = await pool.query(`SELECT *
             FROM inscriptions

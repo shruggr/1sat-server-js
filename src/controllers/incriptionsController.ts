@@ -4,8 +4,8 @@ import { Inscription, Origin } from "../models";
 @Route("api/inscriptions")
 export class InscriptionsController extends Controller {
     @Get("origin/{origin}")
-    public async getOneByOrigin(@Path() origin: string): Promise<Inscription> {
-        return Inscription.loadOneByOrigin(Origin.fromString(origin));
+    public async getByOrigin(@Path() origin: string): Promise<Inscription[]> {
+        return Inscription.loadByOrigin(Origin.fromString(origin));
     }
 
     @Get("txid/{txid}")
