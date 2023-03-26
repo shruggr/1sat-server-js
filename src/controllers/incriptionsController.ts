@@ -14,8 +14,9 @@ export class InscriptionsController extends Controller {
     }
 
     @Get("count")
-    public async getCount(): Promise<number> {
-        return Inscription.count();
+    public async getCount(): Promise<{count: number}> {
+        const count = await Inscription.count();
+        return { count };
     }
 
     @Get("{id}")
