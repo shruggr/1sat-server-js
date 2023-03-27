@@ -122,6 +122,18 @@
 	},
 	"openapi": "3.0.0",
 	"paths": {
+		"/": {
+			"get": {
+				"operationId": "GetInscription",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [],
+				"parameters": []
+			}
+		},
 		"/api/files/inscriptions/{origin}": {
 			"get": {
 				"operationId": "GetInscription",

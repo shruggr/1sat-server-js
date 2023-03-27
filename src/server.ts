@@ -1,9 +1,10 @@
+import * as cors from 'cors';
 import * as dotenv from 'dotenv';
 dotenv.config();
-import * as cors from 'cors';
 import * as express from 'express';
 import { ErrorRequestHandler, Request, Response, NextFunction } from 'express';
-import * as createError from 'http-errors'
+// import * as createError from 'http-errors'
+import { HttpError } from 'http-errors';
 import "isomorphic-fetch";
 import * as swaggerUi from 'swagger-ui-express'
 import { RegisterRoutes } from "./build/routes";
@@ -37,9 +38,9 @@ server.use("/api/docs",
 
 RegisterRoutes(server);
 
-const errorMiddleware = ((err: TypeError | createError.HttpError, req: Request, res: Response, next: NextFunction) => {
-    console.error(req.path, (err as createError.HttpError).status || 500, err);
-    res.status((err as createError.HttpError).status || 500).json({ message: err.message })
+const errorMiddleware = ((err: TypeError | HttpError, req: Request, res: Response, next: NextFunction) => {
+    console.error(req.path, (err as HttpError).status || 500, err);
+    res.status((err as HttpError).status || 500).json({ message: err.message })
 }) as ErrorRequestHandler
 
 server.use(errorMiddleware);

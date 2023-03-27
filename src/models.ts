@@ -1,6 +1,9 @@
-import { Address, Hash, OpCode, Script } from '@ts-bitcoin/core';
+import {JungleBusClient} from "@gorillapool/js-junglebus";
+import { Address, Hash, OpCode, Script, Tx } from '@ts-bitcoin/core';
 import { NotFound } from 'http-errors';
 import { pool } from "./db";
+
+const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 
 export class Txo {
     txid: string = '';
@@ -173,6 +176,14 @@ export class Inscription {
             ]
         )
         return rows.map(row => Inscription.fromRow(row));
+    }
+
+    static async loadFileByOrigin(origin: Origin) {
+        const im = await Inscription.loadOneByOrigin(origin);
+        const jbTxn = await jb.GetTransaction(im.txid);
+        if(!jbTxn) throw new NotFound('not-found');
+        const tx = Tx.fromBuffer(Buffer.from(jbTxn.transaction, 'base64'));
+        return Inscription.parseOutputScript(tx.txOuts[im.vout].script);
     }
 
     static fromRow(row: any): Inscription {
