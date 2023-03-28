@@ -62,6 +62,7 @@ server.use("/api/subscribe", (req, res, next) => {
         subClient.on("message", (channel, message) => {
             res.write(`data: ${message}\n\n`)
         });
+        setTimeout(() => res.end(), 59000)
     } catch(e: any) {
         return next(e);
     }

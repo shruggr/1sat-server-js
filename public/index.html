@@ -4,9 +4,13 @@
     <title>Subscribe</title>
     <script type="module">
 
-        const es = new EventSource('http://server:8081/api/subscribe?address=1FDHUkNu5QLH1XhdjJ3tpcEVSetB5QhnCZ')
+        console.log(new Date().toISOString())
+        const es = new EventSource('https://ordinals.gorillapool.io/api/subscribe?address=1FDHUkNu5QLH1XhdjJ3tpcEVSetB5QhnCZ')
         es.addEventListener("message", (e) => {
             console.log(e.data)
+        })
+        es.addEventListener("error", (e) => {
+            console.error(new Date().toISOString(), e.message)
         })
 
     </script>
