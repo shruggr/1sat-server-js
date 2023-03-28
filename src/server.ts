@@ -54,15 +54,20 @@ server.use("/api/subscribe", (req, res, next) => {
             channels.push(req.query['lock']);
         }
 
+        res.set('Content-Type', 'text/event-stream')
+        res.set('Cache-Control', 'no-store')
         const subClient = pubClient.duplicate();
         subClient.subscribe(...channels);
-        res.on("close", () => subClient.quit())
+        const interval = setInterval(() => res.write('event: ping\n'), 1000)
+        res.on("close", () => {
+            clearInterval(interval)
+            subClient.quit()
+        })
 
-        res.set('Content-Type', 'text/event-stream')
-        subClient.on("message", (channel, message) => {
+        subClient.on("message", (_, message) => {
             res.write(`data: ${message}\n\n`)
         });
-        setTimeout(() => res.end(), 59000)
+        // setTimeout(() => res.end(), 60000)
     } catch(e: any) {
         return next(e);
     }
