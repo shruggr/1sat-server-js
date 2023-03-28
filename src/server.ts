@@ -1,51 +1,22 @@
+import { Address } from '@ts-bitcoin/core';
+import { createHash } from 'crypto';
 import * as cors from 'cors';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import * as express from 'express';
 import { ErrorRequestHandler, Request, Response, NextFunction } from 'express';
-// import * as createError from 'http-errors'
 import { HttpError, NotFound } from 'http-errors';
 import "isomorphic-fetch";
 import * as swaggerUi from 'swagger-ui-express'
 import { RegisterRoutes } from "./build/routes";
-import { createServer } from "http";
-import { Server } from "socket.io";
-// import { createAdapter } from "@socket.io/redis-adapter";
 import Redis from "ioredis";
 
 const server = express();
-const httpServer = createServer(server);
 const pubClient = new Redis();
-// const subClient = pubClient.duplicate();
-const io = new Server(httpServer, { 
-    // adapter: createAdapter(pubClient, subClient),
-    cors: {
-        origin: true,
-    }
-});
-
-io.on("connection", (socket) => {
-    const subClient = pubClient.duplicate();
-    socket.on("message", (message, cb) => {
-        console.log(message);
-        cb(message);
-    });
-
-    socket.on("subscribe", (...channels) => {
-        console.log("Subscribe:", ...channels)
-        subClient.subscribe(...channels);
-    });
-
-    socket.on("disconnect", () => subClient.quit());
-
-    subClient.on("message", (channel, message) => {
-        socket.emit(channel, message);
-    });
-});
 
 async function main() {
     const PORT = process.env.PORT || 8080;
-    httpServer.listen(PORT, () => {
+    server.listen(PORT, () => {
         console.log(`Server listening on port ${PORT}`);
     });
 }
@@ -60,6 +31,41 @@ server.use((req, res, next) => {
     console.log(req.path, req.method);
     next();
 })
+
+server.use("/api/subscribe", (req, res, next) => {
+    try {
+        let channels: string[] = []
+        let addresses: string[] = [];
+        if(Array.isArray(req.query['address'])) {
+            addresses = req.query['address'] as string[];
+        } else if(typeof req.query['address'] == 'string') {
+            addresses = [req.query['address']]
+        }
+        for( let a of addresses) {
+            channels.push(createHash('sha256')
+                .update(Address.fromString(a).toTxOutScript().toBuffer())
+                .digest()
+                .reverse()
+                .toString('hex'))
+        }
+        if(Array.isArray(req.query['lock'])) {
+            channels.push(...req.query['lock'] as string[]);
+        } else if(typeof req.query['lock'] == 'string') {
+            channels.push(req.query['lock']);
+        }
+
+        const subClient = pubClient.duplicate();
+        subClient.subscribe(...channels);
+        res.on("close", () => subClient.quit())
+
+        res.set('Content-Type', 'text/event-stream')
+        subClient.on("message", (channel, message) => {
+            res.write(`data: ${message}\n\n`)
+        });
+    } catch(e: any) {
+        return next(e);
+    }
+});
 
 server.use("/api/docs",
     swaggerUi.serve,

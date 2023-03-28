@@ -11,7 +11,6 @@
   "main": "lib/server.js",
   "dependencies": {
     "@gorillapool/js-junglebus": "^0.4.1",
-    "@socket.io/redis-adapter": "^8.1.0",
     "@ts-bitcoin/core": "^2.2.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
@@ -21,7 +20,6 @@
     "isomorphic-fetch": "^3.0.0",
     "pg": "^8.10.0",
     "protobufjs": "^7.2.2",
-    "socket.io": "^4.6.1",
     "swagger-ui-express": "^4.6.1",
     "tsoa": "^5.1.1"
   },
