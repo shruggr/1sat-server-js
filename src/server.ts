@@ -28,11 +28,12 @@ io.on("connection", (socket) => {
     const subClient = pubClient.duplicate();
     socket.on("message", (message, cb) => {
         console.log(message);
-        cb("ok");
+        cb(message);
     });
 
-    socket.on("subscribe", (channel) => {
-        subClient.subscribe(channel);
+    socket.on("subscribe", (...channels) => {
+        console.log("Subscribe:", ...channels)
+        subClient.subscribe(...channels);
     });
 
     socket.on("disconnect", () => subClient.quit());

@@ -5,15 +5,15 @@
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script><!-- <script src="http://localhost:8080/socket.io/socket.io.js"></script> -->
     <script type="module">
         // import { io } from "https://cdn.socket.io/4.3.2/socket.io.esm.min.js";
-        const socket = io("http://localhost:8080");
+        const socket = io("http://server:8081");
         socket.on("connect", async () => {
             console.log("Connected to server");
             const m = await socket.emitWithAck("message", "Hello from client")
             console.log('Message:', m);
-            socket.emit("subscribe", "update")
+            socket.emit("subscribe", "dab3a9eecb41663021b01755fa924332a922e026b3669823b40e05e8689a7005")
         });
 
-        socket.on("update", (data) => {
+        socket.on("dab3a9eecb41663021b01755fa924332a922e026b3669823b40e05e8689a7005", (data) => {
             console.log("Update:", data);
         });
 
