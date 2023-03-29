@@ -54,14 +54,26 @@ server.use("/api/subscribe", (req, res, next) => {
             channels.push(req.query['lock']);
         }
 
+        console.log('Channels:', channels)
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Connection': 'keep-alive',
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no'
+        });
+        res.write('data: {"status": "Open"}\n\n')
         const subClient = pubClient.duplicate();
         subClient.subscribe(...channels);
-        res.on("close", () => subClient.quit())
+        const interval = setInterval(() => res.write('event: ping\n'), 5000)
+        res.on("close", () => {
+            clearInterval(interval)
+            subClient.quit()
+        })
 
-        res.set('Content-Type', 'text/event-stream')
-        subClient.on("message", (channel, message) => {
+        subClient.on("message", (_, message) => {
             res.write(`data: ${message}\n\n`)
         });
+        // setTimeout(() => res.end(), 30000)
     } catch(e: any) {
         return next(e);
     }
