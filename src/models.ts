@@ -37,7 +37,7 @@ export class Txo {
 
     static async loadInscriptionsByLock(lock: string): Promise<Inscription[]> {
         const { rows } = await pool.query(`
-            SELECT i.* 
+            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock
             FROM txos t
             JOIN inscriptions i ON i.origin=t.origin
             WHERE t.lock = $1 AND t.spend IS NULL`,

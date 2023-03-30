@@ -62,7 +62,6 @@ server.use("/api/subscribe", (req, res, next) => {
             'Cache-Control': 'no-cache',
             'X-Accel-Buffering': 'no'
         });
-        res.write('data: {"status": "Open"}\n\n')
         const subClient = pubClient.duplicate();
         subClient.subscribe(...channels);
         const interval = setInterval(() => res.write('event: ping\n'), 5000)
@@ -72,7 +71,8 @@ server.use("/api/subscribe", (req, res, next) => {
             subClient.quit()
         })
 
-        subClient.on("message", (_, message) => {
+        subClient.on("message", (channel, message) => {
+            res.write(`event: ${channel}\n`)
             res.write(`data: ${message}\n\n`)
         });
         // setTimeout(() => res.end(), 60000)
