@@ -12,7 +12,7 @@ export class Txo {
     accSats: number = 0;
     lock: string = '';
     spend: string = '';
-    origin: Origin = new Origin();
+    origin: Outpoint = new Outpoint();
     height: number = 0;
     idx: number = 0;
 
@@ -63,14 +63,14 @@ export class Txo {
         txo.accSats = row.accsats;
         txo.lock = row.lock.toString('hex');
         txo.spend = row.spend?.toString('hex');
-        txo.origin = Origin.fromBuffer(row.origin);
+        txo.origin = Outpoint.fromBuffer(row.origin);
         txo.height = row.height;
         txo.idx = row.idx;
         return txo;
     }
 }
 
-export class Origin {
+export class Outpoint {
     txid: Buffer = Buffer.alloc(32);
     vout: number = 0;
 
@@ -86,14 +86,14 @@ export class Origin {
     }
 
     static fromString(str: string) {
-        const origin = new Origin();
+        const origin = new Outpoint();
         origin.txid = Buffer.from(str.slice(0, 64), 'hex');
         origin.vout = parseInt(str.slice(65), 10);
         return origin;
     }
 
     static fromBuffer(buf: Buffer) {
-        const origin = new Origin();
+        const origin = new Outpoint();
         origin.txid = buf.slice(0, 32);
         origin.vout = parseInt(buf.slice(32).toString('hex'), 16);
         return origin;
@@ -121,7 +121,7 @@ export class Inscription {
     txid: string = '';
     vout: number = 0;
     file?: File;
-    origin: Origin = new Origin();
+    origin: Outpoint = new Outpoint();
     height: number = 0;
     idx: number = 0;
     lock: string = '';
@@ -137,7 +137,7 @@ export class Inscription {
         return Inscription.fromRow(rows[0]);
     }
 
-    static async loadOneByOrigin(origin: Origin): Promise<Inscription> {
+    static async loadOneByOrigin(origin: Outpoint): Promise<Inscription> {
         const { rows } = await pool.query(`SELECT * 
             FROM inscriptions 
             WHERE origin = $1
@@ -152,7 +152,7 @@ export class Inscription {
         return Inscription.fromRow(rows[0]);
     }
 
-    static async loadByOrigin(origin: Origin): Promise<Inscription[]> {
+    static async loadByOrigin(origin: Outpoint): Promise<Inscription[]> {
         const { rows } = await pool.query(`SELECT * 
             FROM inscriptions 
             WHERE origin = $1
@@ -178,7 +178,7 @@ export class Inscription {
         return rows.map(row => Inscription.fromRow(row));
     }
 
-    static async loadFileByOrigin(origin: Origin) {
+    static async loadFileByOrigin(origin: Outpoint) {
         const im = await Inscription.loadOneByOrigin(origin);
         const jbTxn = await jb.GetTransaction(im.txid);
         if(!jbTxn) throw new NotFound('not-found');
@@ -195,7 +195,7 @@ export class Inscription {
         inscription.file.hash = row.filehash.toString('hex');
         inscription.file.size = row.filesize;
         inscription.file.type = row.filetype.toString('utf8');
-        inscription.origin = Origin.fromBuffer(row.origin);
+        inscription.origin = Outpoint.fromBuffer(row.origin);
         inscription.height = row.height;
         inscription.idx = row.idx;
         inscription.lock = row.lock.toString('hex');

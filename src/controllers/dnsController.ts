@@ -3,7 +3,7 @@ import * as dns from 'dns/promises'
 import { Request as ExpRequest } from "express";
 import { NotFound } from 'http-errors';
 import { Controller, Get, Request, Route } from "tsoa";
-import { Inscription, Origin } from "../models";
+import { Inscription, Outpoint } from "../models";
 
 @Route("")
 export class DnsController extends Controller {
@@ -27,7 +27,7 @@ export class DnsController extends Controller {
         if(!origin) {
             throw new NotFound()
         }
-        const insData = await Inscription.loadFileByOrigin(Origin.fromString(origin))
+        const insData = await Inscription.loadFileByOrigin(Outpoint.fromString(origin))
         if(!insData.data) throw new NotFound('not-found');
         if (!req.res) throw new Error("No response object");
         req.res.header('Content-Type', insData.type || '');

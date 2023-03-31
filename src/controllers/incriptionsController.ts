@@ -1,16 +1,16 @@
 import { Controller, Get, Path, Route } from "tsoa";
-import { Inscription, Origin } from "../models";
+import { Inscription, Outpoint } from "../models";
 
 @Route("api/inscriptions")
 export class InscriptionsController extends Controller {
     @Get("origin/{origin}")
     public async getByOrigin(@Path() origin: string): Promise<Inscription[]> {
-        return Inscription.loadByOrigin(Origin.fromString(origin));
+        return Inscription.loadByOrigin(Outpoint.fromString(origin));
     }
 
     @Get("origin/{origin}/latest")
     public async getOneByOrigin(@Path() origin: string): Promise<Inscription> {
-        return Inscription.loadOneByOrigin(Origin.fromString(origin));
+        return Inscription.loadOneByOrigin(Outpoint.fromString(origin));
     }
 
     @Get("txid/{txid}")
