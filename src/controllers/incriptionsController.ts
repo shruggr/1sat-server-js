@@ -13,6 +13,11 @@ export class InscriptionsController extends Controller {
         return Inscription.loadOneByOrigin(Outpoint.fromString(origin));
     }
 
+    @Get("origin/{origin}/metadata")
+    public async getMetadataByOrigin(@Path() origin: string): Promise<Inscription[]> {
+        return Inscription.loadMetadataByOrigin(Outpoint.fromString(origin));
+    }
+
     @Get("txid/{txid}")
     public async getByTxid(@Path() txid: string): Promise<Inscription[]> {
         return Inscription.loadByTxid(Buffer.from(txid, 'hex'));

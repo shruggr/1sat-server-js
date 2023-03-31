@@ -25,7 +25,7 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Origin": {
+    "Outpoint": {
         "dataType": "refAlias",
         "type": {"dataType":"string","validators":{}},
     },
@@ -37,10 +37,12 @@ const models: TsoaRoute.Models = {
             "txid": {"dataType":"string","default":""},
             "vout": {"dataType":"double","default":0},
             "file": {"ref":"File"},
-            "origin": {"ref":"Origin"},
+            "origin": {"ref":"Outpoint"},
             "height": {"dataType":"double","default":0},
             "idx": {"dataType":"double","default":0},
             "lock": {"dataType":"string","default":""},
+            "MAP": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"string"}},
+            "B": {"ref":"File"},
         },
         "additionalProperties": false,
     },
@@ -54,7 +56,7 @@ const models: TsoaRoute.Models = {
             "accSats": {"dataType":"double","default":0},
             "lock": {"dataType":"string","default":""},
             "spend": {"dataType":"string","default":""},
-            "origin": {"ref":"Origin"},
+            "origin": {"ref":"Outpoint"},
             "height": {"dataType":"double","default":0},
             "idx": {"dataType":"double","default":0},
         },
@@ -166,6 +168,31 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getOneByOrigin.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/inscriptions/origin/:origin/metadata',
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getMetadataByOrigin)),
+
+            function InscriptionsController_getMetadataByOrigin(request: any, response: any, next: any) {
+            const args = {
+                    origin: {"in":"path","name":"origin","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new InscriptionsController();
+
+
+              const promise = controller.getMetadataByOrigin.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

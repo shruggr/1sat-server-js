@@ -25,7 +25,7 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"Origin": {
+			"Outpoint": {
 				"type": "string"
 			},
 			"Inscription": {
@@ -47,7 +47,7 @@
 						"$ref": "#/components/schemas/File"
 					},
 					"origin": {
-						"$ref": "#/components/schemas/Origin"
+						"$ref": "#/components/schemas/Outpoint"
 					},
 					"height": {
 						"type": "number",
@@ -62,6 +62,16 @@
 					"lock": {
 						"type": "string",
 						"default": ""
+					},
+					"MAP": {
+						"properties": {},
+						"additionalProperties": {
+							"type": "string"
+						},
+						"type": "object"
+					},
+					"B": {
+						"$ref": "#/components/schemas/File"
 					}
 				},
 				"type": "object",
@@ -97,7 +107,7 @@
 						"default": ""
 					},
 					"origin": {
-						"$ref": "#/components/schemas/Origin"
+						"$ref": "#/components/schemas/Outpoint"
 					},
 					"height": {
 						"type": "number",
@@ -196,6 +206,37 @@
 							"application/json": {
 								"schema": {
 									"$ref": "#/components/schemas/Inscription"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "origin",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/inscriptions/origin/{origin}/metadata": {
+			"get": {
+				"operationId": "GetMetadataByOrigin",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Inscription"
+									},
+									"type": "array"
 								}
 							}
 						}

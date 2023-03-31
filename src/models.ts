@@ -40,7 +40,8 @@ export class Txo {
             SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock
             FROM txos t
             JOIN inscriptions i ON i.origin=t.origin
-            WHERE t.lock = $1 AND t.spend IS NULL`,
+            WHERE t.lock = $1 AND t.spend IS NULL
+            ORDER BY i.id ASC`,
             [Buffer.from(lock, 'hex')],
         );
         return rows.map((r: any) => Inscription.fromRow(r));
@@ -125,6 +126,8 @@ export class Inscription {
     height: number = 0;
     idx: number = 0;
     lock: string = '';
+    MAP?: {[key: string]: string};
+    B?: File;
 
     static async loadOneById(id: number): Promise<Inscription> {
         const { rows } = await pool.query(`SELECT * 
@@ -162,8 +165,28 @@ export class Inscription {
             ]
         )
         if (!rows.length) throw new NotFound('not-found');
-
         return rows.map(row => Inscription.fromRow(row));
+    }
+
+    static async loadMetadataByOrigin(origin: Outpoint): Promise<Inscription[]> {
+        const { rows } = await pool.query(`SELECT *
+            FROM metadata
+            WHERE origin = $1
+            ORDER BY height DESC, idx DESC`,
+            [origin.toBuffer()]
+        )
+        if (!rows.length) throw new NotFound('not-found');
+        return rows.map(row => Inscription.metadataFromRow(row));
+    }
+
+    static async loadMetadataByTxid(txid: Buffer): Promise<Inscription[]> {
+        const { rows } = await pool.query(`SELECT *
+            FROM metadata
+            WHERE txid = $1`,
+            [txid]
+        );
+        if (!rows.length) throw new NotFound('not-found');
+        return rows.map(row => Inscription.metadataFromRow(row));
     }
 
     static async loadByTxid(txid: Buffer): Promise<Inscription[]> {
@@ -192,13 +215,30 @@ export class Inscription {
         inscription.txid = row.txid.toString('hex');
         inscription.vout = row.vout;
         inscription.file = new File();
-        inscription.file.hash = row.filehash.toString('hex');
+        inscription.file.hash = row.filehash?.toString('hex');
         inscription.file.size = row.filesize;
-        inscription.file.type = row.filetype.toString('utf8');
+        inscription.file.type = row.filetype?.toString('utf8');
         inscription.origin = Outpoint.fromBuffer(row.origin);
         inscription.height = row.height;
         inscription.idx = row.idx;
-        inscription.lock = row.lock.toString('hex');
+        inscription.lock = row.lock?.toString('hex');
+        inscription.MAP = row.map;
+        inscription.B = row.b;
+        return inscription;
+    }
+
+    static metadataFromRow(row: any): Inscription {
+        const inscription = new Inscription();
+        inscription.id = row.id;
+        inscription.txid = row.txid.toString('hex');
+        inscription.vout = row.vout;
+        inscription.file = row.ord;
+        inscription.origin = Outpoint.fromBuffer(row.origin);
+        inscription.height = row.height;
+        inscription.idx = row.idx;
+        inscription.lock = row.lock?.toString('hex');
+        inscription.MAP = row.map;
+        inscription.B = row.b;
         return inscription;
     }
 
@@ -251,5 +291,4 @@ export class Inscription {
         }
         return insData;
     }
-
 }
