@@ -55,7 +55,7 @@ server.use("/api/subscribe", (req, res, next) => {
         }
 
 
-        console.log('Channels:', channels)
+        // console.log('Channels:', channels)
         res.writeHead(200, {
             'Content-Type': 'text/event-stream',
             'Connection': 'keep-alive',
@@ -76,7 +76,6 @@ server.use("/api/subscribe", (req, res, next) => {
             res.write(`data: ${message}\n\n`)
         });
         // setTimeout(() => res.end(), 60000)
-
     } catch(e: any) {
         return next(e);
     }

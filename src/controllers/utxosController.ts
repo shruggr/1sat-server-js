@@ -23,4 +23,9 @@ export class UtxosController extends Controller {
         return Txo.loadInscriptionsByAddress(address);
     }
 
+    @Get("origin/{origin}")
+    public async getTxoByOrigin(@Path() origin: string): Promise<Txo> {
+        return Txo.loadOneByOrigin(origin);
+    }
+
 }

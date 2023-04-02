@@ -55,7 +55,18 @@ export class Txo {
             .toString('hex');
         return Txo.loadInscriptionsByLock(lock);
     }
-    
+
+    static async loadOneByOrigin(origin: string): Promise<Txo> {
+        const { rows } = await pool.query(`
+            SELECT *
+            FROM txos
+            WHERE origin = $1`,
+            [Outpoint.fromString(origin).toBuffer()],
+        );
+        if (rows.length === 0) throw new NotFound('Txo not found');
+        return Txo.fromRow(rows[0]);
+    }
+
     static fromRow(row: any) {
         const txo = new Txo();
         txo.txid = row.txid.toString('hex');
@@ -211,7 +222,7 @@ export class Inscription {
 
     static fromRow(row: any): Inscription {
         const inscription = new Inscription();
-        inscription.id = row.id;
+        inscription.id = parseInt(row.id, 10);
         inscription.txid = row.txid.toString('hex');
         inscription.vout = row.vout;
         inscription.file = new File();
@@ -229,7 +240,7 @@ export class Inscription {
 
     static metadataFromRow(row: any): Inscription {
         const inscription = new Inscription();
-        inscription.id = row.id;
+        inscription.id = parseInt(row.id, 10);
         inscription.txid = row.txid.toString('hex');
         inscription.vout = row.vout;
         inscription.file = row.ord;
