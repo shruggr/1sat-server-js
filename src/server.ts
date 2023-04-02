@@ -78,10 +78,10 @@ server.use("/api/subscribe", (req, res, next) => {
             channel = addressMap.has(channel) ?
                 addressMap.get(channel) as string :
                 channel;
-            res.write(`event: ${channel}\n\n`)
+            res.write(`event: ${channel}\n`)
             res.write(`data: ${message}\n`)
             const m = JSON.parse(message)
-            res.write(`id: ${m.txid}_${m.vout}\n`)
+            res.write(`id: ${m.txid}_${m.vout}\n\n`)
         });
         // setTimeout(() => res.end(), 60000)
     } catch(e: any) {
