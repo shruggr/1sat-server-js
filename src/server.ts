@@ -36,17 +36,20 @@ server.use("/api/subscribe", (req, res, next) => {
     try {
         let channels: string[] = []
         let addresses: string[] = [];
+        const addressMap = new Map<string, string>();
         if(Array.isArray(req.query['address'])) {
             addresses = req.query['address'] as string[];
         } else if(typeof req.query['address'] == 'string') {
             addresses = [req.query['address']]
         }
         for( let a of addresses) {
-            channels.push(createHash('sha256')
+            const lock = createHash('sha256')
                 .update(Address.fromString(a).toTxOutScript().toBuffer())
                 .digest()
                 .reverse()
-                .toString('hex'))
+                .toString('hex')
+            channels.push(lock)
+            addressMap.set(lock, a)
         }
         if(Array.isArray(req.query['lock'])) {
             channels.push(...req.query['lock'] as string[]);
@@ -72,6 +75,10 @@ server.use("/api/subscribe", (req, res, next) => {
         })
 
         subClient.on("message", (channel, message) => {
+            channel = addressMap.has(channel) ?
+                addressMap.get(channel) as string :
+                channel
+                
             res.write(`event: ${channel}\n`)
             res.write(`data: ${message}\n\n`)
         });
