@@ -60,7 +60,7 @@ export class Txo {
         const { rows } = await pool.query(`
             SELECT *
             FROM txos
-            WHERE origin = $1`,
+            WHERE origin = $1 AND spend IS NULL`,
             [Outpoint.fromString(origin).toBuffer()],
         );
         if (rows.length === 0) throw new NotFound('Txo not found');
