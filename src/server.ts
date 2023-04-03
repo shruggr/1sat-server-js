@@ -81,7 +81,7 @@ server.use("/api/subscribe", (req, res, next) => {
             res.write(`event: ${channel}\n`)
             res.write(`data: ${message}\n`)
             const m = JSON.parse(message)
-            res.write(`id: ${m.txid}_${m.vout}\n\n`)
+            res.write(`id: ${m.txid}_${m.vout}_${m.spend}\n\n`)
         });
         // setTimeout(() => res.end(), 60000)
     } catch(e: any) {
