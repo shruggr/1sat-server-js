@@ -81,6 +81,47 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"Listing": {
+				"properties": {
+					"txid": {
+						"type": "string",
+						"default": ""
+					},
+					"vout": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"height": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"idx": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"price": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"payout": {
+						"type": "string",
+						"default": ""
+					},
+					"script": {
+						"type": "string",
+						"default": ""
+					},
+					"origin": {
+						"$ref": "#/components/schemas/Outpoint"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
 			"Txo": {
 				"properties": {
 					"txid": {
@@ -346,6 +387,56 @@
 						"schema": {
 							"format": "double",
 							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/market": {
+			"get": {
+				"operationId": "GetOpenListings",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Listing"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/api/market/{outpoint}": {
+			"get": {
+				"operationId": "GetByAddress",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Listing"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "outpoint",
+						"required": true,
+						"schema": {
+							"type": "string"
 						}
 					}
 				]

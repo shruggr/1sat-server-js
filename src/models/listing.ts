@@ -1,6 +1,5 @@
 import { pool } from "../db";
 import { Outpoint } from "./outpoint";
-import { Inscription } from "./inscription";
 
 export class Listing {
     txid: string = '';
@@ -12,14 +11,24 @@ export class Listing {
     script: string = '';
     origin: Outpoint = new Outpoint();
 
-    static async loadByTxidVout(txid: Buffer, vout: number): Promise<Inscription[]> {
+    static async loadOneByOutpoint(outpoint: Outpoint): Promise<Listing> {
         const { rows } = await pool.query(`
             SELECT *
             FROM listings 
             WHERE txid = $1 AND vout = $2`,
-            [txid, vout],
+            [outpoint.txid, outpoint.vout],
         );
-        return rows.map((r: any) => Inscription.fromRow(r));
+        return Listing.fromRow(rows[0]);
+    }
+
+    static async loadOpenListings(): Promise<Listing[]> {
+        const { rows } = await pool.query(`
+            SELECT l.*
+            FROM txos t
+            JOIN listings l ON l.txid=t.txid AND l.vout=t.vout
+            WHERE t.listing = true AND t.spend IS NULL`,
+        );
+        return rows.map((r: any) => Listing.fromRow(r));
     }
 
     static fromRow(row: any) {

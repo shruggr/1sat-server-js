@@ -9,6 +9,8 @@ import { FilesController } from './../controllers/filesController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { InscriptionsController } from './../controllers/incriptionsController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { MarketController } from './../controllers/marketController';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { UtxosController } from './../controllers/utxosController';
 import type { RequestHandler, Router } from 'express';
 
@@ -44,6 +46,21 @@ const models: TsoaRoute.Models = {
             "spend": {"dataType":"string","default":""},
             "MAP": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"string"}},
             "B": {"ref":"File"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Listing": {
+        "dataType": "refObject",
+        "properties": {
+            "txid": {"dataType":"string","default":""},
+            "vout": {"dataType":"double","default":0},
+            "height": {"dataType":"double","default":0},
+            "idx": {"dataType":"double","default":0},
+            "price": {"dataType":"double","default":0},
+            "payout": {"dataType":"string","default":""},
+            "script": {"dataType":"string","default":""},
+            "origin": {"ref":"Outpoint"},
         },
         "additionalProperties": false,
     },
@@ -269,6 +286,55 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getOneById.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/market',
+            ...(fetchMiddlewares<RequestHandler>(MarketController)),
+            ...(fetchMiddlewares<RequestHandler>(MarketController.prototype.getOpenListings)),
+
+            function MarketController_getOpenListings(request: any, response: any, next: any) {
+            const args = {
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new MarketController();
+
+
+              const promise = controller.getOpenListings.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/market/:outpoint',
+            ...(fetchMiddlewares<RequestHandler>(MarketController)),
+            ...(fetchMiddlewares<RequestHandler>(MarketController.prototype.getByAddress)),
+
+            function MarketController_getByAddress(request: any, response: any, next: any) {
+            const args = {
+                    outpoint: {"in":"path","name":"outpoint","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new MarketController();
+
+
+              const promise = controller.getByAddress.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
