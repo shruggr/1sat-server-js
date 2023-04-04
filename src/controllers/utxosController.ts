@@ -49,7 +49,7 @@ export class UtxosController extends Controller {
         const ins = await Txo.loadOneByOrigin(origin);
         const txnData = await jb.GetTransaction(ins.txid);
         const tx = Tx.fromBuffer(Buffer.from(txnData?.transaction || '', 'base64'));
-        ins.script = tx.txOuts[ins.vout].script.toHex();
+        ins.script = tx.txOuts[ins.vout].script.toBuffer().toString('base64');
         return ins
     }
 

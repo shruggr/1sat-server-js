@@ -42,7 +42,7 @@ export class Listing {
         listing.height = row.height;
         listing.idx = row.idx;
         listing.price = parseInt(row.price, 10);
-        listing.payout = row.payout.toString('hex');
+        listing.payout = row.payout.toString('base64');
         listing.origin = Outpoint.fromBuffer(row.origin);
         return listing;
     }
