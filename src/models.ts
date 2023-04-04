@@ -37,7 +37,7 @@ export class Txo {
 
     static async loadInscriptionsByLock(lock: string): Promise<Inscription[]> {
         const { rows } = await pool.query(`
-            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock
+            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend
             FROM txos t
             JOIN inscriptions i ON i.origin=t.origin
             WHERE t.lock = $1 AND t.spend IS NULL
@@ -45,6 +45,18 @@ export class Txo {
             [Buffer.from(lock, 'hex')],
         );
         return rows.map((r: any) => Inscription.fromRow(r));
+    }
+
+    static async loadInscriptionByOutpoint(outpoint: Outpoint): Promise<Inscription> {
+        const { rows } = await pool.query(`
+            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend
+            FROM txos t
+            JOIN inscriptions i ON i.origin=t.origin
+            WHERE t.txid=$1 AND t.vout=$2
+            ORDER BY i.id ASC`,
+            [outpoint.txid, outpoint.vout],
+        );
+        return Inscription.fromRow(rows[0]);
     }
 
     static async loadInscriptionsByAddress(address: string): Promise<Inscription[]> {
@@ -71,7 +83,7 @@ export class Txo {
         const txo = new Txo();
         txo.txid = row.txid.toString('hex');
         txo.vout = row.vout;
-        txo.satoshis = row.satoshis;
+        txo.satoshis = parseInt(row.satoshis, 10);
         txo.accSats = row.accsats;
         txo.lock = row.lock.toString('hex');
         txo.spend = row.spend?.toString('hex');
@@ -137,6 +149,7 @@ export class Inscription {
     height: number = 0;
     idx: number = 0;
     lock: string = '';
+    spend: string = '';
     MAP?: {[key: string]: string};
     B?: File;
 
@@ -233,6 +246,7 @@ export class Inscription {
         inscription.height = row.height;
         inscription.idx = row.idx;
         inscription.lock = row.lock?.toString('hex');
+        inscription.spend = row.spend?.toString('hex');
         inscription.MAP = row.map;
         inscription.B = row.b;
         return inscription;
