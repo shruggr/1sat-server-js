@@ -3,7 +3,8 @@ import * as dns from 'dns/promises'
 import { Request as ExpRequest } from "express";
 import { NotFound } from 'http-errors';
 import { Controller, Get, Request, Route } from "tsoa";
-import { Inscription, Outpoint } from "../models";
+import { Inscription } from "../models/inscription";
+import { Outpoint } from "../models/outpoint";
 
 @Route("")
 export class DnsController extends Controller {
