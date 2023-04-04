@@ -1,3 +1,4 @@
+import { NotFound } from 'http-errors';
 import { pool } from "../db";
 import { Outpoint } from "./outpoint";
 
@@ -14,10 +15,13 @@ export class Listing {
     static async loadOneByOutpoint(outpoint: Outpoint): Promise<Listing> {
         const { rows } = await pool.query(`
             SELECT *
-            FROM listings 
+            FROM ordinal_lock_listings 
             WHERE txid = $1 AND vout = $2`,
             [outpoint.txid, outpoint.vout],
         );
+        if (rows.length === 0) {
+            throw new NotFound('not-found');
+        }
         return Listing.fromRow(rows[0]);
     }
 
@@ -25,7 +29,7 @@ export class Listing {
         const { rows } = await pool.query(`
             SELECT l.*
             FROM txos t
-            JOIN listings l ON l.txid=t.txid AND l.vout=t.vout
+            JOIN ordinal_lock_listings l ON l.txid=t.txid AND l.vout=t.vout
             WHERE t.listing = true AND t.spend IS NULL`,
         );
         return rows.map((r: any) => Listing.fromRow(r));

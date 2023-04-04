@@ -416,7 +416,7 @@
 		},
 		"/api/market/{outpoint}": {
 			"get": {
-				"operationId": "GetByAddress",
+				"operationId": "GetByOutpoint",
 				"responses": {
 					"200": {
 						"description": "Ok",

@@ -318,9 +318,9 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/market/:outpoint',
             ...(fetchMiddlewares<RequestHandler>(MarketController)),
-            ...(fetchMiddlewares<RequestHandler>(MarketController.prototype.getByAddress)),
+            ...(fetchMiddlewares<RequestHandler>(MarketController.prototype.getByOutpoint)),
 
-            function MarketController_getByAddress(request: any, response: any, next: any) {
+            function MarketController_getByOutpoint(request: any, response: any, next: any) {
             const args = {
                     outpoint: {"in":"path","name":"outpoint","required":true,"dataType":"string"},
             };
@@ -334,7 +334,7 @@ export function RegisterRoutes(app: Router) {
                 const controller = new MarketController();
 
 
-              const promise = controller.getByAddress.apply(controller, validatedArgs as any);
+              const promise = controller.getByOutpoint.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
