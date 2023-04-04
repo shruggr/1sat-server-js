@@ -84,7 +84,7 @@ server.use("/api/subscribe", (req, res, next) => {
             const outpoint = Outpoint.fromString(message)
             let id = ''
             if(channel == 'list') {
-                const data = await Listing.loadByTxidVout(outpoint.txid, outpoint.vout);
+                const data = await Listing.loadOneByOutpoint(outpoint);
                 message = JSON.stringify(data);
                 id = `${outpoint.txid}_${outpoint.vout}_list}`
             } else {
