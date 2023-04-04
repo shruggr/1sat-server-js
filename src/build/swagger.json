@@ -63,6 +63,10 @@
 						"type": "string",
 						"default": ""
 					},
+					"spend": {
+						"type": "string",
+						"default": ""
+					},
 					"MAP": {
 						"properties": {},
 						"additionalProperties": {
@@ -99,6 +103,10 @@
 						"default": 0
 					},
 					"lock": {
+						"type": "string",
+						"default": ""
+					},
+					"script": {
 						"type": "string",
 						"default": ""
 					},
@@ -405,6 +413,68 @@
 				]
 			}
 		},
+		"/api/utxos/lock/{lock}/history": {
+			"get": {
+				"operationId": "GetHistoryByLock",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "lock",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/utxos/address/{address}/history": {
+			"get": {
+				"operationId": "GetHistoryByAddress",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/utxos/lock/{lock}/inscriptions": {
 			"get": {
 				"operationId": "GetInscriptionsByLock",
@@ -459,6 +529,34 @@
 					{
 						"in": "path",
 						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/utxos/origin/{origin}": {
+			"get": {
+				"operationId": "GetTxoByOrigin",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Txo"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "origin",
 						"required": true,
 						"schema": {
 							"type": "string"

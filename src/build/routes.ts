@@ -41,6 +41,7 @@ const models: TsoaRoute.Models = {
             "height": {"dataType":"double","default":0},
             "idx": {"dataType":"double","default":0},
             "lock": {"dataType":"string","default":""},
+            "spend": {"dataType":"string","default":""},
             "MAP": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"string"}},
             "B": {"ref":"File"},
         },
@@ -55,6 +56,7 @@ const models: TsoaRoute.Models = {
             "satoshis": {"dataType":"double","default":0},
             "accSats": {"dataType":"double","default":0},
             "lock": {"dataType":"string","default":""},
+            "script": {"dataType":"string","default":""},
             "spend": {"dataType":"string","default":""},
             "origin": {"ref":"Outpoint"},
             "height": {"dataType":"double","default":0},
@@ -323,6 +325,56 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/utxos/lock/:lock/history',
+            ...(fetchMiddlewares<RequestHandler>(UtxosController)),
+            ...(fetchMiddlewares<RequestHandler>(UtxosController.prototype.getHistoryByLock)),
+
+            function UtxosController_getHistoryByLock(request: any, response: any, next: any) {
+            const args = {
+                    lock: {"in":"path","name":"lock","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new UtxosController();
+
+
+              const promise = controller.getHistoryByLock.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/utxos/address/:address/history',
+            ...(fetchMiddlewares<RequestHandler>(UtxosController)),
+            ...(fetchMiddlewares<RequestHandler>(UtxosController.prototype.getHistoryByAddress)),
+
+            function UtxosController_getHistoryByAddress(request: any, response: any, next: any) {
+            const args = {
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new UtxosController();
+
+
+              const promise = controller.getHistoryByAddress.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/utxos/lock/:lock/inscriptions',
             ...(fetchMiddlewares<RequestHandler>(UtxosController)),
             ...(fetchMiddlewares<RequestHandler>(UtxosController.prototype.getInscriptionsByLock)),
@@ -367,6 +419,31 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getInscriptionsByAddress.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/utxos/origin/:origin',
+            ...(fetchMiddlewares<RequestHandler>(UtxosController)),
+            ...(fetchMiddlewares<RequestHandler>(UtxosController.prototype.getTxoByOrigin)),
+
+            function UtxosController_getTxoByOrigin(request: any, response: any, next: any) {
+            const args = {
+                    origin: {"in":"path","name":"origin","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new UtxosController();
+
+
+              const promise = controller.getTxoByOrigin.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

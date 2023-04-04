@@ -1,5 +1,6 @@
 import { Controller, Get, Path, Route } from "tsoa";
-import { Inscription, Outpoint } from "../models";
+import { Inscription } from "./../models/inscription";
+import { Outpoint } from "./../models/outpoint";
 
 @Route("api/inscriptions")
 export class InscriptionsController extends Controller {

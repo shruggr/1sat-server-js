@@ -10,7 +10,9 @@ import "isomorphic-fetch";
 import * as swaggerUi from 'swagger-ui-express'
 import { RegisterRoutes } from "./build/routes";
 import Redis from "ioredis";
-import { Outpoint, Txo } from './models';
+import { Outpoint } from './models/outpoint';
+import { Txo } from './models/txo';
+import { Listing } from './models/listing';
 
 const server = express();
 const pubClient = new Redis();
@@ -80,10 +82,19 @@ server.use("/api/subscribe", (req, res, next) => {
                 addressMap.get(channel) as string :
                 channel;
             const outpoint = Outpoint.fromString(message)
-            const m = await Txo.loadInscriptionByOutpoint(outpoint)
+            let id = ''
+            if(channel == 'list') {
+                const data = await Listing.loadByTxidVout(outpoint.txid, outpoint.vout);
+                message = JSON.stringify(data);
+                id = `${outpoint.txid}_${outpoint.vout}_list}`
+            } else {
+                const data = await Txo.loadInscriptionByOutpoint(outpoint)
+                message = JSON.stringify(data);
+                id = `${outpoint.txid}_${outpoint.vout}_${data.spend}}`
+            }
             res.write(`event: ${channel}\n`)
             res.write(`data: ${message}\n`)
-            res.write(`id: ${m.txid}_${m.vout}_${m.spend}\n\n`)
+            res.write(`id: ${id}\n\n`)
         });
         // setTimeout(() => res.end(), 60000)
     } catch(e: any) {
