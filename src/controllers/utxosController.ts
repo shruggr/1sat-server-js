@@ -9,36 +9,43 @@ const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 export class UtxosController extends Controller {
     @Get("lock/{lock}")
     public async getByLock(@Path() lock: string): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         return Txo.loadUtxosByLock(lock);
     }
 
     @Get("address/{address}")
     public async getByAddress(@Path() address: string): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         return Txo.loadUtxosByAddress(address);
     }
 
     @Get("lock/{lock}/history")
     public async getHistoryByLock(@Path() lock: string): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         return Txo.loadHistoryByLock(lock);
     }
 
     @Get("address/{address}/history")
     public async getHistoryByAddress(@Path() address: string): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         return Txo.loadHistoryByAddress(address);
     }
 
     @Get("lock/{lock}/inscriptions")
     public async getInscriptionsByLock(@Path() lock: string): Promise<Inscription[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         return Txo.loadInscriptionsByLock(lock);
     }
 
     @Get("address/{address}/inscriptions")
     public async getInscriptionsByAddress(@Path() address: string): Promise<Inscription[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         return Txo.loadInscriptionsByAddress(address);
     }
 
     @Get("origin/{origin}")
     public async getTxoByOrigin(@Path() origin: string): Promise<Txo> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         const ins = await Txo.loadOneByOrigin(origin);
         const txnData = await jb.GetTransaction(ins.txid);
         const tx = Tx.fromBuffer(Buffer.from(txnData?.transaction || '', 'base64'));
