@@ -59,6 +59,11 @@ server.use("/api/subscribe", (req, res, next) => {
         } else if(typeof req.query['lock'] == 'string') {
             channels.push(req.query['lock']);
         }
+        if(Array.isArray(req.query['channel'])) {
+            channels.push(...req.query['channel'] as string[]);
+        } else if(typeof req.query['channel'] == 'string') {
+            channels.push(req.query['channel']);
+        }
 
 
         // console.log('Channels:', channels)
