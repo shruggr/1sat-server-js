@@ -30,7 +30,7 @@ export class Listing {
             SELECT l.*
             FROM txos t
             JOIN ordinal_lock_listings l ON l.txid=t.txid AND l.vout=t.vout
-            WHERE t.listing = true AND t.spend IS NULL`,
+            WHERE t.spend IS NULL`,
         );
         return rows.map((r: any) => Listing.fromRow(r));
     }
