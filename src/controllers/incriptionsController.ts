@@ -1,6 +1,7 @@
 import { Controller, Get, Path, Route } from "tsoa";
 import { Inscription } from "./../models/inscription";
 import { Outpoint } from "./../models/outpoint";
+import { Txo } from "../models/txo";
 
 @Route("api/inscriptions")
 export class InscriptionsController extends Controller {
@@ -17,6 +18,11 @@ export class InscriptionsController extends Controller {
     @Get("origin/{origin}/metadata")
     public async getMetadataByOrigin(@Path() origin: string): Promise<Inscription[]> {
         return Inscription.loadMetadataByOrigin(Outpoint.fromString(origin));
+    }
+
+    @Get("outpoint/{outpoint}")
+    public async getByOutpoint(@Path() outpoint: string): Promise<Inscription> {
+        return Txo.loadInscriptionByOutpoint(Outpoint.fromString(outpoint));
     }
 
     @Get("txid/{txid}")
