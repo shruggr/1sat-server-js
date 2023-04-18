@@ -46,6 +46,7 @@ const models: TsoaRoute.Models = {
             "spend": {"dataType":"string","default":""},
             "MAP": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"string"}},
             "B": {"ref":"File"},
+            "listing": {"dataType":"boolean","default":false},
         },
         "additionalProperties": false,
     },
@@ -78,6 +79,7 @@ const models: TsoaRoute.Models = {
             "origin": {"ref":"Outpoint"},
             "height": {"dataType":"double","default":0},
             "idx": {"dataType":"double","default":0},
+            "listing": {"dataType":"boolean","default":false},
         },
         "additionalProperties": false,
     },
@@ -212,6 +214,31 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getMetadataByOrigin.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/inscriptions/outpoint/:outpoint',
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getByOutpoint)),
+
+            function InscriptionsController_getByOutpoint(request: any, response: any, next: any) {
+            const args = {
+                    outpoint: {"in":"path","name":"outpoint","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new InscriptionsController();
+
+
+              const promise = controller.getByOutpoint.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

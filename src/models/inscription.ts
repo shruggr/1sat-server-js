@@ -32,6 +32,7 @@ export class Inscription {
     spend: string = '';
     MAP?: {[key: string]: string};
     B?: File;
+    listing: boolean = false;
 
     static async loadOneById(id: number): Promise<Inscription> {
         const { rows } = await pool.query(`SELECT * 
@@ -129,6 +130,7 @@ export class Inscription {
         inscription.spend = row.spend?.toString('hex');
         inscription.MAP = row.map;
         inscription.B = row.b;
+        inscription.listing = row.listing || false;
         return inscription;
     }
 

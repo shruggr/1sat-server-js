@@ -15,6 +15,7 @@ export class Txo {
     origin: Outpoint = new Outpoint();
     height: number = 0;
     idx: number = 0;
+    listing: boolean = false;
 
     static async loadUtxosByLock(lock: string): Promise<Txo[]> {
         const { rows } = await pool.query(`
@@ -56,7 +57,7 @@ export class Txo {
 
     static async loadInscriptionsByLock(lock: string): Promise<Inscription[]> {
         const { rows } = await pool.query(`
-            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map
+            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing
             FROM txos t
             JOIN inscriptions i ON i.origin=t.origin
             WHERE t.lock = $1 AND t.spend IS NULL
@@ -68,7 +69,7 @@ export class Txo {
 
     static async loadInscriptionByOutpoint(outpoint: Outpoint): Promise<Inscription> {
         const { rows } = await pool.query(`
-            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map
+            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing
             FROM txos t
             JOIN inscriptions i ON i.origin=t.origin
             WHERE t.txid=$1 AND t.vout=$2
@@ -111,6 +112,7 @@ export class Txo {
         txo.origin = Outpoint.fromBuffer(row.origin);
         txo.height = row.height;
         txo.idx = row.idx;
+        txo.listing = row.listing;
         return txo;
     }
 }
