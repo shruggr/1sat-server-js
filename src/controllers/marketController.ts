@@ -14,6 +14,13 @@ export class MarketController extends Controller {
         return Listing.loadOpenListings();
     }
 
+    @Get("recent/{page}")
+    public async getRecentListings(
+        @Path() page: number,
+    ): Promise<Inscription[]> {
+        return Listing.loadRecentListings(page);
+    }
+
     @Get("{outpoint}")
     public async getByOutpoint(@Path() outpoint: string): Promise<Listing> {
         const listing = await Listing.loadOneByOutpoint(Outpoint.fromString(outpoint));

@@ -38,6 +38,20 @@ export class Listing {
         return rows.map((r: any) => Inscription.fromRow(r));
     }
 
+    static async loadRecentListings(page = 0): Promise<Inscription[]> {
+        const { rows } = await pool.query(`
+            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing, l.price, l.payout
+            FROM txos t
+            JOIN ordinal_lock_listings l ON l.txid=t.txid AND l.vout=t.vout
+            JOIN inscriptions i ON i.origin=t.origin
+            WHERE t.listing = true AND t.spend IS NULL
+            ORDER BY t.height DESC, t.idx DESC
+            LIMIT 100 OFFSET $1`,
+            [page * 100],
+        );
+        return rows.map((r: any) => Inscription.fromRow(r));
+    }
+
     static fromRow(row: any) {
         const listing = new Listing();
         listing.txid = row.txid.toString('hex');
