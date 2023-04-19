@@ -34,6 +34,10 @@
 						"type": "number",
 						"format": "double"
 					},
+					"num": {
+						"type": "number",
+						"format": "double"
+					},
 					"txid": {
 						"type": "string",
 						"default": ""
@@ -80,6 +84,16 @@
 					"listing": {
 						"type": "boolean",
 						"default": false
+					},
+					"price": {
+						"type": "number",
+						"format": "double"
+					},
+					"payout": {
+						"type": "string"
+					},
+					"script": {
+						"type": "string"
 					}
 				},
 				"type": "object",
@@ -438,7 +452,7 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/Listing"
+										"$ref": "#/components/schemas/Inscription"
 									},
 									"type": "array"
 								}

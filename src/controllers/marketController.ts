@@ -3,13 +3,14 @@ import { Tx } from '@ts-bitcoin/core';
 import { Controller, Get, Path, Route } from "tsoa";
 import { Listing } from "../models/listing";
 import { Outpoint } from '../models/outpoint';
+import { Inscription } from "../models/inscription";
 
 const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 
 @Route("api/market")
 export class MarketController extends Controller {
     @Get("")
-    public async getOpenListings(): Promise<Listing[]> {
+    public async getOpenListings(): Promise<Inscription[]> {
         return Listing.loadOpenListings();
     }
 

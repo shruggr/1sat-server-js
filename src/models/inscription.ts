@@ -22,6 +22,7 @@ export class InscriptionData {
 
 export class Inscription {
     id?: number;
+    num?: number;
     txid: string = '';
     vout: number = 0;
     file?: File;
@@ -33,6 +34,10 @@ export class Inscription {
     MAP?: {[key: string]: string};
     B?: File;
     listing: boolean = false;
+    price?: number;
+    payout?: string;
+    script?: string;
+
 
     static async loadOneById(id: number): Promise<Inscription> {
         const { rows } = await pool.query(`SELECT * 
@@ -116,7 +121,7 @@ export class Inscription {
 
     static fromRow(row: any): Inscription {
         const inscription = new Inscription();
-        inscription.id = parseInt(row.id, 10);
+        inscription.num = inscription.id = parseInt(row.id, 10);
         inscription.txid = row.txid.toString('hex');
         inscription.vout = row.vout;
         inscription.file = new File();
@@ -131,6 +136,8 @@ export class Inscription {
         inscription.MAP = row.map;
         inscription.B = row.b;
         inscription.listing = row.listing || false;
+        inscription.price = row.price;
+        inscription.payout = row.payout?.toString('base64');
         return inscription;
     }
 

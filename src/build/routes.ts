@@ -36,6 +36,7 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "id": {"dataType":"double"},
+            "num": {"dataType":"double"},
             "txid": {"dataType":"string","default":""},
             "vout": {"dataType":"double","default":0},
             "file": {"ref":"File"},
@@ -47,6 +48,9 @@ const models: TsoaRoute.Models = {
             "MAP": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"string"}},
             "B": {"ref":"File"},
             "listing": {"dataType":"boolean","default":false},
+            "price": {"dataType":"double"},
+            "payout": {"dataType":"string"},
+            "script": {"dataType":"string"},
         },
         "additionalProperties": false,
     },
