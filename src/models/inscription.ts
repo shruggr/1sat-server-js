@@ -136,7 +136,7 @@ export class Inscription {
         inscription.MAP = row.map;
         inscription.B = row.b;
         inscription.listing = row.listing || false;
-        inscription.price = row.price;
+        inscription.price = row.price ? parseInt(row.price, 10) : undefined;
         inscription.payout = row.payout?.toString('base64');
         return inscription;
     }
