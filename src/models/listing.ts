@@ -29,7 +29,7 @@ export class Listing {
 
     static async loadOpenListings(): Promise<Inscription[]> {
         const { rows } = await pool.query(`
-            SELECT i.*, t.listing, l.price, l.payout
+            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing, l.price, l.payout
             FROM txos t
             JOIN ordinal_lock_listings l ON l.txid=t.txid AND l.vout=t.vout
             JOIN inscriptions i ON i.origin=t.origin
