@@ -1,6 +1,6 @@
 import { JungleBusClient } from "@gorillapool/js-junglebus";
 import { Tx } from '@ts-bitcoin/core';
-import { Controller, Get, Path, Route } from "tsoa";
+import { Controller, Get, Path, Query, Route } from "tsoa";
 import { Listing } from "../models/listing";
 import { Outpoint } from '../models/outpoint';
 import { Inscription } from "../models/inscription";
@@ -14,11 +14,12 @@ export class MarketController extends Controller {
         return Listing.loadOpenListings();
     }
 
-    @Get("recent/{page}")
+    @Get("recent")
     public async getRecentListings(
-        @Path() page: number,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
     ): Promise<Inscription[]> {
-        return Listing.loadRecentListings(page);
+        return Listing.loadRecentListings(limit, offset);
     }
 
     @Get("{outpoint}")
