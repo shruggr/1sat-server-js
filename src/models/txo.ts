@@ -73,9 +73,13 @@ export class Txo {
             FROM txos t
             JOIN inscriptions i ON i.origin=t.origin
             WHERE t.txid=$1 AND t.vout=$2
-            ORDER BY i.id ASC`,
+            ORDER BY i.id ASC
+            LIMIT 1`,
             [outpoint.txid, outpoint.vout],
         );
+        if(!rows.length) {
+            throw new NotFound('Inscription not found');
+        }
         const ins = Inscription.fromRow(rows[0]);
 
         return ins;

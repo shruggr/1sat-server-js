@@ -121,7 +121,7 @@ export class Inscription {
 
     static fromRow(row: any): Inscription {
         const inscription = new Inscription();
-        if (row.id && row.id > 0) {
+        if (row?.id && row.id > 0) {
             inscription.id = parseInt(row.id, 10);
             inscription.num = inscription.id
         };
