@@ -121,7 +121,8 @@ export class Inscription {
 
     static fromRow(row: any): Inscription {
         const inscription = new Inscription();
-        inscription.num = inscription.id = row.id ?  parseInt(row.id, 10) : undefined;
+        inscription.id = row.id ? parseInt(row.id, 10) : undefined;
+        inscription.num = inscription.id
         inscription.txid = row.txid.toString('hex');
         inscription.vout = row.vout;
         inscription.file = new File();
