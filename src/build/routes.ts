@@ -17,6 +17,11 @@ import type { RequestHandler, Router } from 'express';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
+    "Outpoint": {
+        "dataType": "refAlias",
+        "type": {"dataType":"string","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "File": {
         "dataType": "refObject",
         "properties": {
@@ -27,11 +32,6 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Outpoint": {
-        "dataType": "refAlias",
-        "type": {"dataType":"string","validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Inscription": {
         "dataType": "refObject",
         "properties": {
@@ -39,6 +39,7 @@ const models: TsoaRoute.Models = {
             "num": {"dataType":"double"},
             "txid": {"dataType":"string","default":""},
             "vout": {"dataType":"double","default":0},
+            "outpoint": {"ref":"Outpoint"},
             "file": {"ref":"File"},
             "origin": {"ref":"Outpoint"},
             "height": {"dataType":"double","default":0},

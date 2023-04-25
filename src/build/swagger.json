@@ -6,6 +6,9 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
+			"Outpoint": {
+				"type": "string"
+			},
 			"File": {
 				"properties": {
 					"hash": {
@@ -25,9 +28,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"Outpoint": {
-				"type": "string"
-			},
 			"Inscription": {
 				"properties": {
 					"id": {
@@ -46,6 +46,9 @@
 						"type": "number",
 						"format": "double",
 						"default": 0
+					},
+					"outpoint": {
+						"$ref": "#/components/schemas/Outpoint"
 					},
 					"file": {
 						"$ref": "#/components/schemas/File"
