@@ -11,6 +11,7 @@ const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 export class MarketController extends Controller {
     @Get("")
     public async getOpenListings(): Promise<Inscription[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         return Listing.loadOpenListings();
     }
 
@@ -19,6 +20,7 @@ export class MarketController extends Controller {
         @Query() limit: number = 100,
         @Query() offset: number = 0
     ): Promise<Inscription[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         return Listing.loadRecentListings(limit, offset);
     }
 
