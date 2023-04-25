@@ -27,7 +27,7 @@ export class MarketController extends Controller {
         const listing = await Listing.loadOneByOutpoint(Outpoint.fromString(outpoint));
         const txnData = await jb.GetTransaction(listing.txid);
         const tx = Tx.fromBuffer(Buffer.from(txnData?.transaction || '', 'base64'));
-        listing.script = tx.txOuts[listing.vout].script.toHex();
+        listing.script = tx.txOuts[listing.vout].script.toBuffer().toString('base64');
         return listing
     }
 }

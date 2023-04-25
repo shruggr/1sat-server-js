@@ -25,6 +25,7 @@ export class Inscription {
     num?: number;
     txid: string = '';
     vout: number = 0;
+    outpoint: Outpoint = new Outpoint();
     file?: File;
     origin: Outpoint = new Outpoint();
     height: number = 0;
@@ -125,8 +126,8 @@ export class Inscription {
             inscription.id = parseInt(row.id, 10);
             inscription.num = inscription.id
         };
-        inscription.txid = row.txid.toString('hex');
-        inscription.vout = row.vout;
+        inscription.outpoint.txid = inscription.txid = row.txid.toString('hex');
+        inscription.outpoint.vout = inscription.vout = row.vout;
         inscription.file = new File();
         inscription.file.hash = row.filehash?.toString('hex');
         inscription.file.size = row.filesize;
