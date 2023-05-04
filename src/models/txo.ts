@@ -86,13 +86,13 @@ export class Txo {
         return ins;
     }
 
-    static async loadInscriptionsByAddress(address: string): Promise<Inscription[]> {
+    static async loadInscriptionsByAddress(address: string, limit = 100, offset = 0): Promise<Inscription[]> {
         const lock = Hash.sha256(
             Address.fromString(address).toTxOutScript().toBuffer()
         )
             .reverse()
             .toString('hex');
-        return Txo.loadInscriptionsByLock(lock);
+        return Txo.loadInscriptionsByLock(lock, limit, offset);
     }
 
     static async loadOneByOrigin(origin: string): Promise<Txo> {
