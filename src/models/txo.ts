@@ -62,7 +62,7 @@ export class Txo {
             JOIN inscriptions i ON i.origin=t.origin
             WHERE t.lock = $1 AND t.spend IS NULL
             ORDER BY i.id ASC
-            LIMIT $1 OFFSET $2`,
+            LIMIT $2 OFFSET $3`,
             [Buffer.from(lock, 'hex'), limit, offset],
         );
         return rows.map((r: any) => Inscription.fromRow(r));
