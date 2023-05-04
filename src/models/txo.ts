@@ -55,14 +55,15 @@ export class Txo {
         return Txo.loadHistoryByLock(lock);
     }
 
-    static async loadInscriptionsByLock(lock: string): Promise<Inscription[]> {
+    static async loadInscriptionsByLock(lock: string, limit = 100, offset = 0): Promise<Inscription[]> {
         const { rows } = await pool.query(`
             SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing
             FROM txos t
             JOIN inscriptions i ON i.origin=t.origin
             WHERE t.lock = $1 AND t.spend IS NULL
-            ORDER BY i.id ASC`,
-            [Buffer.from(lock, 'hex')],
+            ORDER BY i.id ASC
+            LIMIT $1 OFFSET $2`,
+            [Buffer.from(lock, 'hex'), limit, offset],
         );
         return rows.map((r: any) => Inscription.fromRow(r));
     }

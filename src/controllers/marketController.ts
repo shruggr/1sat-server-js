@@ -24,6 +24,42 @@ export class MarketController extends Controller {
         return Listing.loadRecentListings(limit, offset);
     }
 
+    @Get("num/asc")
+    public async getListingsByNumAsc(
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
+    ): Promise<Inscription[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        return Listing.loadListingsByNum(limit, offset, 'ASC');
+    }
+
+    @Get("num/desc")
+    public async getListingsByNumDesc(
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
+    ): Promise<Inscription[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        return Listing.loadListingsByNum(limit, offset, 'DESC');
+    }
+
+    @Get("price/asc")
+    public async getListingsByPriceAsc(
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
+    ): Promise<Inscription[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        return Listing.loadListingsByPrice(limit, offset, 'ASC');
+    }
+
+    @Get("price/desc")
+    public async getListingsByPriceDesc(
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
+    ): Promise<Inscription[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        return Listing.loadListingsByPrice(limit, offset, 'DESC');
+    }
+
     @Get("{outpoint}")
     public async getByOutpoint(@Path() outpoint: string): Promise<Listing> {
         const listing = await Listing.loadOneByOutpoint(Outpoint.fromString(outpoint));

@@ -39,13 +39,51 @@ export class Listing {
     }
 
     static async loadRecentListings(limit: number, offset: number): Promise<Inscription[]> {
+        // const { rows } = await pool.query(`
+        //     SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing, l.price, l.payout
+        //     FROM txos t
+        //     JOIN ordinal_lock_listings l ON l.txid=t.txid AND l.vout=t.vout
+        //     JOIN inscriptions i ON i.origin=t.origin
+        //     WHERE t.listing = true AND t.spend IS NULL
+        //     ORDER BY t.height DESC, t.idx DESC
+        //     LIMIT $1 OFFSET $2`,
+        //     [limit, offset],
+        // );
         const { rows } = await pool.query(`
-            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing, l.price, l.payout
-            FROM txos t
-            JOIN ordinal_lock_listings l ON l.txid=t.txid AND l.vout=t.vout
-            JOIN inscriptions i ON i.origin=t.origin
-            WHERE t.listing = true AND t.spend IS NULL
+            SELECT l.num as id, l.txid, l.vout, i.filehash, i.filesize, i.filetype, i.origin, l.height, l.idx, t.lock, t.spend, i.map, true as listing, l.price, l.payout
+            FROM ordinal_lock_listings l
+            JOIN inscriptions i ON i.origin=l.origin
+            JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
+            WHERE l.spend IS NULL
             ORDER BY t.height DESC, t.idx DESC
+            LIMIT $1 OFFSET $2`,
+            [limit, offset],
+        );
+        return rows.map((r: any) => Inscription.fromRow(r));
+    }
+
+    static async loadListingsByNum(limit: number, offset: number, sort = 'DESC'): Promise<Inscription[]> {
+        const { rows } = await pool.query(`
+            SELECT l.num as id, l.txid, l.vout, i.filehash, i.filesize, i.filetype, i.origin, l.height, l.idx, t.lock, l.spend, i.map, true as listing, l.price, l.payout
+            FROM ordinal_lock_listings l
+            JOIN inscriptions i ON i.origin=l.origin
+            JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
+            WHERE l.spend IS NULL
+            ORDER BY l.num ${sort}
+            LIMIT $1 OFFSET $2`,
+            [limit, offset],
+        );
+        return rows.map((r: any) => Inscription.fromRow(r));
+    }
+
+    static async loadListingsByPrice(limit: number, offset: number, sort = 'DESC'): Promise<Inscription[]> {
+        const { rows } = await pool.query(`
+            SELECT l.num as id, l.txid, l.vout, i.filehash, i.filesize, i.filetype, i.origin, l.height, l.idx, t.lock, l.spend, i.map, true as listing, l.price, l.payout
+            FROM ordinal_lock_listings l
+            JOIN inscriptions i ON i.origin=l.origin
+            JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
+            WHERE l.spend IS NULL
+            ORDER BY l.price ${sort}
             LIMIT $1 OFFSET $2`,
             [limit, offset],
         );
