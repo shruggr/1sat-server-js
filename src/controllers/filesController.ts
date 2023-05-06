@@ -1,5 +1,4 @@
 import { Request as ExpRequest } from "express";
-import { NotFound } from 'http-errors';
 import { Controller, Get, Path, Request, Route } from "tsoa";
 import { Inscription } from "../models/inscription";
 import { Outpoint } from "../models/outpoint";
@@ -12,7 +11,6 @@ export class FilesController extends Controller {
         @Request() req: ExpRequest,
     ): Promise<void> {
         const insData = await Inscription.loadFileByOrigin(Outpoint.fromString(origin))
-        if(!insData.data) throw new NotFound('not-found');
         if (!req.res) throw new Error("No response object");
         req.res.header('Content-Type', insData.type || '');
         req.res.header('Cache-Control', 'public,immutable,max-age=31536000')

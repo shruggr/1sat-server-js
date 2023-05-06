@@ -21,7 +21,7 @@ export class Txo {
         const { rows } = await pool.query(`
             SELECT * 
             FROM txos 
-            WHERE lock = $1 AND spend IS NULL`,
+            WHERE lock = $1 AND spend = decode('', 'hex')`,
             [Buffer.from(lock, 'hex')],
         );
         return rows.map((r: any) => Txo.fromRow(r));
@@ -40,7 +40,7 @@ export class Txo {
         const { rows } = await pool.query(`
             SELECT * 
             FROM txos 
-            WHERE lock = $1 AND spend IS NOT NULL`,
+            WHERE lock = $1 AND spend = decode('', 'hex')`,
             [Buffer.from(lock, 'hex')],
         );
         return rows.map((r: any) => Txo.fromRow(r));
@@ -60,7 +60,7 @@ export class Txo {
             SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing
             FROM txos t
             JOIN inscriptions i ON i.origin=t.origin
-            WHERE t.lock = $1 AND t.spend IS NULL
+            WHERE t.lock = $1 AND t.spend = decode('', 'hex')
             ORDER BY i.id ASC
             LIMIT $2 OFFSET $3`,
             [Buffer.from(lock, 'hex'), limit, offset],
@@ -99,7 +99,7 @@ export class Txo {
         const { rows } = await pool.query(`
             SELECT *
             FROM txos
-            WHERE origin = $1 AND spend IS NULL`,
+            WHERE origin = $1 AND spend = decode('', 'hex')`,
             [Outpoint.fromString(origin).toBuffer()],
         );
         if (rows.length === 0) throw new NotFound('Txo not found');

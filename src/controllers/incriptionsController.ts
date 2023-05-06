@@ -1,7 +1,8 @@
-import { Controller, Get, Path, Route } from "tsoa";
+import { BodyProp, Controller, Get, Path, Post, Query, Route } from "tsoa";
 import { Inscription } from "./../models/inscription";
 import { Outpoint } from "./../models/outpoint";
 import { Txo } from "../models/txo";
+import { pool } from "../db";
 
 @Route("api/inscriptions")
 export class InscriptionsController extends Controller {
@@ -39,5 +40,35 @@ export class InscriptionsController extends Controller {
     @Get("{id}")
     public async getOneById(@Path() id: number): Promise<Inscription> {
         return Inscription.loadOneById(id);
+    }
+
+    @Post("search/text")
+    public async searchText(
+        @BodyProp() query: string,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
+    ): Promise<Inscription[]> {
+        const rows = await pool.query(`SELECT * FROM inscriptions
+            WHERE search_text_en @@ plainto_tsquery('english', $1)
+            ORDER BY height DESC, idx DESC
+            DESC LIMIT $2 OFFSET $3`,
+            [{ text: query }, limit, offset]
+        )
+        return rows.rows.map(row => Inscription.fromRow(row));
+    }
+
+    @Post("search/map")
+    public async searchMap(
+        @BodyProp() query: string,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
+    ): Promise<Inscription[]> {
+        const rows = await pool.query(`SELECT * FROM inscriptions
+            WHERE map @> $1
+            ORDER BY height DESC, idx DESC
+            DESC LIMIT $2 OFFSET $3`,
+            [{ text: query }, limit, offset]
+        )
+        return rows.rows.map(row => Inscription.fromRow(row));
     }
 }

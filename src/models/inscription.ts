@@ -7,6 +7,12 @@ import { Outpoint } from "./outpoint";
 
 const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 
+export interface Sigma {
+    algorithm: string;
+    address: string;
+    signature: string;
+    vin: number;
+}
 
 export class File {
     hash: string = '';
@@ -34,6 +40,7 @@ export class Inscription {
     spend: string = '';
     MAP?: {[key: string]: string};
     B?: File;
+    SIGMA?: Sigma[] = [];
     listing: boolean = false;
     price?: number;
     payout?: string;
@@ -139,6 +146,7 @@ export class Inscription {
         inscription.spend = row.spend?.toString('hex');
         inscription.MAP = row.map;
         inscription.B = row.b;
+        inscription.SIGMA = row.sigma;
         inscription.listing = row.listing || false;
         inscription.price = row.price ? parseInt(row.price, 10) : undefined;
         inscription.payout = row.payout?.toString('base64');
@@ -157,6 +165,7 @@ export class Inscription {
         inscription.lock = row.lock?.toString('hex');
         inscription.MAP = row.map;
         inscription.B = row.b;
+        inscription.SIGMA = row.sigma;
         return inscription;
     }
 
