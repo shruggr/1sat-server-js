@@ -41,14 +41,13 @@ export class Listing {
         let orderBy = 'ORDER BY ';
         switch(sort) {
             case ListingSort.num:
-                orderBy += `l.num ${dir || 'DESC'}`;
+                orderBy += `l.num ${dir == SortDirection.asc ? 'ASC' : 'DESC'}`;
                 break;
             case ListingSort.price:
-                orderBy += `l.price ${dir || 'DESC'}`;
+                orderBy += `l.price ${dir == SortDirection.asc ? 'ASC' : 'DESC'}`;
                 break;
             default:
-                orderBy += `l.height ${dir || 'DESC'}, l.idx ${dir || 'DESC'}`;
-
+                orderBy += `l.height ${dir == SortDirection.asc ? 'ASC' : 'DESC'}, l.idx ${dir == SortDirection.asc ? 'ASC' : 'DESC'}`;
         }
         const { rows } = await pool.query(`
             SELECT l.num as id, l.txid, l.vout, i.filehash, i.filesize, i.filetype, i.origin, l.height, l.idx, t.lock, l.spend, i.map, true as listing, l.price, l.payout
