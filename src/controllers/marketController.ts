@@ -1,7 +1,7 @@
 import { JungleBusClient } from "@gorillapool/js-junglebus";
 import { Tx } from '@ts-bitcoin/core';
 import { Controller, Get, Path, Query, Route } from "tsoa";
-import { Listing } from "../models/listing";
+import { Listing, ListingSort, SortDirection } from "../models/listing";
 import { Outpoint } from '../models/outpoint';
 import { Inscription } from "../models/inscription";
 
@@ -10,9 +10,14 @@ const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 @Route("api/market")
 export class MarketController extends Controller {
     @Get("")
-    public async getOpenListings(): Promise<Inscription[]> {
+    public async getOpenListings(
+        @Query() sort: ListingSort,
+        @Query() dir: SortDirection,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
+    ): Promise<Inscription[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        return Listing.loadOpenListings();
+        return Listing.queryListings(sort, dir, limit, offset);
     }
 
     @Get("recent")

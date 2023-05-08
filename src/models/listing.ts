@@ -3,6 +3,17 @@ import { pool } from "../db";
 import { Outpoint } from "./outpoint";
 import { Inscription } from './inscription';
 
+export enum ListingSort {
+    recent = 'recent',
+    num = 'num',
+    price = 'price',
+}
+
+export enum SortDirection {
+    asc = 'ASC',
+    desc = 'DESC',
+}
+
 export class Listing {
     txid: string = '';
     vout: number = 0;
@@ -74,6 +85,32 @@ export class Listing {
             JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
             WHERE l.spend = decode('', 'hex')
             ORDER BY l.price ${sort}
+            LIMIT $1 OFFSET $2`,
+            [limit, offset],
+        );
+        return rows.map((r: any) => Inscription.fromRow(r));
+    }
+
+    static async queryListings(sort: ListingSort, dir: SortDirection, limit: number, offset: number): Promise<Inscription[]> {
+        let orderBy = 'ORDER BY ';
+        switch(sort) {
+            case ListingSort.num:
+                orderBy += `l.num ${dir || 'DESC'}`;
+                break;
+            case ListingSort.price:
+                orderBy += `l.price ${dir || 'DESC'}`;
+                break;
+            default:
+                orderBy += `l.height ${dir || 'DESC'}, l.idx ${dir || 'DESC'}`;
+                
+        }
+        const { rows } = await pool.query(`
+            SELECT l.num as id, l.txid, l.vout, i.filehash, i.filesize, i.filetype, i.origin, l.height, l.idx, t.lock, l.spend, i.map, true as listing, l.price, l.payout
+            FROM ordinal_lock_listings l
+            JOIN inscriptions i ON i.origin=l.origin
+            JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
+            WHERE l.spend = decode('', 'hex')
+            ${orderBy}
             LIMIT $1 OFFSET $2`,
             [limit, offset],
         );

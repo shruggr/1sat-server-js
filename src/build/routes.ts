@@ -70,6 +70,16 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ListingSort": {
+        "dataType": "refEnum",
+        "enums": ["recent","num","price"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SortDirection": {
+        "dataType": "refEnum",
+        "enums": ["ASC","DESC"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Listing": {
         "dataType": "refObject",
         "properties": {
@@ -451,6 +461,10 @@ export function RegisterRoutes(app: Router) {
 
             function MarketController_getOpenListings(request: any, response: any, next: any) {
             const args = {
+                    sort: {"in":"query","name":"sort","required":true,"ref":"ListingSort"},
+                    dir: {"in":"query","name":"dir","required":true,"ref":"SortDirection"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
