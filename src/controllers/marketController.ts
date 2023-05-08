@@ -11,8 +11,8 @@ const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 export class MarketController extends Controller {
     @Get("")
     public async getOpenListings(
-        @Query() sort: ListingSort,
-        @Query() dir: SortDirection,
+        @Query() sort: ListingSort = ListingSort.recent,
+        @Query() dir: SortDirection = SortDirection.desc,
         @Query() limit: number = 100,
         @Query() offset: number = 0
     ): Promise<Inscription[]> {

@@ -461,8 +461,8 @@ export function RegisterRoutes(app: Router) {
 
             function MarketController_getOpenListings(request: any, response: any, next: any) {
             const args = {
-                    sort: {"in":"query","name":"sort","required":true,"ref":"ListingSort"},
-                    dir: {"in":"query","name":"dir","required":true,"ref":"SortDirection"},
+                    sort: {"default":"recent","in":"query","name":"sort","ref":"ListingSort"},
+                    dir: {"default":"DESC","in":"query","name":"dir","ref":"SortDirection"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
             };
