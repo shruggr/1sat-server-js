@@ -51,7 +51,7 @@ export class InscriptionsController extends Controller {
         const rows = await pool.query(`SELECT * FROM inscriptions
             WHERE search_text_en @@ plainto_tsquery('english', $1)
             ORDER BY height DESC, idx DESC
-            DESC LIMIT $2 OFFSET $3`,
+            LIMIT $2 OFFSET $3`,
             [{ text: query }, limit, offset]
         )
         return rows.rows.map(row => Inscription.fromRow(row));
@@ -66,7 +66,7 @@ export class InscriptionsController extends Controller {
         const rows = await pool.query(`SELECT * FROM inscriptions
             WHERE map @> $1
             ORDER BY height DESC, idx DESC
-            DESC LIMIT $2 OFFSET $3`,
+            LIMIT $2 OFFSET $3`,
             [{ text: query }, limit, offset]
         )
         return rows.rows.map(row => Inscription.fromRow(row));
