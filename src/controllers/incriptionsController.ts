@@ -59,7 +59,7 @@ export class InscriptionsController extends Controller {
 
     @Post("search/map")
     public async searchMap(
-        @BodyProp() query: string,
+        @BodyProp() query: {[key: string]: any},
         @Query() limit: number = 100,
         @Query() offset: number = 0
     ): Promise<Inscription[]> {
