@@ -13,7 +13,7 @@ export class CollectionsController extends Controller {
         const rows = await pool.query(`SELECT * FROM inscriptions 
             WHERE map @> '{"subType": "collection"}'::jsonb
             ORDER BY height DESC, idx DESC
-            DESC LIMIT $1 OFFSET $2`, 
+            LIMIT $1 OFFSET $2`, 
             [limit, offset]
         )
 
@@ -30,7 +30,7 @@ export class CollectionsController extends Controller {
         const rows = await pool.query(`SELECT * FROM inscriptions 
             WHERE map @> '{"type": "collectionItem", "collectionId": $1}'::jsonb
             ORDER BY height DESC, idx DESC
-            DESC LIMIT $2 OFFSET $3`, 
+            LIMIT $2 OFFSET $3`, 
             [collectionId, limit, offset]
         )
 
