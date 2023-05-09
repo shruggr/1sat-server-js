@@ -67,7 +67,7 @@ export class InscriptionsController extends Controller {
             WHERE map @> $1
             ORDER BY height DESC, idx DESC
             LIMIT $2 OFFSET $3`,
-            [query , limit, offset]
+            [JSON.stringify(query) , limit, offset]
         )
         return rows.rows.map(row => Inscription.fromRow(row));
     }
