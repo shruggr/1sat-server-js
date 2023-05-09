@@ -52,7 +52,7 @@ export class InscriptionsController extends Controller {
             WHERE search_text_en @@ plainto_tsquery('english', $1)
             ORDER BY height DESC, idx DESC
             LIMIT $2 OFFSET $3`,
-            [{ text: query }, limit, offset]
+            [query, limit, offset]
         )
         return rows.rows.map(row => Inscription.fromRow(row));
     }
@@ -67,7 +67,7 @@ export class InscriptionsController extends Controller {
             WHERE map @> $1
             ORDER BY height DESC, idx DESC
             LIMIT $2 OFFSET $3`,
-            [{ text: query }, limit, offset]
+            [query , limit, offset]
         )
         return rows.rows.map(row => Inscription.fromRow(row));
     }
