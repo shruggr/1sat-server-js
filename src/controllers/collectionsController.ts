@@ -11,7 +11,7 @@ export class CollectionsController extends Controller {
     ): Promise<Inscription[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         const rows = await pool.query(`SELECT * FROM inscriptions 
-            WHERE map->>'type' = 'collection'
+            WHERE map @> '{"subType": "collection"}'::jsonb
             ORDER BY height DESC, idx DESC
             DESC LIMIT $1 OFFSET $2`, 
             [limit, offset]
