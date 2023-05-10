@@ -695,7 +695,9 @@
 							"schema": {
 								"properties": {
 									"query": {
-										"type": "string"
+										"properties": {},
+										"additionalProperties": {},
+										"type": "object"
 									}
 								},
 								"required": [

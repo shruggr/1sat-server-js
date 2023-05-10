@@ -28,10 +28,17 @@ export class CollectionsController extends Controller {
     ): Promise<Inscription[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         const rows = await pool.query(`SELECT * FROM inscriptions 
-            WHERE map @> '{"type": "collectionItem", "collectionId": $1}'::jsonb
+            WHERE map @> $1
             ORDER BY height DESC, idx DESC
             LIMIT $2 OFFSET $3`, 
-            [collectionId, limit, offset]
+            [
+                JSON.stringify({
+                    "type": "collectionItem",
+                    "collectionId": collectionId
+                }), 
+                limit, 
+                offset
+            ]
         )
 
         return rows.rows.map(row => Inscription.fromRow(row));

@@ -434,7 +434,7 @@ export function RegisterRoutes(app: Router) {
 
             function InscriptionsController_searchMap(request: any, response: any, next: any) {
             const args = {
-                    query: {"in":"body-prop","name":"query","required":true,"dataType":"string"},
+                    query: {"in":"body-prop","name":"query","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
             };
