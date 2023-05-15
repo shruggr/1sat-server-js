@@ -63,7 +63,7 @@ export class Txo {
             JOIN inscriptions i ON i.origin=t.origin
             LEFT JOIN ordinal_lock_listings l ON l.txid=t.txid AND l.vout=t.vout
             WHERE t.lock = $1 AND t.spend = decode('', 'hex')
-            ORDER BY i.id ${dir.toLowerCase() == SortDirection.desc ? 'DESC' : 'ASC'} NULLS LAST
+            ORDER BY i.id ${dir.toLowerCase() == SortDirection.desc ? 'DESC' : 'ASC'} NULLS FIRST
             LIMIT $2 OFFSET $3`,
             [Buffer.from(lock, 'hex'), limit, offset],
         );
