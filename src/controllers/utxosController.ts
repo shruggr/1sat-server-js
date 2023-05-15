@@ -3,6 +3,7 @@ import { Tx } from '@ts-bitcoin/core';
 import { Controller, Get, Path, Query, Route } from "tsoa";
 import { Inscription } from "../models/inscription";
 import { Txo } from "../models/txo";
+import { SortDirection } from "../models/listing";
 
 const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 @Route("api/utxos")
@@ -35,20 +36,22 @@ export class UtxosController extends Controller {
     public async getInscriptionsByLock(
         @Path() lock: string,
         @Query() limit: number = 100,
-        @Query() offset: number = 0
+        @Query() offset: number = 0,
+        @Query() dir: SortDirection = SortDirection.desc,
     ): Promise<Inscription[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        return Txo.loadInscriptionsByLock(lock, limit, offset);
+        return Txo.loadInscriptionsByLock(lock, limit, offset, dir);
     }
 
     @Get("address/{address}/inscriptions")
     public async getInscriptionsByAddress(
         @Path() address: string,
         @Query() limit: number = 100,
-        @Query() offset: number = 0
+        @Query() offset: number = 0,
+        @Query() dir: SortDirection = SortDirection.desc,
     ): Promise<Inscription[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        return Txo.loadInscriptionsByAddress(address, limit, offset);
+        return Txo.loadInscriptionsByAddress(address, limit, offset, dir);
     }
 
     @Get("origin/{origin}")
