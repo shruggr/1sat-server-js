@@ -10,8 +10,8 @@ export enum ListingSort {
 }
 
 export enum SortDirection {
-    asc = 'ASC',
-    desc = 'DESC',
+    asc = 'asc',
+    desc = 'desc',
 }
 
 export class Listing {

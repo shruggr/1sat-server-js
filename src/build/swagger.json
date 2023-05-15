@@ -144,8 +144,8 @@
 			},
 			"SortDirection": {
 				"enum": [
-					"ASC",
-					"DESC"
+					"asc",
+					"desc"
 				],
 				"type": "string"
 			},
@@ -1011,6 +1011,14 @@
 							"format": "double",
 							"type": "number"
 						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
 					}
 				]
 			}
@@ -1061,6 +1069,14 @@
 							"default": 0,
 							"format": "double",
 							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
 						}
 					}
 				]

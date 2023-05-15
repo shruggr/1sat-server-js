@@ -77,7 +77,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "SortDirection": {
         "dataType": "refEnum",
-        "enums": ["ASC","DESC"],
+        "enums": ["asc","desc"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Listing": {
@@ -462,7 +462,7 @@ export function RegisterRoutes(app: Router) {
             function MarketController_getOpenListings(request: any, response: any, next: any) {
             const args = {
                     sort: {"default":"recent","in":"query","name":"sort","ref":"ListingSort"},
-                    dir: {"default":"DESC","in":"query","name":"dir","ref":"SortDirection"},
+                    dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
             };
@@ -643,6 +643,7 @@ export function RegisterRoutes(app: Router) {
                     lock: {"in":"path","name":"lock","required":true,"dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -670,6 +671,7 @@ export function RegisterRoutes(app: Router) {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
