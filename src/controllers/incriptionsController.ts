@@ -82,10 +82,10 @@ export class InscriptionsController extends Controller {
             WHERE sigma @> $1
             ORDER BY height DESC, idx DESC
             LIMIT $2 OFFSET $3`,
-            [JSON.stringify({
+            [JSON.stringify([{
                 address,
                 valid: true
-            }) , limit, offset]
+            }]) , limit, offset]
         )
         return rows.rows.map(row => Inscription.fromRow(row));
     }
