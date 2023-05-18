@@ -455,6 +455,33 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/inscriptions/sigma/:address',
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.searchSigma)),
+
+            function InscriptionsController_searchSigma(request: any, response: any, next: any) {
+            const args = {
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new InscriptionsController();
+
+
+              const promise = controller.searchSigma.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/market',
             ...(fetchMiddlewares<RequestHandler>(MarketController)),
             ...(fetchMiddlewares<RequestHandler>(MarketController.prototype.getOpenListings)),

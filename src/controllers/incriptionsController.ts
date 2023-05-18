@@ -71,4 +71,22 @@ export class InscriptionsController extends Controller {
         )
         return rows.rows.map(row => Inscription.fromRow(row));
     }
+
+    @Get("sigma/{address}")
+    public async searchSigma(
+        @Path() address: string,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
+    ): Promise<Inscription[]> {
+        const rows = await pool.query(`SELECT * FROM inscriptions
+            WHERE sigma @> $1
+            ORDER BY height DESC, idx DESC
+            LIMIT $2 OFFSET $3`,
+            [JSON.stringify({
+                address,
+                valid: true
+            }) , limit, offset]
+        )
+        return rows.rows.map(row => Inscription.fromRow(row));
+    }
 }
