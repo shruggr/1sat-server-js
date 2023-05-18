@@ -58,7 +58,7 @@ export class Txo {
 
     static async loadInscriptionsByLock(lock: string, limit = 100, offset = 0, dir = SortDirection.asc): Promise<Inscription[]> {
         const { rows } = await pool.query(`
-            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing, l.price, l.payout
+            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing, l.price, l.payout, i.sigma
             FROM txos t
             JOIN inscriptions i ON i.origin=t.origin
             LEFT JOIN ordinal_lock_listings l ON l.txid=t.txid AND l.vout=t.vout
@@ -72,9 +72,10 @@ export class Txo {
 
     static async loadInscriptionByOutpoint(outpoint: Outpoint): Promise<Inscription> {
         const { rows } = await pool.query(`
-            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing
+            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing, l.price, l.payout, i.sigma
             FROM txos t
             JOIN inscriptions i ON i.origin=t.origin
+            LEFT JOIN ordinal_lock_listings l ON l.txid=t.txid AND l.vout=t.vout
             WHERE t.txid=$1 AND t.vout=$2
             ORDER BY i.id ASC
             LIMIT 1`,
