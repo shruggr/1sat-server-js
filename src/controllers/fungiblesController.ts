@@ -102,7 +102,7 @@ export class FungiblesController extends Controller {
         const { rows } = await pool.query(`SELECT tick, SUM(amt)
             FROM bsv20_txos 
             WHERE lock=$1 AND spend=decode('', 'hex')
-            GROUP BY lock`,
+            GROUP BY tick`,
             [Buffer.from(lock, 'hex')],
         )
 
