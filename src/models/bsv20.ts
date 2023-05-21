@@ -33,7 +33,7 @@ export class Bsv20 {
             dec: row.dec,
             supply: row.supply,
             amt: row.amt,
-            lock: row.lock.toString('hex'),
+            lock: row.lock?.toString('hex'),
             spend: row.spend?.toString('hex'),
             MAP: row.map,
             B: row.b,
