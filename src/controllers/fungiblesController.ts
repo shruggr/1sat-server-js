@@ -46,7 +46,7 @@ export class FungiblesController extends Controller {
     ): Promise<Bsv20> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         const { rows } = await pool.query(`SELECT * FROM bsv20 
-            WHERE tick=$1
+            WHERE tick=UPPER($1)
             ORDER BY height ASC, idx ASC
             LIMIT 1`,
             [ticker]
