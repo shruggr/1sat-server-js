@@ -117,7 +117,7 @@ export class Txo {
         txo.accSats = row.accsats;
         txo.lock = row.lock.toString('hex');
         txo.spend = row.spend?.toString('hex');
-        txo.origin = Outpoint.fromBuffer(row.origin);
+        txo.origin = row.origin && Outpoint.fromBuffer(row.origin);
         txo.height = row.height;
         txo.idx = row.idx;
         txo.listing = row.listing;
