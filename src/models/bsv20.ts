@@ -21,7 +21,7 @@ export class Bsv20 {
 
     static fromRow(row: any): Bsv20 {
         return {
-            id: Outpoint.fromBuffer(row.id),
+            id: row.id && Outpoint.fromBuffer(row.id),
             txid: row.txid?.toString('hex'),
             vout: row.vout,
             height: row.height,
