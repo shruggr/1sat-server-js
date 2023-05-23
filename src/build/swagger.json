@@ -129,6 +129,10 @@
 					},
 					"script": {
 						"type": "string"
+					},
+					"bsv20": {
+						"type": "boolean",
+						"default": false
 					}
 				},
 				"type": "object",
@@ -201,6 +205,10 @@
 					},
 					"valid": {
 						"type": "boolean"
+					},
+					"accounts": {
+						"type": "number",
+						"format": "double"
 					}
 				},
 				"type": "object",
@@ -1371,6 +1379,15 @@
 						"schema": {
 							"$ref": "#/components/schemas/SortDirection"
 						}
+					},
+					{
+						"in": "query",
+						"name": "excludeBsv20",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
 					}
 				]
 			}
@@ -1429,6 +1446,15 @@
 						"required": false,
 						"schema": {
 							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "excludeBsv20",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
 						}
 					}
 				]

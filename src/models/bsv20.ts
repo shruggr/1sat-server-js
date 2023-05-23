@@ -18,6 +18,7 @@ export class Bsv20 {
     MAP?: {[key: string]: any};
     B?: File;
     valid?: boolean;
+    accounts?: number;
 
     static fromRow(row: any): Bsv20 {
         return {

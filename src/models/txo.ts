@@ -56,13 +56,15 @@ export class Txo {
         return Txo.loadHistoryByLock(lock);
     }
 
-    static async loadInscriptionsByLock(lock: string, limit = 100, offset = 0, dir = SortDirection.asc): Promise<Inscription[]> {
+    static async loadInscriptionsByLock(lock: string, limit = 100, offset = 0, dir = SortDirection.asc, excludeBsv20: boolean): Promise<Inscription[]> {
+        let where = excludeBsv20 ? 'AND t.bsv20 = false' : '';
         const { rows } = await pool.query(`
-            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing, l.price, l.payout, i.sigma
+            SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing, l.price, l.payout, i.sigma, t.bsv20
             FROM txos t
             JOIN inscriptions i ON i.origin=t.origin
             LEFT JOIN ordinal_lock_listings l ON l.txid=t.txid AND l.vout=t.vout
             WHERE t.lock = $1 AND t.spend = decode('', 'hex')
+            ${where}
             ORDER BY i.id ${dir.toLowerCase() == SortDirection.desc ? 'DESC' : 'ASC'} NULLS FIRST
             LIMIT $2 OFFSET $3`,
             [Buffer.from(lock, 'hex'), limit, offset],
@@ -89,13 +91,13 @@ export class Txo {
         return ins;
     }
 
-    static async loadInscriptionsByAddress(address: string, limit = 100, offset = 0, dir = SortDirection.asc): Promise<Inscription[]> {
+    static async loadInscriptionsByAddress(address: string, limit = 100, offset = 0, dir = SortDirection.asc, excludeBsv20: boolean): Promise<Inscription[]> {
         const lock = Hash.sha256(
             Address.fromString(address).toTxOutScript().toBuffer()
         )
             .reverse()
             .toString('hex');
-        return Txo.loadInscriptionsByLock(lock, limit, offset, dir);
+        return Txo.loadInscriptionsByLock(lock, limit, offset, dir, excludeBsv20);
     }
 
     static async loadOneByOrigin(origin: string): Promise<Txo> {

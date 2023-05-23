@@ -45,6 +45,7 @@ export class Inscription {
     price?: number;
     payout?: string;
     script?: string;
+    bsv20: boolean = false;
 
 
     static async loadOneById(id: number): Promise<Inscription> {
@@ -150,6 +151,7 @@ export class Inscription {
         inscription.listing = row.listing || false;
         inscription.price = row.price ? parseInt(row.price, 10) : undefined;
         inscription.payout = row.payout?.toString('base64');
+        inscription.bsv20 = row.bsv20 || false;
         return inscription;
     }
 

@@ -38,9 +38,10 @@ export class UtxosController extends Controller {
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() dir: SortDirection = SortDirection.desc,
+        @Query() excludeBsv20: boolean = false,
     ): Promise<Inscription[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        return Txo.loadInscriptionsByLock(lock, limit, offset, dir);
+        return Txo.loadInscriptionsByLock(lock, limit, offset, dir, excludeBsv20);
     }
 
     @Get("address/{address}/inscriptions")
@@ -49,9 +50,10 @@ export class UtxosController extends Controller {
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() dir: SortDirection = SortDirection.desc,
+        @Query() excludeBsv20: boolean = false,
     ): Promise<Inscription[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        return Txo.loadInscriptionsByAddress(address, limit, offset, dir);
+        return Txo.loadInscriptionsByAddress(address, limit, offset, dir, excludeBsv20);
     }
 
     @Get("origin/{origin}")

@@ -68,6 +68,7 @@ const models: TsoaRoute.Models = {
             "price": {"dataType":"double"},
             "payout": {"dataType":"string"},
             "script": {"dataType":"string"},
+            "bsv20": {"dataType":"boolean","default":false},
         },
         "additionalProperties": false,
     },
@@ -92,6 +93,7 @@ const models: TsoaRoute.Models = {
             "MAP": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
             "B": {"ref":"File"},
             "valid": {"dataType":"boolean"},
+            "accounts": {"dataType":"double"},
         },
         "additionalProperties": false,
     },
@@ -873,6 +875,7 @@ export function RegisterRoutes(app: Router) {
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
+                    excludeBsv20: {"default":false,"in":"query","name":"excludeBsv20","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -901,6 +904,7 @@ export function RegisterRoutes(app: Router) {
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
+                    excludeBsv20: {"default":false,"in":"query","name":"excludeBsv20","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

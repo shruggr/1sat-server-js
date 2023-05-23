@@ -13,7 +13,7 @@ export class FungiblesController extends Controller {
     ): Promise<Bsv20[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         const { rows } = await pool.query(`SELECT * FROM bsv20 
-            WHERE valid = true
+            WHERE valid = true OR valid IS NULL
             ORDER BY height DESC, idx DESC
             LIMIT $1 OFFSET $2`,
             [
@@ -45,7 +45,7 @@ export class FungiblesController extends Controller {
         @Path() ticker: string,
     ): Promise<Bsv20> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        const { rows } = await pool.query(`SELECT * FROM bsv20 
+        const { rows } = await pool.query(`SELECT b.* FROM bsv20 b
             WHERE tick=UPPER($1)
             ORDER BY height ASC, idx ASC
             LIMIT 1`,
@@ -55,7 +55,13 @@ export class FungiblesController extends Controller {
         if (rows.length === 0) {
             throw new NotFound(`Ticker ${ticker} not found`)
         }
-        return Bsv20.fromRow(rows[0]);
+        const bsv20 = Bsv20.fromRow(rows[0]);
+
+        const { rows: [{accounts}] } = await pool.query(`SELECT COUNT(DISTINCT lock) as accounts
+            FROM bsv20_txos
+            WHERE tick=UPPER($1) AND valid=true`, [ticker]);
+        bsv20.accounts = accounts;
+        return bsv20;
     }
 
     @Get("address/{address}")
@@ -75,7 +81,8 @@ export class FungiblesController extends Controller {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         const { rows } = await pool.query(`SELECT * 
             FROM bsv20_txos 
-            WHERE lock=$1 AND spend=decode('', 'hex')`,
+            WHERE lock=$1 AND spend=decode('', 'hex') AND 
+                (valid = true OR valid IS NULL)`,
             [Buffer.from(lock, 'hex')],
         )
 
@@ -101,7 +108,8 @@ export class FungiblesController extends Controller {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         const { rows } = await pool.query(`SELECT tick, SUM(amt)
             FROM bsv20_txos 
-            WHERE lock=$1 AND spend=decode('', 'hex')
+            WHERE lock=$1 AND spend=decode('', 'hex') AND 
+                (valid = true OR valid IS NULL)
             GROUP BY tick`,
             [Buffer.from(lock, 'hex')],
         )
