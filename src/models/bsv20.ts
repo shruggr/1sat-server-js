@@ -19,6 +19,7 @@ export class Bsv20 {
     B?: File;
     valid?: boolean;
     accounts?: number;
+    reason: string = '';
 
     static fromRow(row: any): Bsv20 {
         return {
@@ -38,7 +39,8 @@ export class Bsv20 {
             spend: row.spend?.toString('hex'),
             MAP: row.map,
             B: row.b,
-            valid: row.valid
+            valid: row.valid,
+            reason: row.reason
         }
     }
 }

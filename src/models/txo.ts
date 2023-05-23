@@ -58,7 +58,7 @@ export class Txo {
 
     static async loadInscriptionsByLock(lock: string, limit = 100, offset = 0, dir = SortDirection.asc, excludeBsv20: boolean): Promise<Inscription[]> {
         let where = excludeBsv20 ? 'AND t.bsv20 = false' : '';
-        const { rows } = await pool.query(`
+        const query = `
             SELECT i.id, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing, l.price, l.payout, i.sigma, t.bsv20
             FROM txos t
             JOIN inscriptions i ON i.origin=t.origin
@@ -66,7 +66,8 @@ export class Txo {
             WHERE t.lock = $1 AND t.spend = decode('', 'hex')
             ${where}
             ORDER BY i.id ${dir.toLowerCase() == SortDirection.desc ? 'DESC' : 'ASC'} NULLS FIRST
-            LIMIT $2 OFFSET $3`,
+            LIMIT $2 OFFSET $3`
+        const { rows } = await pool.query(query,
             [Buffer.from(lock, 'hex'), limit, offset],
         );
         return rows.map((r: any) => Inscription.fromRow(r));

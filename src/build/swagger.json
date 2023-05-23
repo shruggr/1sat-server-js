@@ -209,10 +209,24 @@
 					"accounts": {
 						"type": "number",
 						"format": "double"
+					},
+					"reason": {
+						"type": "string",
+						"default": ""
 					}
 				},
 				"type": "object",
 				"additionalProperties": false
+			},
+			"Status": {
+				"enum": [
+					0,
+					1,
+					2,
+					3,
+					4
+				],
+				"type": "number"
 			},
 			"ListingSort": {
 				"enum": [
@@ -484,6 +498,14 @@
 				"parameters": [
 					{
 						"in": "query",
+						"name": "status",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/Status"
+						}
+					},
+					{
+						"in": "query",
 						"name": "limit",
 						"required": false,
 						"schema": {
@@ -588,6 +610,34 @@
 						"schema": {
 							"type": "string"
 						}
+					},
+					{
+						"in": "query",
+						"name": "status",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/Status"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
 					}
 				]
 			}
@@ -618,6 +668,34 @@
 						"required": true,
 						"schema": {
 							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "status",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/Status"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
 						}
 					}
 				]
@@ -1198,6 +1276,39 @@
 						}
 					}
 				]
+			}
+		},
+		"/api/stats": {
+			"get": {
+				"operationId": "GetOpenListings",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"indexed": {
+											"type": "number",
+											"format": "double"
+										},
+										"settled": {
+											"type": "number",
+											"format": "double"
+										}
+									},
+									"required": [
+										"indexed",
+										"settled"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": []
 			}
 		},
 		"/api/utxos/lock/{lock}": {

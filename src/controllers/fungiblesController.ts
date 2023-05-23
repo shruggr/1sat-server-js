@@ -4,16 +4,40 @@ import { Controller, Get, Path, Query, Route } from "tsoa";
 import { pool } from "../db";
 import { Bsv20 } from "../models/bsv20";
 
+enum Status {
+    Invalid = 0,
+    Valid = 1,
+    Pending = 2,
+    ValidAndPending = 3,
+    All = 4,
+}
+
 @Route("api/bsv20")
 export class FungiblesController extends Controller {
     @Get("")
     public async getRecent(
+        @Query() status = Status.ValidAndPending,
         @Query() limit: number = 100,
         @Query() offset: number = 0
     ): Promise<Bsv20[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        const { rows } = await pool.query(`SELECT * FROM bsv20 
-            WHERE valid = true OR valid IS NULL
+        let where = '';
+        switch(status) {
+            case Status.Invalid:
+                where = 'WHERE valid = FALSE'
+                break
+            case Status.Pending:
+                where = 'WHERE valid IS NULL'
+                break
+            case Status.Valid:
+                where = 'WHERE valid = TRUE'
+                break
+            case Status.ValidAndPending:
+                where = 'WHERE valid = TRUE OR valid IS NULL'
+        }
+        const { rows } = await pool.query(`SELECT * 
+            FROM bsv20 
+            ${where}
             ORDER BY height DESC, idx DESC
             LIMIT $1 OFFSET $2`,
             [
@@ -64,26 +88,52 @@ export class FungiblesController extends Controller {
         return bsv20;
     }
 
+
     @Get("address/{address}")
     public async getByAddress(
         @Path() address: string,
+        @Query() status = Status.ValidAndPending,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
     ): Promise<Bsv20[]> {
         const lock = Hash.sha256(
             Address.fromString(address).toTxOutScript().toBuffer()
         ).reverse().toString('hex');
-        return this.getByLock(lock);
+        return this.getByLock(lock, status, limit, offset);
     }
 
     @Get("lock/{lock}")
     public async getByLock(
         @Path() lock: string,
+        @Query() status = Status.ValidAndPending,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
     ): Promise<Bsv20[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        let where = '';
+        switch(status) {
+            case Status.Invalid:
+                where = 'AND valid = FALSE'
+                break
+            case Status.Pending:
+                where = 'AND valid IS NULL'
+                break
+            case Status.Valid:
+                where = 'AND valid = TRUE'
+                break
+            case Status.ValidAndPending:
+                where = 'AND (valid = TRUE OR valid IS NULL)'
+        }
         const { rows } = await pool.query(`SELECT * 
             FROM bsv20_txos 
-            WHERE lock=$1 AND spend=decode('', 'hex') AND 
-                (valid = true OR valid IS NULL)`,
-            [Buffer.from(lock, 'hex')],
+            WHERE lock=$1 AND spend=decode('', 'hex') ${where}
+            ORDER BY height DESC, idx DESC
+            LIMIT $2 OFFSET $3`,
+            [
+                Buffer.from(lock, 'hex'),
+                limit,
+                offset
+            ],
         )
 
         return rows.map(row => Bsv20.fromRow(row))

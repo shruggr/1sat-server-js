@@ -15,6 +15,8 @@ import { InscriptionsController } from './../controllers/incriptionsController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { MarketController } from './../controllers/marketController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { StatsController } from './../controllers/statsController';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { UtxosController } from './../controllers/utxosController';
 import type { RequestHandler, Router } from 'express';
 
@@ -94,8 +96,14 @@ const models: TsoaRoute.Models = {
             "B": {"ref":"File"},
             "valid": {"dataType":"boolean"},
             "accounts": {"dataType":"double"},
+            "reason": {"dataType":"string","default":""},
         },
         "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Status": {
+        "dataType": "refEnum",
+        "enums": [0,1,2,3,4],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ListingSort": {
@@ -261,6 +269,7 @@ export function RegisterRoutes(app: Router) {
 
             function FungiblesController_getRecent(request: any, response: any, next: any) {
             const args = {
+                    status: {"default":3,"in":"query","name":"status","ref":"Status"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
             };
@@ -338,6 +347,9 @@ export function RegisterRoutes(app: Router) {
             function FungiblesController_getByAddress(request: any, response: any, next: any) {
             const args = {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
+                    status: {"default":3,"in":"query","name":"status","ref":"Status"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -363,6 +375,9 @@ export function RegisterRoutes(app: Router) {
             function FungiblesController_getByLock(request: any, response: any, next: any) {
             const args = {
                     lock: {"in":"path","name":"lock","required":true,"dataType":"string"},
+                    status: {"default":3,"in":"query","name":"status","ref":"Status"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -759,6 +774,30 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getByOutpoint.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/stats',
+            ...(fetchMiddlewares<RequestHandler>(StatsController)),
+            ...(fetchMiddlewares<RequestHandler>(StatsController.prototype.getOpenListings)),
+
+            function StatsController_getOpenListings(request: any, response: any, next: any) {
+            const args = {
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new StatsController();
+
+
+              const promise = controller.getOpenListings.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
