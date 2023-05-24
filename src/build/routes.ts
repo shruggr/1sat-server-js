@@ -97,23 +97,31 @@ const models: TsoaRoute.Models = {
             "valid": {"dataType":"boolean"},
             "accounts": {"dataType":"double"},
             "reason": {"dataType":"string","default":""},
+            "unconfirmed": {"dataType":"double"},
+            "available": {"dataType":"double"},
+            "pctMinted": {"dataType":"double"},
         },
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Status": {
         "dataType": "refEnum",
-        "enums": [0,1,2,3,4],
+        "enums": ["invalid","valid","pending","valid+pending","all"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ListingSort": {
+    "Bsv20Sort": {
         "dataType": "refEnum",
-        "enums": ["recent","num","price"],
+        "enums": ["pct_minted","available","tick","max","height"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "SortDirection": {
         "dataType": "refEnum",
         "enums": ["asc","desc","ASC","DESC"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ListingSort": {
+        "dataType": "refEnum",
+        "enums": ["recent","num","price"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Listing": {
@@ -269,9 +277,11 @@ export function RegisterRoutes(app: Router) {
 
             function FungiblesController_getRecent(request: any, response: any, next: any) {
             const args = {
-                    status: {"default":3,"in":"query","name":"status","ref":"Status"},
+                    status: {"default":"valid+pending","in":"query","name":"status","ref":"Status"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    sort: {"default":"height","in":"query","name":"sort","ref":"Bsv20Sort"},
+                    dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -340,6 +350,35 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/bsv20/:ticker/activity',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getByTickerActivity)),
+
+            function FungiblesController_getByTickerActivity(request: any, response: any, next: any) {
+            const args = {
+                    ticker: {"in":"path","name":"ticker","required":true,"dataType":"string"},
+                    fromHeight: {"default":0,"in":"query","name":"fromHeight","dataType":"double"},
+                    fromIdx: {"default":0,"in":"query","name":"fromIdx","dataType":"double"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    status: {"default":"valid+pending","in":"query","name":"status","ref":"Status"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new FungiblesController();
+
+
+              const promise = controller.getByTickerActivity.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/bsv20/address/:address',
             ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
             ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getByAddress)),
@@ -347,7 +386,7 @@ export function RegisterRoutes(app: Router) {
             function FungiblesController_getByAddress(request: any, response: any, next: any) {
             const args = {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
-                    status: {"default":3,"in":"query","name":"status","ref":"Status"},
+                    status: {"default":"valid+pending","in":"query","name":"status","ref":"Status"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
             };
@@ -375,7 +414,7 @@ export function RegisterRoutes(app: Router) {
             function FungiblesController_getByLock(request: any, response: any, next: any) {
             const args = {
                     lock: {"in":"path","name":"lock","required":true,"dataType":"string"},
-                    status: {"default":3,"in":"query","name":"status","ref":"Status"},
+                    status: {"default":"valid+pending","in":"query","name":"status","ref":"Status"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
             };

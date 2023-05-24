@@ -3,13 +3,22 @@ import { NotFound } from 'http-errors';
 import { Controller, Get, Path, Query, Route } from "tsoa";
 import { pool } from "../db";
 import { Bsv20 } from "../models/bsv20";
+import { SortDirection } from '../models/listing';
 
 enum Status {
-    Invalid = 0,
-    Valid = 1,
-    Pending = 2,
-    ValidAndPending = 3,
-    All = 4,
+    Invalid = "invalid",
+    Valid = "valid",
+    Pending = "pending",
+    ValidAndPending = "valid+pending",
+    All = "all",
+}
+
+enum Bsv20Sort {
+    PctMinted = 'pct_minted',
+    Available = 'available',
+    Ticker = 'tick',
+    Max = 'max',
+    Height = 'height'
 }
 
 @Route("api/bsv20")
@@ -18,7 +27,9 @@ export class FungiblesController extends Controller {
     public async getRecent(
         @Query() status = Status.ValidAndPending,
         @Query() limit: number = 100,
-        @Query() offset: number = 0
+        @Query() offset: number = 0,
+        @Query() sort: Bsv20Sort = Bsv20Sort.Height,
+        @Query() dir: SortDirection = SortDirection.desc,
     ): Promise<Bsv20[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         let where = '';
@@ -38,9 +49,10 @@ export class FungiblesController extends Controller {
         const { rows } = await pool.query(`SELECT * 
             FROM bsv20 
             ${where}
-            ORDER BY height DESC, idx DESC
-            LIMIT $1 OFFSET $2`,
+            ORDER BY $1 ${dir == SortDirection.ASC ? 'ASC' : 'DESC'}, idx ${dir == SortDirection.ASC ? 'ASC' : 'DESC'}
+            LIMIT $2 OFFSET $3`,
             [
+                sort,
                 limit,
                 offset
             ]
@@ -69,11 +81,14 @@ export class FungiblesController extends Controller {
         @Path() ticker: string,
     ): Promise<Bsv20> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        const { rows } = await pool.query(`SELECT b.* FROM bsv20 b
-            WHERE tick=UPPER($1)
-            ORDER BY height ASC, idx ASC
+        const { rows } = await pool.query(`SELECT b.*, a.accounts, u.unconfirmed
+            FROM bsv20 b
+            JOIN (SELECT COUNT(DISTINCT lock) as accounts FROM bsv20_txos WHERE tick=$1 AND valid=true) a ON true
+            JOIN (SELECT SUM(amt) as unconfirmed FROM bsv20_txos WHERE tick=$1 AND valid IS NULL) u ON true
+            WHERE tick=$1
+            ORDER BY height ASC, idx ASC, valid DESC
             LIMIT 1`,
-            [ticker]
+            [ticker.toUpperCase()]
         )
 
         if (rows.length === 0) {
@@ -81,13 +96,49 @@ export class FungiblesController extends Controller {
         }
         const bsv20 = Bsv20.fromRow(rows[0]);
 
-        const { rows: [{accounts}] } = await pool.query(`SELECT COUNT(DISTINCT lock) as accounts
-            FROM bsv20_txos
-            WHERE tick=UPPER($1) AND valid=true`, [ticker]);
-        bsv20.accounts = accounts;
         return bsv20;
     }
 
+    @Get("{ticker}/activity")
+    public async getByTickerActivity(
+        @Path() ticker: string,
+        @Query() fromHeight: number = 0,
+        @Query() fromIdx: number = 0,
+        @Query() limit: number = 100,
+        @Query() status = Status.ValidAndPending,
+    ): Promise<Bsv20[]> {
+        let where = '';
+        switch(status) {
+            case Status.Invalid:
+                where = 'AND valid = FALSE'
+                break
+            case Status.Pending:
+                where = 'AND valid IS NULL'
+                break
+            case Status.Valid:
+                where = 'AND valid = TRUE'
+                break
+            case Status.ValidAndPending:
+                where = 'AND (valid = TRUE OR valid IS NULL)'
+        }
+        const { rows } = await pool.query(`SELECT *
+            FROM bsv20_txos
+            WHERE tick=$1 AND (height > $2 OR (height=$2 AND idx > $3)) ${where}
+            ORDER BY height ASC, idx ASC
+            LIMIT $4`,
+            [
+                ticker.toUpperCase(),
+                fromHeight,
+                fromIdx,
+                limit
+            ]
+        )
+
+        if (rows.length === 0) {
+            throw new NotFound(`Ticker ${ticker} not found`)
+        }
+        return rows.map(row => Bsv20.fromRow(row));
+    }
 
     @Get("address/{address}")
     public async getByAddress(

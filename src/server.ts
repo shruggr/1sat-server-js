@@ -65,8 +65,6 @@ server.use("/api/subscribe", (req, res, next) => {
             channels.push(req.query['channel']);
         }
 
-
-        // console.log('Channels:', channels)
         res.writeHead(200, {
             'Content-Type': 'text/event-stream',
             'Connection': 'keep-alive',
@@ -86,20 +84,28 @@ server.use("/api/subscribe", (req, res, next) => {
             channel = addressMap.has(channel) ?
                 addressMap.get(channel) as string :
                 channel;
-            const outpoint = Outpoint.fromString(message)
+            
             let id = ''
-            if(channel == 'list') {
-                const data = await Listing.loadOneByOutpoint(outpoint);
-                message = JSON.stringify(data);
-                id = `${outpoint.txid}_${outpoint.vout}_list}`
-            } else {
-                const data = await Txo.loadInscriptionByOutpoint(outpoint)
-                message = JSON.stringify(data);
-                id = `${outpoint.txid}_${outpoint.vout}_${data.spend}}`
+            if(message.length > 60) {
+                const outpoint = Outpoint.fromString(message)
+                if(channel == 'list') {
+                    const data = await Listing.loadOneByOutpoint(outpoint);
+                    message = JSON.stringify(data);
+                    id = `${outpoint.txid}_${outpoint.vout}_list}`
+    
+                } else if (channel.length){
+                    const data = await Txo.loadInscriptionByOutpoint(outpoint)
+                    message = JSON.stringify(data);
+                    id = `${outpoint.txid}_${outpoint.vout}_${data.spend}}`
+                }
             }
             res.write(`event: ${channel}\n`)
             res.write(`data: ${message}\n`)
-            res.write(`id: ${id}\n\n`)
+            if(id) {
+                res.write(`id: ${id}\n\n`)
+            } else {
+                res.write(`\n`)
+            }
         });
         // setTimeout(() => res.end(), 60000)
     } catch(e: any) {
@@ -128,4 +134,4 @@ const errorMiddleware = ((err: TypeError | HttpError, req: Request, res: Respons
 
 server.use(errorMiddleware);
 
-main().catch(console.error);
+main().catch(console.error);``

@@ -20,6 +20,9 @@ export class Bsv20 {
     valid?: boolean;
     accounts?: number;
     reason: string = '';
+    unconfirmed?: number;
+    available?: number;
+    pctMinted?: number;
 
     static fromRow(row: any): Bsv20 {
         return {
@@ -40,7 +43,11 @@ export class Bsv20 {
             MAP: row.map,
             B: row.b,
             valid: row.valid,
-            reason: row.reason
+            reason: row.reason,
+            unconfirmed: row.unconfirmed,
+            available: row.available,
+            pctMinted: row.pct_minted,
+            accounts: row.accounts,
         }
     }
 }
