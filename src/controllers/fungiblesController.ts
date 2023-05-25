@@ -196,9 +196,7 @@ export class FungiblesController extends Controller {
     ): Promise<{[tick: string]:number}> {
         const lock = Hash.sha256(
             Address.fromString(address).toTxOutScript().toBuffer()
-        )
-            .reverse()
-            .toString('hex')
+        ).reverse().toString('hex')
         return this.getBalanceByLock(lock)
     }
 

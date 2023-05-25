@@ -1001,6 +1001,64 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/utxos/address/:address/bsv20',
+            ...(fetchMiddlewares<RequestHandler>(UtxosController)),
+            ...(fetchMiddlewares<RequestHandler>(UtxosController.prototype.getBsv20sByAddress)),
+
+            function UtxosController_getBsv20sByAddress(request: any, response: any, next: any) {
+            const args = {
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+                    fromHeight: {"default":0,"in":"query","name":"fromHeight","dataType":"double"},
+                    fromIdx: {"default":0,"in":"query","name":"fromIdx","dataType":"double"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    tick: {"default":"","in":"query","name":"tick","dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new UtxosController();
+
+
+              const promise = controller.getBsv20sByAddress.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/utxos/lock/:lock/bsv20',
+            ...(fetchMiddlewares<RequestHandler>(UtxosController)),
+            ...(fetchMiddlewares<RequestHandler>(UtxosController.prototype.getBsv20sByLock)),
+
+            function UtxosController_getBsv20sByLock(request: any, response: any, next: any) {
+            const args = {
+                    lock: {"in":"path","name":"lock","required":true,"dataType":"string"},
+                    fromHeight: {"default":0,"in":"query","name":"fromHeight","dataType":"double"},
+                    fromIdx: {"default":0,"in":"query","name":"fromIdx","dataType":"double"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    tick: {"default":"","in":"query","name":"tick","dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new UtxosController();
+
+
+              const promise = controller.getBsv20sByLock.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/utxos/origin/:origin',
             ...(fetchMiddlewares<RequestHandler>(UtxosController)),
             ...(fetchMiddlewares<RequestHandler>(UtxosController.prototype.getTxoByOrigin)),

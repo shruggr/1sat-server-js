@@ -23,6 +23,9 @@ export class Bsv20 {
     unconfirmed?: number;
     available?: number;
     pctMinted?: number;
+    price?: number;
+    payout?: string;
+    script?: string;
 
     static fromRow(row: any): Bsv20 {
         return {
@@ -48,6 +51,8 @@ export class Bsv20 {
             available: row.available,
             pctMinted: row.pct_minted,
             accounts: row.accounts,
+            price: row.price && parseInt(row.price, 10),
+            payout: row.payout?.toString('base64')
         }
     }
 }

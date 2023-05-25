@@ -1,9 +1,11 @@
 import { JungleBusClient } from "@gorillapool/js-junglebus";
-import { Tx } from '@ts-bitcoin/core';
+import { Address, Hash, Tx } from '@ts-bitcoin/core';
 import { Controller, Get, Path, Query, Route } from "tsoa";
 import { Inscription } from "../models/inscription";
 import { Txo } from "../models/txo";
 import { SortDirection } from "../models/listing";
+import { Bsv20 } from "../models/bsv20";
+import { pool } from "../db";
 
 const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 @Route("api/utxos")
@@ -54,6 +56,47 @@ export class UtxosController extends Controller {
     ): Promise<Inscription[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         return Txo.loadInscriptionsByAddress(address, limit, offset, dir, excludeBsv20);
+    }
+
+    @Get("address/{address}/tick/{tick}")
+    public async getBsv20sByAddress(
+        @Path() address: string,
+        @Path() tick: string = '',
+        @Query() fromHeight: number = 0,
+        @Query() fromIdx: number = 0,
+        @Query() limit: number = 100,
+    ): Promise<Bsv20[]> {
+        const lock = Hash.sha256(
+            Address.fromString(address).toTxOutScript().toBuffer()
+        ).reverse().toString('hex');
+        return this.getBsv20sByLock(lock, tick, fromHeight, fromIdx, limit);
+    }
+
+    @Get("lock/{lock}/tick/{tick}")
+    public async getBsv20sByLock(
+        @Path() lock: string,
+        @Path() tick: string = '',
+        @Query() fromHeight: number = 0,
+        @Query() fromIdx: number = 0,
+        @Query() limit: number = 100,
+    ): Promise<Bsv20[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        const { rows } = await pool.query(`SELECT * 
+            FROM bsv20_txos
+            WHERE lock = $1 AND spend=decode('', 'hex')
+                AND tick=$2 AND valid=TRUE
+                AND (height > $3 OR (height = $3 AND idx >= $4))
+            ORDER BY height, idx
+            LIMIT $5`,
+            [
+                Buffer.from(lock, 'base64').toString('hex'),
+                tick,
+                fromHeight,
+                fromIdx,
+                limit,
+            ]
+        );
+        return rows.map((row: any) => Bsv20.fromRow(row));
     }
 
     @Get("origin/{origin}")
