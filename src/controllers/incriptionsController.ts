@@ -18,16 +18,19 @@ export class InscriptionsController extends Controller {
 
     @Get("origin/{origin}/metadata")
     public async getMetadataByOrigin(@Path() origin: string): Promise<Inscription[]> {
+        this.setHeader('Cache-Control', 'public,immutable,max-age=31536000')
         return Inscription.loadMetadataByOrigin(Outpoint.fromString(origin));
     }
 
     @Get("outpoint/{outpoint}")
     public async getByOutpoint(@Path() outpoint: string): Promise<Inscription> {
+        this.setHeader('Cache-Control', 'public,immutable,max-age=31536000')
         return Txo.loadInscriptionByOutpoint(Outpoint.fromString(outpoint));
     }
 
     @Get("txid/{txid}")
     public async getByTxid(@Path() txid: string): Promise<Inscription[]> {
+        this.setHeader('Cache-Control', 'public,immutable,max-age=31536000')
         return Inscription.loadByTxid(Buffer.from(txid, 'hex'));
     }
 

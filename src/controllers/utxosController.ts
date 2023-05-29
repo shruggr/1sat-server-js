@@ -89,7 +89,7 @@ export class UtxosController extends Controller {
             ORDER BY height, idx
             LIMIT $5`,
             [
-                Buffer.from(lock, 'base64').toString('hex'),
+                Buffer.from(lock, 'hex'),
                 tick,
                 fromHeight,
                 fromIdx,

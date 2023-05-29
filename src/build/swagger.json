@@ -225,6 +225,16 @@
 					"pctMinted": {
 						"type": "number",
 						"format": "double"
+					},
+					"price": {
+						"type": "number",
+						"format": "double"
+					},
+					"payout": {
+						"type": "string"
+					},
+					"script": {
+						"type": "string"
 					}
 				},
 				"type": "object",
@@ -235,7 +245,7 @@
 					"invalid",
 					"valid",
 					"pending",
-					"valid+pending",
+					"valid_pending",
 					"all"
 				],
 				"type": "string"
@@ -258,6 +268,38 @@
 					"DESC"
 				],
 				"type": "string"
+			},
+			"BalanceItem": {
+				"properties": {
+					"confirmed": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"pending": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TokenBalance": {
+				"properties": {
+					"all": {
+						"$ref": "#/components/schemas/BalanceItem"
+					},
+					"listed": {
+						"$ref": "#/components/schemas/BalanceItem"
+					},
+					"tick": {
+						"type": "string",
+						"default": ""
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
 			},
 			"ListingSort": {
 				"enum": [
@@ -565,6 +607,43 @@
 				]
 			}
 		},
+		"/api/bsv20/outpoint/{txid}/{vout}": {
+			"get": {
+				"operationId": "GetByOutpoint",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Bsv20"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "txid",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "vout",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
 		"/api/bsv20/id/{id}": {
 			"get": {
 				"operationId": "GetById",
@@ -856,6 +935,68 @@
 										"format": "double"
 									},
 									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "lock",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/address/{address}/balance/sorted": {
+			"get": {
+				"operationId": "GetSortedBalanceByAddress",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/TokenBalance"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/lock/{lock}/balance/sorted": {
+			"get": {
+				"operationId": "GetSortedBalanceByLock",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/TokenBalance"
+									},
+									"type": "array"
 								}
 							}
 						}
@@ -1314,6 +1455,65 @@
 				]
 			}
 		},
+		"/api/market/bsv20": {
+			"get": {
+				"operationId": "GetOpenBsv20",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Bsv20"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/ListingSort"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
 		"/api/market/recent": {
 			"get": {
 				"operationId": "GetRecentListings",
@@ -1352,6 +1552,15 @@
 							"default": 0,
 							"format": "double",
 							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "bsv20",
+						"required": false,
+						"schema": {
+							"default": true,
+							"type": "boolean"
 						}
 					}
 				]
@@ -1678,7 +1887,7 @@
 				]
 			}
 		},
-		"/api/utxos/address/{address}/bsv20": {
+		"/api/utxos/address/{address}/tick/{tick}": {
 			"get": {
 				"operationId": "GetBsv20sByAddress",
 				"responses": {
@@ -1707,6 +1916,15 @@
 						}
 					},
 					{
+						"in": "path",
+						"name": "tick",
+						"required": true,
+						"schema": {
+							"default": "",
+							"type": "string"
+						}
+					},
+					{
 						"in": "query",
 						"name": "fromHeight",
 						"required": false,
@@ -1735,20 +1953,11 @@
 							"format": "double",
 							"type": "number"
 						}
-					},
-					{
-						"in": "query",
-						"name": "tick",
-						"required": false,
-						"schema": {
-							"default": "",
-							"type": "string"
-						}
 					}
 				]
 			}
 		},
-		"/api/utxos/lock/{lock}/bsv20": {
+		"/api/utxos/lock/{lock}/tick/{tick}": {
 			"get": {
 				"operationId": "GetBsv20sByLock",
 				"responses": {
@@ -1777,6 +1986,15 @@
 						}
 					},
 					{
+						"in": "path",
+						"name": "tick",
+						"required": true,
+						"schema": {
+							"default": "",
+							"type": "string"
+						}
+					},
+					{
 						"in": "query",
 						"name": "fromHeight",
 						"required": false,
@@ -1804,15 +2022,6 @@
 							"default": 100,
 							"format": "double",
 							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "tick",
-						"required": false,
-						"schema": {
-							"default": "",
-							"type": "string"
 						}
 					}
 				]

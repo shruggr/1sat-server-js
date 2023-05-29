@@ -51,7 +51,7 @@ export class Bsv20 {
             available: row.available,
             pctMinted: row.pct_minted,
             accounts: row.accounts,
-            price: row.price && parseInt(row.price, 10),
+            price: row.price,
             payout: row.payout?.toString('base64')
         }
     }

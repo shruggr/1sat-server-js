@@ -5,6 +5,7 @@ import { Listing, ListingSort, SortDirection } from "../models/listing";
 import { Outpoint } from '../models/outpoint';
 import { Inscription } from "../models/inscription";
 import { pool } from "../db";
+import { Bsv20 } from "../models/bsv20";
 
 const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 
@@ -48,7 +49,7 @@ export class MarketController extends Controller {
         @Query() dir: SortDirection = SortDirection.desc,
         @Query() limit: number = 100,
         @Query() offset: number = 0
-    ): Promise<Inscription[]> {
+    ): Promise<Bsv20[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         let orderBy = 'ORDER BY ';
         switch(sort) {
@@ -70,7 +71,7 @@ export class MarketController extends Controller {
             LIMIT $1 OFFSET $2`,
             [limit, offset],
         );
-        return rows.map((r: any) => Inscription.fromRow(r));
+        return rows.map((r: any) => Bsv20.fromRow(r));
     }
 
     @Get("recent")

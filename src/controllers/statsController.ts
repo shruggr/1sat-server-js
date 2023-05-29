@@ -8,7 +8,7 @@ export class StatsController extends Controller {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         const { rows: [{ settled }] } = await pool.query(`SELECT height as settled
             FROM progress
-            WHERE indexer='1sat'`)
+            WHERE indexer='node'`)
         const { rows: [{ indexed }] } = await pool.query(`SELECT MAX(height) as indexed 
             FROM txns
             WHERE height < 100000000`)

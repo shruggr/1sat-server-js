@@ -9,7 +9,7 @@ enum Status {
     Invalid = "invalid",
     Valid = "valid",
     Pending = "pending",
-    ValidAndPending = "valid+pending",
+    ValidAndPending = "valid_pending",
     All = "all",
 }
 
@@ -49,15 +49,34 @@ export class FungiblesController extends Controller {
         const { rows } = await pool.query(`SELECT * 
             FROM bsv20 
             ${where}
-            ORDER BY $1 ${dir == SortDirection.ASC ? 'ASC' : 'DESC'}, idx ${dir == SortDirection.ASC ? 'ASC' : 'DESC'}
-            LIMIT $2 OFFSET $3`,
+            ORDER BY ${sort} ${dir}, idx ${dir}
+            LIMIT $1 OFFSET $2`,
             [
-                sort,
                 limit,
                 offset
             ]
         )
         return rows.map(row => Bsv20.fromRow(row));
+    }
+
+    @Get("outpoint/{txid}/{vout}")
+    public async getByOutpoint(
+        @Path() txid: string,
+        @Path() vout: number
+    ): Promise<Bsv20> {
+        this.setHeader('Cache-Control', 'public,immutable,max-age=31536000')
+        const { rows } = await pool.query(`SELECT * FROM bsv20_txos 
+                WHERE txid=$1 AND vout=$2`,
+            [
+                Buffer.from(txid, 'hex'), 
+                vout,
+            ]
+        )
+
+        if (rows.length === 0) {
+            throw new NotFound()
+        }
+        return Bsv20.fromRow(rows[0]);
     }
 
     @Get("id/{id}")
@@ -218,4 +237,66 @@ export class FungiblesController extends Controller {
             return acc;
         }, {});
     }
+
+    @Get("address/{address}/balance/sorted")
+    public async getSortedBalanceByAddress(
+        @Path() address: string,
+        ): Promise<TokenBalance[]> {
+        const lock = Hash.sha256(
+            Address.fromString(address).toTxOutScript().toBuffer()
+        ).reverse().toString('hex')
+        return this.getSortedBalanceByLock(lock)
+    }
+
+    @Get("lock/{lock}/balance/sorted")
+    public async getSortedBalanceByLock(
+        @Path() lock: string,
+    ): Promise<TokenBalance[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+
+        const { rows } = await pool.query(`SELECT tick, listing, valid, SUM(amt) as amt
+            FROM bsv20_txos 
+            WHERE lock=$1 AND spend=decode('', 'hex') AND 
+                (valid = true OR valid IS NULL) AND
+                op != 'deploy'
+            GROUP BY tick, listing, valid`,
+            [Buffer.from(lock, 'hex')],
+        )
+
+        // console.log("BALANCE ROWS:", rows)
+        const results: {[ticker: string]:TokenBalance} = {};
+        for (let row of rows) {
+            let tick = results[row.tick]
+            if(!tick) {
+                tick = new TokenBalance(row.tick)
+                results[row.tick] = tick
+            }
+
+            const amt = parseInt(row.amt, 10)
+            if(row.valid) {
+                tick.all.confirmed += amt
+                if(row.listing) {
+                    tick.listed.confirmed += amt
+                }
+            } else { 
+                tick.all.pending += amt
+                if(row.listing) {
+                    tick.listed.pending += amt
+                }
+            }
+        }
+        return Object.values(results)
+    }
+}
+
+
+class TokenBalance {
+    constructor(public tick = '') {}
+    all = new BalanceItem()
+    listed = new BalanceItem()
+}
+
+class BalanceItem {
+    confirmed = 0
+    pending = 0
 }
