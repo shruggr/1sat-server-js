@@ -15,7 +15,7 @@ import { InscriptionsController } from './../controllers/incriptionsController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { MarketController } from './../controllers/marketController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { StatsController } from './../controllers/ordfsController';
+import { OrdfsController } from './../controllers/ordfsController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { StatsController } from './../controllers/statsController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -949,10 +949,10 @@ export function RegisterRoutes(app: Router) {
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/ordfs/:origin/:filename',
-            ...(fetchMiddlewares<RequestHandler>(StatsController)),
-            ...(fetchMiddlewares<RequestHandler>(StatsController.prototype.getOrdfsFile)),
+            ...(fetchMiddlewares<RequestHandler>(OrdfsController)),
+            ...(fetchMiddlewares<RequestHandler>(OrdfsController.prototype.getOrdfsFile)),
 
-            function StatsController_getOrdfsFile(request: any, response: any, next: any) {
+            function OrdfsController_getOrdfsFile(request: any, response: any, next: any) {
             const args = {
                     origin: {"in":"path","name":"origin","required":true,"dataType":"string"},
                     filename: {"in":"path","name":"filename","required":true,"dataType":"string"},
@@ -965,7 +965,7 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
 
-                const controller = new StatsController();
+                const controller = new OrdfsController();
 
 
               const promise = controller.getOrdfsFile.apply(controller, validatedArgs as any);

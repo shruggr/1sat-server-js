@@ -5,7 +5,7 @@ import { Outpoint } from "../models/outpoint";
 import { NotFound } from 'http-errors';
 
 @Route("api/ordfs")
-export class StatsController extends Controller {
+export class OrdfsController extends Controller {
     @Get("{origin}/{filename}")
     public async getOrdfsFile(
         @Path() origin: string,
