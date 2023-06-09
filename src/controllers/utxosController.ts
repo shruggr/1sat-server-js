@@ -84,7 +84,7 @@ export class UtxosController extends Controller {
         const { rows } = await pool.query(`SELECT * 
             FROM bsv20_txos
             WHERE lock = $1 AND spend=decode('', 'hex')
-                AND tick=$2 AND valid=TRUE
+                AND tick=$2 AND valid=TRUE AND op IN ('mint', 'transfer')
                 AND (height > $3 OR (height = $3 AND idx >= $4))
             ORDER BY height, idx
             LIMIT $5`,
