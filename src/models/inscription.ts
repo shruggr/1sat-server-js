@@ -48,12 +48,12 @@ export class Inscription {
     bsv20: boolean = false;
 
 
-    static async loadOneById(id: number): Promise<Inscription> {
+    static async loadOneById(num: number): Promise<Inscription> {
         const { rows } = await pool.query(`SELECT * 
             FROM inscriptions 
-            WHERE id = $1
+            WHERE num = $1
             LIMIT 1`,
-            [id]
+            [num]
         )
         if (!rows.length) throw new NotFound('not-found');
         return Inscription.fromRow(rows[0]);
@@ -63,7 +63,7 @@ export class Inscription {
         const { rows } = await pool.query(`SELECT * 
             FROM inscriptions 
             WHERE origin = $1
-            ORDER BY id DESC
+            ORDER BY num DESC
             LIMIT 1`,
             [
                 origin.toBuffer()
@@ -78,7 +78,7 @@ export class Inscription {
         const { rows } = await pool.query(`SELECT * 
             FROM inscriptions 
             WHERE origin = $1
-            ORDER BY id DESC`,
+            ORDER BY num DESC`,
             [
                 origin.toBuffer()
             ]
@@ -130,9 +130,9 @@ export class Inscription {
 
     static fromRow(row: any): Inscription {
         const inscription = new Inscription();
-        if (row?.id && row.id > 0) {
-            inscription.id = parseInt(row.id, 10);
-            inscription.num = inscription.id
+        if (row?.num && row.num > 0) {
+            inscription.num = parseInt(row.num, 10);
+            inscription.id = inscription.num
         };
         inscription.outpoint.txid = inscription.txid = row.txid.toString('hex');
         inscription.outpoint.vout = inscription.vout = row.vout;
@@ -157,7 +157,7 @@ export class Inscription {
 
     static metadataFromRow(row: any): Inscription {
         const inscription = new Inscription();
-        inscription.id = parseInt(row.id, 10);
+        inscription.num = parseInt(row.num, 10);
         inscription.txid = row.txid.toString('hex');
         inscription.vout = row.vout;
         inscription.file = row.ord;
@@ -172,7 +172,7 @@ export class Inscription {
     }
 
     static async count(): Promise<number> {
-        const { rows } = await pool.query(`SELECT MAX(id) as count 
+        const { rows } = await pool.query(`SELECT MAX(num) as count 
             FROM inscriptions`);
         return parseInt(rows[0].count, 10);
     }
