@@ -65,7 +65,7 @@ export class MarketController extends Controller {
         const { rows } = await pool.query(`
             SELECT b.*, l.price, l.payout
             FROM ordinal_lock_listings l
-            JOIN bsv20_txos b ON b.txid=l.txid AND b.vout=l.vout
+            JOIN bsv20_txos b ON b.txid=l.txid AND b.vout=l.vout AND b.valid=true
             WHERE b.spend = decode('', 'hex')
             ${orderBy}
             LIMIT $1 OFFSET $2`,
