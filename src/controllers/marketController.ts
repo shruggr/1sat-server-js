@@ -31,7 +31,7 @@ export class MarketController extends Controller {
                 orderBy += `l.height ${dir}, l.idx ${dir}`;
         }
         const { rows } = await pool.query(`
-            SELECT l.num, l.txid, l.vout, i.filehash, i.filesize, i.filetype, i.origin, l.height, l.idx, t.lock, l.spend, i.map, true as listing, l.price, l.payout
+            SELECT l.num, l.txid, l.vout, i.filehash, i.filesize, i.filetype, i.origin, l.height, l.idx, t.lock, l.spend, i.map, true as listing, l.price, l.payout, i.sigma
             FROM ordinal_lock_listings l
             JOIN inscriptions i ON i.origin=l.origin
             JOIN txos t ON t.txid=l.txid AND t.vout=l.vout

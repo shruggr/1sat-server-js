@@ -134,4 +134,4 @@ const errorMiddleware = ((err: TypeError | HttpError, req: Request, res: Respons
 
 server.use(errorMiddleware);
 
-main().catch(console.error);``
+main().catch(console.error);

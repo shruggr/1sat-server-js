@@ -519,6 +519,27 @@
 				"parameters": []
 			}
 		},
+		"/{filename}": {
+			"get": {
+				"operationId": "GetOrdfs",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "filename",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/files/inscriptions/{origin}": {
 			"get": {
 				"operationId": "GetInscription",

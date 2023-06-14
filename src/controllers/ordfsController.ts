@@ -18,10 +18,10 @@ export class OrdfsController extends Controller {
         if(!dir[filename]) {
             throw new NotFound()
         }
-        const insData = await Inscription.loadFileByOrigin(Outpoint.fromString(dir[filename]))
+        const file = (dir[filename] as string).slice(6)
+        const insData = await Inscription.loadFileByOrigin(Outpoint.fromString(file))
         req.res!.header('Content-Type', insData.type || '');
         req.res!.header('Cache-Control', 'public,immutable,max-age=31536000')
         req.res!.status(200).send(insData.data);
-
     }
 }
