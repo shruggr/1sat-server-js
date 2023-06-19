@@ -105,6 +105,7 @@ const models: TsoaRoute.Models = {
             "price": {"dataType":"double"},
             "payout": {"dataType":"string"},
             "script": {"dataType":"string"},
+            "listing": {"dataType":"boolean","default":false},
         },
         "additionalProperties": false,
     },

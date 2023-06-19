@@ -75,7 +75,7 @@ export class Txo {
 
     static async loadInscriptionByOutpoint(outpoint: Outpoint): Promise<Inscription> {
         const { rows } = await pool.query(`
-            SELECT i.num, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing, l.price, l.payout, i.sigma
+            SELECT i.num, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing, l.price, l.payout, i.sigma, t.bsv20
             FROM txos t
             JOIN inscriptions i ON i.origin=t.origin
             LEFT JOIN ordinal_lock_listings l ON l.txid=t.txid AND l.vout=t.vout

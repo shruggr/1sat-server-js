@@ -235,6 +235,10 @@
 					},
 					"script": {
 						"type": "string"
+					},
+					"listing": {
+						"type": "boolean",
+						"default": false
 					}
 				},
 				"type": "object",

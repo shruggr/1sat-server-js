@@ -26,6 +26,7 @@ export class Bsv20 {
     price?: number;
     payout?: string;
     script?: string;
+    listing: boolean = false; 
 
     static fromRow(row: any): Bsv20 {
         return {
@@ -52,7 +53,8 @@ export class Bsv20 {
             pctMinted: row.pct_minted,
             accounts: row.accounts,
             price: row.price,
-            payout: row.payout?.toString('base64')
+            payout: row.payout?.toString('base64'),
+            listing: row.listing,
         }
     }
 }
