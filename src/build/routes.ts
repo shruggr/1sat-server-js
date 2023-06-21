@@ -218,6 +218,58 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/collections/sigma/:address',
+            ...(fetchMiddlewares<RequestHandler>(CollectionsController)),
+            ...(fetchMiddlewares<RequestHandler>(CollectionsController.prototype.searchSigmaCollections)),
+
+            function CollectionsController_searchSigmaCollections(request: any, response: any, next: any) {
+            const args = {
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new CollectionsController();
+
+
+              const promise = controller.searchSigmaCollections.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/collections/:collectionId/stats',
+            ...(fetchMiddlewares<RequestHandler>(CollectionsController)),
+            ...(fetchMiddlewares<RequestHandler>(CollectionsController.prototype.getCollection)),
+
+            function CollectionsController_getCollection(request: any, response: any, next: any) {
+            const args = {
+                    collectionId: {"in":"path","name":"collectionId","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new CollectionsController();
+
+
+              const promise = controller.getCollection.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/collections/:collectionId/items',
             ...(fetchMiddlewares<RequestHandler>(CollectionsController)),
             ...(fetchMiddlewares<RequestHandler>(CollectionsController.prototype.getCollectionItems)),
@@ -247,9 +299,9 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/',
             ...(fetchMiddlewares<RequestHandler>(DnsController)),
-            ...(fetchMiddlewares<RequestHandler>(DnsController.prototype.getInscription)),
+            ...(fetchMiddlewares<RequestHandler>(DnsController.prototype.getDnsInscription)),
 
-            function DnsController_getInscription(request: any, response: any, next: any) {
+            function DnsController_getDnsInscription(request: any, response: any, next: any) {
             const args = {
                     req: {"in":"request","name":"req","required":true,"dataType":"object"},
             };
@@ -263,7 +315,7 @@ export function RegisterRoutes(app: Router) {
                 const controller = new DnsController();
 
 
-              const promise = controller.getInscription.apply(controller, validatedArgs as any);
+              const promise = controller.getDnsInscription.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
@@ -889,6 +941,35 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getOpenListings.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/market/search/map',
+            ...(fetchMiddlewares<RequestHandler>(MarketController)),
+            ...(fetchMiddlewares<RequestHandler>(MarketController.prototype.searchMap)),
+
+            function MarketController_searchMap(request: any, response: any, next: any) {
+            const args = {
+                    query: {"in":"body-prop","name":"query","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
+                    sort: {"default":"recent","in":"query","name":"sort","ref":"ListingSort"},
+                    dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new MarketController();
+
+
+              const promise = controller.searchMap.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

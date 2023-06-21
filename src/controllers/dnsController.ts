@@ -9,7 +9,7 @@ import { Outpoint } from "../models/outpoint";
 @Route("")
 export class DnsController extends Controller {
     @Get("")
-    public async getInscription(
+    public async getDnsInscription(
         @Request() req: ExpRequest,
     ): Promise<void> {
         console.log("HOST:", req.hostname)

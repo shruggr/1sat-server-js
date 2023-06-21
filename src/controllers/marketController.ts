@@ -1,6 +1,6 @@
 import { JungleBusClient } from "@gorillapool/js-junglebus";
 import { Tx } from '@ts-bitcoin/core';
-import { Controller, Get, Path, Query, Route } from "tsoa";
+import { BodyProp, Controller, Get, Path, Post, Query, Route } from "tsoa";
 import { Listing, ListingSort, SortDirection } from "../models/listing";
 import { Outpoint } from '../models/outpoint';
 import { Inscription } from "../models/inscription";
@@ -18,7 +18,7 @@ export class MarketController extends Controller {
         @Query() limit: number = 100,
         @Query() offset: number = 0
     ): Promise<Inscription[]> {
-        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        // this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         let orderBy = 'ORDER BY ';
         switch(sort) {
             case ListingSort.num:
@@ -39,6 +39,38 @@ export class MarketController extends Controller {
             ${orderBy}
             LIMIT $1 OFFSET $2`,
             [limit, offset],
+        );
+        return rows.map((r: any) => Inscription.fromRow(r));
+    }
+
+    @Post("search/map")
+    public async searchMap(
+        @BodyProp() query: {[key: string]: any},
+        @Query() sort: ListingSort = ListingSort.recent,
+        @Query() dir: SortDirection = SortDirection.desc,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
+    ): Promise<Inscription[]> {
+        let orderBy = 'ORDER BY ';
+        switch(sort) {
+            case ListingSort.num:
+                orderBy += `l.num ${dir}`;
+                break;
+            case ListingSort.price:
+                orderBy += `l.price ${dir}`;
+                break;
+            default:
+                orderBy += `l.height ${dir}, l.idx ${dir}`;
+        }
+        const { rows } = await pool.query(`
+            SELECT l.num, l.txid, l.vout, i.filehash, i.filesize, i.filetype, i.origin, l.height, l.idx, t.lock, l.spend, i.map, true as listing, l.price, l.payout, i.sigma
+            FROM ordinal_lock_listings l
+            JOIN inscriptions i ON i.origin=l.origin
+            JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
+            WHERE l.spend = decode('', 'hex') and l.bsv20 = false AND i.map @> $3
+            ${orderBy}
+            LIMIT $1 OFFSET $2`,
+            [limit, offset, JSON.stringify(query)],
         );
         return rows.map((r: any) => Inscription.fromRow(r));
     }
