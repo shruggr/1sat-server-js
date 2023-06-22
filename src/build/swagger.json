@@ -521,7 +521,7 @@
 							"application/json": {
 								"schema": {
 									"properties": {
-										"max": {
+										"highestMintNum": {
 											"type": "number",
 											"format": "double"
 										},
@@ -531,7 +531,7 @@
 										}
 									},
 									"required": [
-										"max",
+										"highestMintNum",
 										"count"
 									],
 									"type": "object"

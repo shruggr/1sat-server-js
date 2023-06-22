@@ -42,15 +42,18 @@ export class CollectionsController extends Controller {
     @Get("{collectionId}/stats")
     public async getCollection(
         @Path() collectionId: string,
-    ): Promise<{count: number, max: number}> {
-        const { rows: [row]} = await pool.query(`SELECT MAX((map->'subTypeData'->>'mintNumber')::INTEGER) as maxNum, COUNT(1)::INTEGER as count
+    ): Promise<{count: number, highestMintNum: number}> {
+        const { rows: [row]} = await pool.query(`SELECT MAX((map->'subTypeData'->>'mintNumber')::INTEGER) as maxnum, COUNT(1)::INTEGER as count
             FROM inscriptions
             WHERE map @> $1`, 
             [JSON.stringify({subTypeData: {collectionId}})],
         )
 
         if (!row) throw new NotFound();
-        return row
+        return {
+            count: row.count,
+            highestMintNum: row.maxnum || 0
+        }
     }
 
     @Get("{collectionId}/items")
