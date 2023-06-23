@@ -348,6 +348,33 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/:origin/:filename',
+            ...(fetchMiddlewares<RequestHandler>(DnsController)),
+            ...(fetchMiddlewares<RequestHandler>(DnsController.prototype.getOrdfsFile)),
+
+            function DnsController_getOrdfsFile(request: any, response: any, next: any) {
+            const args = {
+                    origin: {"in":"path","name":"origin","required":true,"dataType":"string"},
+                    filename: {"in":"path","name":"filename","required":true,"dataType":"string"},
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new DnsController();
+
+
+              const promise = controller.getOrdfsFile.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/files/inscriptions/:origin',
             ...(fetchMiddlewares<RequestHandler>(FilesController)),
             ...(fetchMiddlewares<RequestHandler>(FilesController.prototype.getInscription)),
