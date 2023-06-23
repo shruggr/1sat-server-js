@@ -949,9 +949,9 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.post('/api/market/search/map',
             ...(fetchMiddlewares<RequestHandler>(MarketController)),
-            ...(fetchMiddlewares<RequestHandler>(MarketController.prototype.searchMap)),
+            ...(fetchMiddlewares<RequestHandler>(MarketController.prototype.searchMarketByMap)),
 
-            function MarketController_searchMap(request: any, response: any, next: any) {
+            function MarketController_searchMarketByMap(request: any, response: any, next: any) {
             const args = {
                     query: {"in":"body-prop","name":"query","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
                     sort: {"default":"recent","in":"query","name":"sort","ref":"ListingSort"},
@@ -969,7 +969,7 @@ export function RegisterRoutes(app: Router) {
                 const controller = new MarketController();
 
 
-              const promise = controller.searchMap.apply(controller, validatedArgs as any);
+              const promise = controller.searchMarketByMap.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

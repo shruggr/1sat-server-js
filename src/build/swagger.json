@@ -1575,7 +1575,7 @@
 		},
 		"/api/market/search/map": {
 			"post": {
-				"operationId": "SearchMap",
+				"operationId": "SearchMarketByMap",
 				"responses": {
 					"200": {
 						"description": "Ok",

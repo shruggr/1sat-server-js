@@ -44,7 +44,7 @@ export class MarketController extends Controller {
     }
 
     @Post("search/map")
-    public async searchMap(
+    public async searchMarketByMap(
         @BodyProp() query: {[key: string]: any},
         @Query() sort: ListingSort = ListingSort.recent,
         @Query() dir: SortDirection = SortDirection.desc,
@@ -117,7 +117,15 @@ export class MarketController extends Controller {
 
     @Get("{outpoint}")
     public async getByOutpoint(@Path() outpoint: string): Promise<Listing> {
-        const listing = await Listing.loadOneByOutpoint(Outpoint.fromString(outpoint));
+        const op = Outpoint.fromString(outpoint)
+        const { rows: [listing] } = await pool.query(`
+            SELECT o.*, i.filehash, i.filesize, i.filetype, i.map, true as listing, i.sigma
+            FROM ordinal_lock_listings l
+            JOIN inscriptions i ON i.origin=l.origin
+            WHERE txid=$1 AND vout=$2`,
+            [op.txid, op.vout]
+        );
+        // const listing = await Listing.loadOneByOutpoint(Outpoint.fromString(outpoint));
         const txnData = await jb.GetTransaction(listing.txid);
         const tx = Tx.fromBuffer(Buffer.from(txnData?.transaction || '', 'base64'));
         listing.script = tx.txOuts[listing.vout].script.toBuffer().toString('base64');
