@@ -65,7 +65,7 @@ const models: TsoaRoute.Models = {
             "idx": {"dataType":"double","default":0},
             "lock": {"dataType":"string","default":""},
             "spend": {"dataType":"string","default":""},
-            "MAP": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"string"}},
+            "MAP": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
             "B": {"ref":"File"},
             "SIGMA": {"dataType":"array","array":{"dataType":"refObject","ref":"Sigma"},"default":[]},
             "listing": {"dataType":"boolean","default":false},

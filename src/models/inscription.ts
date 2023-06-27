@@ -38,7 +38,7 @@ export class Inscription {
     idx: number = 0;
     lock: string = '';
     spend: string = '';
-    MAP?: {[key: string]: string};
+    MAP?: {[key: string]: any};
     B?: File;
     SIGMA?: Sigma[] = [];
     listing: boolean = false;

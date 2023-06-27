@@ -2,6 +2,7 @@ import { NotFound } from 'http-errors';
 import { Controller, Get, Path, Query, Route } from "tsoa";
 import { Inscription } from "../models/inscription";
 import { pool } from "../db";
+import { Outpoint } from '../models/outpoint';
 
 @Route("api/collections")
 export class CollectionsController extends Controller {
@@ -42,7 +43,8 @@ export class CollectionsController extends Controller {
     @Get("{collectionId}/stats")
     public async getCollection(
         @Path() collectionId: string,
-    ): Promise<{count: number, highestMintNum: number}> {
+    ): Promise<{count: number, highestMintNum: number, MAP: {[key: string]: any}}> {
+        const outpoint =Outpoint.fromString(collectionId);
         const { rows: [row]} = await pool.query(`SELECT MAX((map->'subTypeData'->>'mintNumber')::INTEGER) as maxnum, COUNT(1)::INTEGER as count
             FROM inscriptions
             WHERE map @> $1`, 
@@ -50,9 +52,16 @@ export class CollectionsController extends Controller {
         )
 
         if (!row) throw new NotFound();
+
+        const { rows: [map]} = await pool.query(`SELECT map
+            FROM inscriptions
+            WHERE txid=$1 AND vout=$2`,
+            [outpoint.txid, outpoint.vout],
+        )
         return {
             count: row.count,
-            highestMintNum: row.maxnum || 0
+            highestMintNum: row.maxnum || 0,
+            MAP: map?.map,
         }
     }
 

@@ -101,9 +101,7 @@
 					},
 					"MAP": {
 						"properties": {},
-						"additionalProperties": {
-							"type": "string"
-						},
+						"additionalProperties": {},
 						"type": "object"
 					},
 					"B": {
@@ -521,6 +519,11 @@
 							"application/json": {
 								"schema": {
 									"properties": {
+										"MAP": {
+											"properties": {},
+											"additionalProperties": {},
+											"type": "object"
+										},
 										"highestMintNum": {
 											"type": "number",
 											"format": "double"
@@ -531,6 +534,7 @@
 										}
 									},
 									"required": [
+										"MAP",
 										"highestMintNum",
 										"count"
 									],
