@@ -1,8 +1,13 @@
+import { JungleBusClient } from "@gorillapool/js-junglebus";
 import { BodyProp, Controller, Get, Path, Post, Query, Route } from "tsoa";
+import { NotFound } from 'http-errors';
 import { Inscription } from "./../models/inscription";
 import { Outpoint } from "./../models/outpoint";
 import { Txo } from "../models/txo";
 import { pool } from "../db";
+import { Tx } from '@ts-bitcoin/core'
+
+const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 
 @Route("api/inscriptions")
 export class InscriptionsController extends Controller {
@@ -13,7 +18,21 @@ export class InscriptionsController extends Controller {
 
     @Get("origin/{origin}/latest")
     public async getOneByOrigin(@Path() origin: string): Promise<Inscription> {
-        return Inscription.loadOneByOrigin(Outpoint.fromString(origin));
+        const outpoint = Outpoint.fromString(origin)
+        const { rows } = await pool.query(`
+            SELECT i.num, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing, l.price, l.payout, i.sigma, t.bsv20
+            FROM txos t
+            JOIN inscriptions i ON i.origin=t.origin
+            LEFT JOIN ordinal_lock_listings l ON l.txid=t.txid AND l.vout=t.vout
+            WHERE t.origin=$1
+            ORDER BY t.height DESC, t.idx DESC
+            LIMIT 1`,
+            [outpoint.toBuffer()],
+        );
+        if(!rows.length) {
+            throw new NotFound('Inscription not found');
+        }
+        return Inscription.fromRow(rows[0]);
     }
 
     @Get("origin/{origin}/metadata")
@@ -25,7 +44,11 @@ export class InscriptionsController extends Controller {
     @Get("outpoint/{outpoint}")
     public async getByOutpoint(@Path() outpoint: string): Promise<Inscription> {
         this.setHeader('Cache-Control', 'public,immutable,max-age=31536000')
-        return Txo.loadInscriptionByOutpoint(Outpoint.fromString(outpoint));
+        const ins = await Txo.loadInscriptionByOutpoint(Outpoint.fromString(outpoint));
+        const txnData = await jb.GetTransaction(ins.txid);
+        const tx = Tx.fromBuffer(Buffer.from(txnData?.transaction || '', 'base64'));
+        ins.script = tx.txOuts[ins.vout].script.toBuffer().toString('base64');
+        return ins;
     }
 
     @Get("txid/{txid}")
