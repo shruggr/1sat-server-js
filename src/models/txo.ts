@@ -85,7 +85,7 @@ export class Txo {
             [outpoint.txid, outpoint.vout],
         );
         if(!rows.length) {
-            throw new NotFound('Inscription not found');
+            throw new NotFound(`Inscription not found: ${outpoint.toString()}`);
         }
         const ins = Inscription.fromRow(rows[0]);
 

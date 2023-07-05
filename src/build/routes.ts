@@ -81,6 +81,7 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "id": {"ref":"Outpoint"},
+            "outpoint": {"ref":"Outpoint"},
             "txid": {"dataType":"string"},
             "vout": {"dataType":"double"},
             "height": {"dataType":"double","default":0},
@@ -739,11 +740,61 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/inscriptions/origin/:origin/history',
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getOriginHistory)),
+
+            function InscriptionsController_getOriginHistory(request: any, response: any, next: any) {
+            const args = {
+                    origin: {"in":"path","name":"origin","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new InscriptionsController();
+
+
+              const promise = controller.getOriginHistory.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/inscriptions/outpoints',
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getInsByOutpoints)),
+
+            function InscriptionsController_getInsByOutpoints(request: any, response: any, next: any) {
+            const args = {
+                    outpoints: {"in":"body","name":"outpoints","required":true,"dataType":"array","array":{"dataType":"string"}},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new InscriptionsController();
+
+
+              const promise = controller.getInsByOutpoints.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/inscriptions/outpoint/:outpoint',
             ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
-            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getByOutpoint)),
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getInsByOutpoint)),
 
-            function InscriptionsController_getByOutpoint(request: any, response: any, next: any) {
+            function InscriptionsController_getInsByOutpoint(request: any, response: any, next: any) {
             const args = {
                     outpoint: {"in":"path","name":"outpoint","required":true,"dataType":"string"},
             };
@@ -757,7 +808,7 @@ export function RegisterRoutes(app: Router) {
                 const controller = new InscriptionsController();
 
 
-              const promise = controller.getByOutpoint.apply(controller, validatedArgs as any);
+              const promise = controller.getInsByOutpoint.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
@@ -847,6 +898,7 @@ export function RegisterRoutes(app: Router) {
                     query: {"in":"body-prop","name":"query","required":true,"dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -874,6 +926,7 @@ export function RegisterRoutes(app: Router) {
                     query: {"in":"body-prop","name":"query","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1342,6 +1395,31 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getTxoByOrigin.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/utxos/outpoints',
+            ...(fetchMiddlewares<RequestHandler>(UtxosController)),
+            ...(fetchMiddlewares<RequestHandler>(UtxosController.prototype.getTxosByOutpoints)),
+
+            function UtxosController_getTxosByOutpoints(request: any, response: any, next: any) {
+            const args = {
+                    outpoints: {"in":"body","name":"outpoints","required":true,"dataType":"array","array":{"dataType":"string"}},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new UtxosController();
+
+
+              const promise = controller.getTxosByOutpoints.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

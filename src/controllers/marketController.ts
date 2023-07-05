@@ -1,6 +1,6 @@
 import { JungleBusClient } from "@gorillapool/js-junglebus";
 import { Tx } from '@ts-bitcoin/core';
-import { BodyProp, Controller, Get, Path, Post, Query, Route } from "tsoa";
+import { BodyProp, Controller, Deprecated, Get, Path, Post, Query, Route } from "tsoa";
 import { Listing, ListingSort, SortDirection } from "../models/listing";
 import { Outpoint } from '../models/outpoint';
 import { Inscription } from "../models/inscription";
@@ -106,6 +106,7 @@ export class MarketController extends Controller {
         return rows.map((r: any) => Bsv20.fromRow(r));
     }
 
+    @Deprecated()
     @Get("recent")
     public async getRecentListings(
         @Query() limit: number = 100,

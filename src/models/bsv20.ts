@@ -2,6 +2,7 @@ import { Outpoint } from "./outpoint";
 
 export class Bsv20 {
     id: Outpoint = new Outpoint();
+    outpoint: Outpoint = new Outpoint();
     txid?: string;
     vout?: number;
     height: number = 0;
@@ -29,8 +30,12 @@ export class Bsv20 {
     listing: boolean = false; 
 
     static fromRow(row: any): Bsv20 {
+        const outpoint = new Outpoint()
+        outpoint.txid = row.txid;
+        outpoint.vout = row.vout;
         return {
             id: row.id && Outpoint.fromBuffer(row.id),
+            outpoint,
             txid: row.txid?.toString('hex'),
             vout: row.vout,
             height: row.height,

@@ -1,11 +1,12 @@
 import { JungleBusClient } from "@gorillapool/js-junglebus";
-import { BodyProp, Controller, Get, Path, Post, Query, Route } from "tsoa";
-import { NotFound } from 'http-errors';
+import { Body, BodyProp, Controller, Get, Path, Post, Query, Route } from "tsoa";
+import { BadRequest, NotFound } from 'http-errors';
 import { Inscription } from "./../models/inscription";
 import { Outpoint } from "./../models/outpoint";
 import { Txo } from "../models/txo";
 import { pool } from "../db";
 import { Tx } from '@ts-bitcoin/core'
+import { SortDirection } from "../models/listing";
 
 const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 
@@ -41,8 +42,34 @@ export class InscriptionsController extends Controller {
         return Inscription.loadMetadataByOrigin(Outpoint.fromString(origin));
     }
 
+    @Get("origin/{origin}/history")
+    public async getOriginHistory(@Path() origin: string): Promise<Inscription[]> {
+        const outpoint = Outpoint.fromString(origin)
+        return Inscription.loadInscriptions(
+            [outpoint.toBuffer()],
+            't.origin=$1',
+            't.height, t.idx',
+        );
+    }
+
+    @Post("outpoints")
+    public async getInsByOutpoints(
+        @Body() outpoints: string[]
+    ): Promise<Inscription[]> {
+        if (!outpoints.length || outpoints.length > 100) throw new BadRequest();
+        let wheres: string[] = [];
+        let params: any[] = [];
+        outpoints.forEach((o, i) => {
+            let outpoint = Outpoint.fromString(o);
+            wheres.push(`($${params.length+1}, $${params.length+2})`)
+            params.push(outpoint.txid, outpoint.vout)
+        });
+        const where = `(t.txid, t.vout) IN (${wheres.join(',')})`;
+        return Inscription.loadInscriptions(params, where);
+    }
+
     @Get("outpoint/{outpoint}")
-    public async getByOutpoint(@Path() outpoint: string): Promise<Inscription> {
+    public async getInsByOutpoint(@Path() outpoint: string): Promise<Inscription> {
         this.setHeader('Cache-Control', 'public,immutable,max-age=31536000')
         const ins = await Txo.loadInscriptionByOutpoint(Outpoint.fromString(outpoint));
         const txnData = await jb.GetTransaction(ins.txid);
@@ -72,30 +99,32 @@ export class InscriptionsController extends Controller {
     public async searchText(
         @BodyProp() query: string,
         @Query() limit: number = 100,
-        @Query() offset: number = 0
+        @Query() offset: number = 0,
+        @Query() dir: SortDirection = SortDirection.desc,
     ): Promise<Inscription[]> {
-        const rows = await pool.query(`SELECT * FROM inscriptions
-            WHERE search_text_en @@ plainto_tsquery('english', $1)
-            ORDER BY height DESC, idx DESC
-            LIMIT $2 OFFSET $3`,
-            [query, limit, offset]
-        )
-        return rows.rows.map(row => Inscription.fromRow(row));
+        return Inscription.loadInscriptions(
+            [query], 
+            `i.search_text_en @@ plainto_tsquery('english', $1)`, 
+            `i.height ${dir}, i.idx ${dir}`, 
+            limit, 
+            offset,
+        );
     }
 
     @Post("search/map")
     public async searchMap(
         @BodyProp() query: {[key: string]: any},
         @Query() limit: number = 100,
-        @Query() offset: number = 0
+        @Query() offset: number = 0,
+        @Query() dir: SortDirection = SortDirection.desc,
     ): Promise<Inscription[]> {
-        const rows = await pool.query(`SELECT * FROM inscriptions
-            WHERE map @> $1
-            ORDER BY height DESC, idx DESC
-            LIMIT $2 OFFSET $3`,
-            [JSON.stringify(query) , limit, offset]
-        )
-        return rows.rows.map(row => Inscription.fromRow(row));
+        return Inscription.loadInscriptions(
+            [JSON.stringify(query)], 
+            `i.map @> $1 AND t.spend=decode('', 'hex')`, 
+            `i.height ${dir}, i.idx ${dir}`, 
+            limit, 
+            offset,
+        );
     }
 
     @Get("sigma/{address}")

@@ -1,12 +1,16 @@
 import { JungleBusClient } from "@gorillapool/js-junglebus";
 import { Address, Hash, Tx } from '@ts-bitcoin/core';
-import { Controller, Get, Path, Query, Route } from "tsoa";
+import { BadRequest } from 'http-errors';
+import Redis from "ioredis";
+import { Body, Controller, Get, Path, Post, Query, Route } from "tsoa";
 import { Inscription } from "../models/inscription";
 import { Txo } from "../models/txo";
 import { SortDirection } from "../models/listing";
 import { Bsv20 } from "../models/bsv20";
 import { pool } from "../db";
+import { Outpoint } from "../models/outpoint";
 
+const redis = new Redis();
 const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 @Route("api/utxos")
 export class UtxosController extends Controller {
@@ -109,4 +113,37 @@ export class UtxosController extends Controller {
         return ins
     }
 
+    @Post("outpoints")
+    public async getTxosByOutpoints(
+        @Body() outpoints: string[],
+    ): Promise<Txo[]> {
+        if (!outpoints.length || outpoints.length > 100) throw new BadRequest();
+        console.log('Get Outpoints')
+        let wheres: string[] = [];
+        let params: any[] = [];
+        outpoints.forEach((o, i) => {
+            let outpoint = Outpoint.fromString(o);
+            wheres.push(`($${params.length+1}, $${params.length+2})`)
+            params.push(outpoint.txid, outpoint.vout)
+        });
+        const {rows} = await pool.query(`SELECT *
+            FROM txos 
+            WHERE (txid, vout) IN (${wheres.join(',')})`,
+            params,
+        )
+
+        return Promise.all(rows.map(async row => {
+            const txo = Txo.fromRow(row);
+            let rawtx = await redis.getBuffer(`tx:${txo.txid}`);
+            if(!rawtx) {
+                console.log('fetch:', txo.txid)
+                const txnData = await jb.GetTransaction(txo.txid);
+                rawtx = Buffer.from(txnData?.transaction || '', 'base64')
+                await redis.set(`tx:${txo.txid}`, rawtx);
+            }
+            const tx = Tx.fromBuffer(rawtx);
+            txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
+            return txo;
+        }));
+    }
 }

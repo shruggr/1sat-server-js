@@ -120,6 +120,27 @@ export class Inscription {
         return rows.map(row => Inscription.fromRow(row));
     }
 
+    static async loadInscriptions(params: any[], where: string, orderBy = '', limit?: number, offset?: number): Promise<Inscription[]> {
+        let sql = `SELECT i.num, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing, l.price, l.payout, i.sigma, t.bsv20
+            FROM txos t
+            JOIN inscriptions i ON i.origin=t.origin
+            LEFT JOIN ordinal_lock_listings l ON l.txid=t.txid AND l.vout=t.vout 
+            WHERE ${where} `;
+        if(orderBy) {
+            sql += `ORDER BY ${orderBy} `
+        }
+        if(limit) {
+            sql += `LIMIT $${params.length+1} `;
+            params.push(limit);
+        }
+        if(offset) {
+            sql += `OFFSET $${params.length+1}`;
+            params.push(limit);
+        }
+        const { rows } = await pool.query(sql, params);
+        return rows.map(r => Inscription.fromRow(r));
+    }
+
     static async loadFileByOrigin(origin: Outpoint) {
         const im = await Inscription.loadOneByOrigin(origin);
         const jbTxn = await jb.GetTransaction(im.txid);
