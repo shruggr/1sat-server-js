@@ -31,7 +31,7 @@ server.use(cors({
 }));
 server.use(express.json({ limit: '50mb' }));
 server.use((req, res, next) => {
-    console.log(req.path, req.method);
+    console.log(new Date().toISOString(), req.path, req.method);
     next();
 })
 
@@ -40,12 +40,12 @@ server.use("/api/subscribe", (req, res, next) => {
         let channels: string[] = []
         let addresses: string[] = [];
         const addressMap = new Map<string, string>();
-        if(Array.isArray(req.query['address'])) {
+        if (Array.isArray(req.query['address'])) {
             addresses = req.query['address'] as string[];
-        } else if(typeof req.query['address'] == 'string') {
+        } else if (typeof req.query['address'] == 'string') {
             addresses = [req.query['address']]
         }
-        for( let a of addresses) {
+        for (let a of addresses) {
             const lock = createHash('sha256')
                 .update(Address.fromString(a).toTxOutScript().toBuffer())
                 .digest()
@@ -54,14 +54,14 @@ server.use("/api/subscribe", (req, res, next) => {
             channels.push(lock)
             addressMap.set(lock, a)
         }
-        if(Array.isArray(req.query['lock'])) {
+        if (Array.isArray(req.query['lock'])) {
             channels.push(...req.query['lock'] as string[]);
-        } else if(typeof req.query['lock'] == 'string') {
+        } else if (typeof req.query['lock'] == 'string') {
             channels.push(req.query['lock']);
         }
-        if(Array.isArray(req.query['channel'])) {
+        if (Array.isArray(req.query['channel'])) {
             channels.push(...req.query['channel'] as string[]);
-        } else if(typeof req.query['channel'] == 'string') {
+        } else if (typeof req.query['channel'] == 'string') {
             channels.push(req.query['channel']);
         }
 
@@ -84,16 +84,16 @@ server.use("/api/subscribe", (req, res, next) => {
             channel = addressMap.has(channel) ?
                 addressMap.get(channel) as string :
                 channel;
-            
+
             let id = ''
-            if(message.length > 60) {
+            if (message.length > 60) {
                 const outpoint = Outpoint.fromString(message)
-                if(channel == 'list') {
+                if (channel == 'list') {
                     const data = await Listing.loadOneByOutpoint(outpoint);
                     message = JSON.stringify(data);
                     id = `${outpoint.txid}_${outpoint.vout}_list}`
-    
-                } else if (channel.length){
+
+                } else if (channel.length) {
                     const data = await Txo.loadInscriptionByOutpoint(outpoint)
                     message = JSON.stringify(data);
                     id = `${outpoint.txid}_${outpoint.vout}_${data.spend}}`
@@ -101,14 +101,14 @@ server.use("/api/subscribe", (req, res, next) => {
             }
             res.write(`event: ${channel}\n`)
             res.write(`data: ${message}\n`)
-            if(id) {
+            if (id) {
                 res.write(`id: ${id}\n\n`)
             } else {
                 res.write(`\n`)
             }
         });
         // setTimeout(() => res.end(), 60000)
-    } catch(e: any) {
+    } catch (e: any) {
         return next(e);
     }
 });

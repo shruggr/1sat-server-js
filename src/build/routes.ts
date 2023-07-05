@@ -150,21 +150,6 @@ const models: TsoaRoute.Models = {
         "enums": ["recent","num","price"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Listing": {
-        "dataType": "refObject",
-        "properties": {
-            "txid": {"dataType":"string","default":""},
-            "vout": {"dataType":"double","default":0},
-            "height": {"dataType":"double","default":0},
-            "idx": {"dataType":"double","default":0},
-            "price": {"dataType":"double","default":0},
-            "payout": {"dataType":"string","default":""},
-            "script": {"dataType":"string","default":""},
-            "origin": {"ref":"Outpoint"},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Txo": {
         "dataType": "refObject",
         "properties": {

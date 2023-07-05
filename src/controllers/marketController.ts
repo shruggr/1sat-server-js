@@ -1,7 +1,7 @@
 import { JungleBusClient } from "@gorillapool/js-junglebus";
 import { Tx } from '@ts-bitcoin/core';
 import { BodyProp, Controller, Deprecated, Get, Path, Post, Query, Route } from "tsoa";
-import { Listing, ListingSort, SortDirection } from "../models/listing";
+import { ListingSort, SortDirection } from "../models/listing";
 import { Outpoint } from '../models/outpoint';
 import { Inscription } from "../models/inscription";
 import { pool } from "../db";
@@ -117,16 +117,21 @@ export class MarketController extends Controller {
     }
 
     @Get("{outpoint}")
-    public async getByOutpoint(@Path() outpoint: string): Promise<Listing> {
+    public async getByOutpoint(@Path() outpoint: string): Promise<Inscription> {
         const op = Outpoint.fromString(outpoint)
+        // SELECT o.*, i.filehash, i.filesize, i.filetype, i.map, true as listing, i.sigma
+        // FROM ordinal_lock_listings o
+        // JOIN inscriptions i ON i.origin=o.origin
+
         const { rows } = await pool.query(`
-            SELECT o.*, i.filehash, i.filesize, i.filetype, i.map, true as listing, i.sigma
-            FROM ordinal_lock_listings o
-            JOIN inscriptions i ON i.origin=o.origin
-            WHERE o.txid=$1 AND o.vout=$2`,
+            SELECT l.num, l.txid, l.vout, i.filehash, i.filesize, i.filetype, i.origin, l.height, l.idx, t.lock, l.spend, i.map, true as listing, l.price, l.payout, i.sigma
+            FROM ordinal_lock_listings l
+            JOIN inscriptions i ON i.origin=l.origin
+            JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
+            WHERE l.txid=$1 AND l.vout=$2`,
             [op.txid, op.vout]
         );
-        const listing = Listing.fromRow(rows[0])
+        const listing = Inscription.fromRow(rows[0])
         // const listing = await Listing.loadOneByOutpoint(Outpoint.fromString(outpoint));
         const txnData = await jb.GetTransaction(listing.txid);
         const tx = Tx.fromBuffer(Buffer.from(txnData?.transaction || '', 'base64'));

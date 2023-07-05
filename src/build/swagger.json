@@ -314,47 +314,6 @@
 				],
 				"type": "string"
 			},
-			"Listing": {
-				"properties": {
-					"txid": {
-						"type": "string",
-						"default": ""
-					},
-					"vout": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"height": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"idx": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"price": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"payout": {
-						"type": "string",
-						"default": ""
-					},
-					"script": {
-						"type": "string",
-						"default": ""
-					},
-					"origin": {
-						"$ref": "#/components/schemas/Outpoint"
-					}
-				},
-				"type": "object",
-				"additionalProperties": false
-			},
 			"Txo": {
 				"properties": {
 					"txid": {
@@ -1867,7 +1826,7 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Listing"
+									"$ref": "#/components/schemas/Inscription"
 								}
 							}
 						}
