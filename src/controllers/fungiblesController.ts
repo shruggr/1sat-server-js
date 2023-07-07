@@ -1,9 +1,10 @@
 import { Address, Hash } from '@ts-bitcoin/core';
 import { NotFound } from 'http-errors';
-import { Controller, Get, Path, Query, Route } from "tsoa";
+import { Controller, Deprecated, Get, Path, Query, Route } from "tsoa";
 import { pool } from "../db";
 import { Bsv20 } from "../models/bsv20";
 import { SortDirection } from '../models/listing';
+import { Outpoint } from '../models/outpoint';
 
 enum Status {
     Invalid = "invalid",
@@ -59,24 +60,33 @@ export class FungiblesController extends Controller {
         return rows.map(row => Bsv20.fromRow(row));
     }
 
-    @Get("outpoint/{txid}/{vout}")
+    @Get("outpoint/{outpoint}")
     public async getByOutpoint(
-        @Path() txid: string,
-        @Path() vout: number
+        @Path() outpoint: string,
     ): Promise<Bsv20> {
-        this.setHeader('Cache-Control', 'public,immutable,max-age=31536000')
+        const op = Outpoint.fromString(outpoint)
         const { rows } = await pool.query(`SELECT * FROM bsv20_txos 
-                WHERE txid=$1 AND vout=$2`,
+            WHERE txid=$1 AND vout=$2`,
             [
-                Buffer.from(txid, 'hex'), 
-                vout,
+                op.txid, 
+                op.vout,
             ]
         )
-
+        
         if (rows.length === 0) {
             throw new NotFound()
         }
+        this.setHeader('Cache-Control', 'public,immutable,max-age=31536000')
         return Bsv20.fromRow(rows[0]);
+    }
+
+    @Deprecated()
+    @Get("outpoint/{txid}/{vout}")
+    public async getByTxidVout(
+        @Path() txid: string,
+        @Path() vout: number
+    ): Promise<Bsv20> {
+        return this.getByOutpoint(`${txid}_${vout}`)
     }
 
     @Get("id/{id}")

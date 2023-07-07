@@ -24,7 +24,6 @@ async function main() {
     });
 }
 
-
 server.set('trust proxy', true);
 server.use(cors({
     origin: true,

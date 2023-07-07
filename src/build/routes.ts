@@ -389,11 +389,36 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/bsv20/outpoint/:txid/:vout',
+        app.get('/api/bsv20/outpoint/:outpoint',
             ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
             ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getByOutpoint)),
 
             function FungiblesController_getByOutpoint(request: any, response: any, next: any) {
+            const args = {
+                    outpoint: {"in":"path","name":"outpoint","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new FungiblesController();
+
+
+              const promise = controller.getByOutpoint.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/bsv20/outpoint/:txid/:vout',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getByTxidVout)),
+
+            function FungiblesController_getByTxidVout(request: any, response: any, next: any) {
             const args = {
                     txid: {"in":"path","name":"txid","required":true,"dataType":"string"},
                     vout: {"in":"path","name":"vout","required":true,"dataType":"double"},
@@ -408,7 +433,7 @@ export function RegisterRoutes(app: Router) {
                 const controller = new FungiblesController();
 
 
-              const promise = controller.getByOutpoint.apply(controller, validatedArgs as any);
+              const promise = controller.getByTxidVout.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
