@@ -1067,6 +1067,35 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/market/bsv20/:tick',
+            ...(fetchMiddlewares<RequestHandler>(MarketController)),
+            ...(fetchMiddlewares<RequestHandler>(MarketController.prototype.getOpenBsv20ByTicker)),
+
+            function MarketController_getOpenBsv20ByTicker(request: any, response: any, next: any) {
+            const args = {
+                    tick: {"in":"path","name":"tick","required":true,"dataType":"string"},
+                    sort: {"default":"recent","in":"query","name":"sort","ref":"ListingSort"},
+                    dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new MarketController();
+
+
+              const promise = controller.getOpenBsv20ByTicker.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/market/recent',
             ...(fetchMiddlewares<RequestHandler>(MarketController)),
             ...(fetchMiddlewares<RequestHandler>(MarketController.prototype.getRecentListings)),

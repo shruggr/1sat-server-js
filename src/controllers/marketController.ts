@@ -106,6 +106,37 @@ export class MarketController extends Controller {
         return rows.map((r: any) => Bsv20.fromRow(r));
     }
 
+    @Get("bsv20/{tick}")
+    public async getOpenBsv20ByTicker(
+        @Path() tick: string,
+        @Query() sort: ListingSort = ListingSort.recent,
+        @Query() dir: SortDirection = SortDirection.desc,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
+    ): Promise<Bsv20[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        let orderBy = 'ORDER BY ';
+        switch(sort) {
+            case ListingSort.num:
+                orderBy += `l.num ${dir}`;
+                break;
+            case ListingSort.price:
+                orderBy += `l.price ${dir}`;
+                break;
+            default:
+                orderBy += `l.height ${dir}, l.idx ${dir}`;
+        }
+        const { rows } = await pool.query(`
+            SELECT b.*, l.price, l.payout
+            FROM ordinal_lock_listings l
+            JOIN bsv20_txos b ON b.txid=l.txid AND b.vout=l.vout AND b.valid=true
+            WHERE b.spend = decode('', 'hex') AND b.tick=$1
+            ${orderBy}
+            LIMIT $2 OFFSET $3`,
+            [tick.toUpperCase(), limit, offset],
+        );
+        return rows.map((r: any) => Bsv20.fromRow(r));
+    }
     @Deprecated()
     @Get("recent")
     public async getRecentListings(
