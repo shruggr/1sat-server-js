@@ -306,6 +306,14 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"InscriptionSort": {
+				"enum": [
+					"",
+					"height",
+					"listing"
+				],
+				"type": "string"
+			},
 			"ListingSort": {
 				"enum": [
 					"recent",
@@ -1516,6 +1524,14 @@
 					},
 					{
 						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/InscriptionSort"
+						}
+					},
+					{
+						"in": "query",
 						"name": "dir",
 						"required": false,
 						"schema": {
@@ -1591,6 +1607,37 @@
 							"default": 0,
 							"format": "double",
 							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/inscriptions/geohash/{geohashes}": {
+			"get": {
+				"operationId": "SearchGeohashes",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Inscription"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "geohashes",
+						"required": true,
+						"schema": {
+							"type": "string"
 						}
 					}
 				]
@@ -1756,6 +1803,15 @@
 				"parameters": [
 					{
 						"in": "query",
+						"name": "tick",
+						"required": false,
+						"schema": {
+							"default": "",
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
 						"name": "sort",
 						"required": false,
 						"schema": {
@@ -1775,7 +1831,7 @@
 						"name": "limit",
 						"required": false,
 						"schema": {
-							"default": 100,
+							"default": 1000,
 							"format": "double",
 							"type": "number"
 						}

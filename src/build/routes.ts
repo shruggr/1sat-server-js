@@ -145,6 +145,11 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "InscriptionSort": {
+        "dataType": "refEnum",
+        "enums": ["","height","listing"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ListingSort": {
         "dataType": "refEnum",
         "enums": ["recent","num","price"],
@@ -936,6 +941,7 @@ export function RegisterRoutes(app: Router) {
                     query: {"in":"body-prop","name":"query","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    sort: {"default":"","in":"query","name":"sort","ref":"InscriptionSort"},
                     dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
             };
 
@@ -976,6 +982,31 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.searchSigma.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/inscriptions/geohash/:geohashes',
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.searchGeohashes)),
+
+            function InscriptionsController_searchGeohashes(request: any, response: any, next: any) {
+            const args = {
+                    geohashes: {"in":"path","name":"geohashes","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new InscriptionsController();
+
+
+              const promise = controller.searchGeohashes.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
@@ -1045,9 +1076,10 @@ export function RegisterRoutes(app: Router) {
 
             function MarketController_getOpenBsv20(request: any, response: any, next: any) {
             const args = {
+                    tick: {"default":"","in":"query","name":"tick","dataType":"string"},
                     sort: {"default":"recent","in":"query","name":"sort","ref":"ListingSort"},
                     dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
-                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    limit: {"default":1000,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
             };
 

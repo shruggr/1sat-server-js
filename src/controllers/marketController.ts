@@ -77,9 +77,10 @@ export class MarketController extends Controller {
 
     @Get("bsv20")
     public async getOpenBsv20(
+        @Query() tick: string = '',
         @Query() sort: ListingSort = ListingSort.recent,
         @Query() dir: SortDirection = SortDirection.desc,
-        @Query() limit: number = 100,
+        @Query() limit: number = 1000,
         @Query() offset: number = 0
     ): Promise<Bsv20[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
@@ -94,14 +95,18 @@ export class MarketController extends Controller {
             default:
                 orderBy += `l.height ${dir}, l.idx ${dir}`;
         }
+        const params: any[] = [limit, offset]
+        if (tick) {
+            params.push(tick.toUpperCase())
+        }
         const { rows } = await pool.query(`
             SELECT b.*, l.price, l.payout
             FROM ordinal_lock_listings l
             JOIN bsv20_txos b ON b.txid=l.txid AND b.vout=l.vout AND b.valid=true
-            WHERE b.spend = decode('', 'hex')
+            WHERE b.spend = decode('', 'hex') ${tick ? `AND b.tick=$3` : ''}
             ${orderBy}
             LIMIT $1 OFFSET $2`,
-            [limit, offset],
+            params,
         );
         return rows.map((r: any) => Bsv20.fromRow(r));
     }
@@ -114,29 +119,9 @@ export class MarketController extends Controller {
         @Query() limit: number = 100,
         @Query() offset: number = 0
     ): Promise<Bsv20[]> {
-        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        let orderBy = 'ORDER BY ';
-        switch(sort) {
-            case ListingSort.num:
-                orderBy += `l.num ${dir}`;
-                break;
-            case ListingSort.price:
-                orderBy += `l.price ${dir}`;
-                break;
-            default:
-                orderBy += `l.height ${dir}, l.idx ${dir}`;
-        }
-        const { rows } = await pool.query(`
-            SELECT b.*, l.price, l.payout
-            FROM ordinal_lock_listings l
-            JOIN bsv20_txos b ON b.txid=l.txid AND b.vout=l.vout AND b.valid=true
-            WHERE b.spend = decode('', 'hex') AND b.tick=$1
-            ${orderBy}
-            LIMIT $2 OFFSET $3`,
-            [tick.toUpperCase(), limit, offset],
-        );
-        return rows.map((r: any) => Bsv20.fromRow(r));
+        return this.getOpenBsv20(tick, sort, dir, limit, offset);
     }
+
     @Deprecated()
     @Get("recent")
     public async getRecentListings(

@@ -1,7 +1,7 @@
 import { JungleBusClient } from "@gorillapool/js-junglebus";
 import { Body, BodyProp, Controller, Get, Path, Post, Query, Route } from "tsoa";
 import { BadRequest, NotFound } from 'http-errors';
-import { Inscription } from "./../models/inscription";
+import { Inscription, InscriptionSort } from "./../models/inscription";
 import { Outpoint } from "./../models/outpoint";
 import { Txo } from "../models/txo";
 import { pool } from "../db";
@@ -116,12 +116,21 @@ export class InscriptionsController extends Controller {
         @BodyProp() query: {[key: string]: any},
         @Query() limit: number = 100,
         @Query() offset: number = 0,
+        @Query() sort: InscriptionSort = InscriptionSort.none,
         @Query() dir: SortDirection = SortDirection.desc,
     ): Promise<Inscription[]> {
+        let orderBy = '';
+        switch(sort) {
+            case InscriptionSort.listing:
+                orderBy += `t.listing ${dir}, i.height ASC`;
+                break;
+            default:
+                orderBy += `i.height ${dir}, i.idx ${dir}`;
+        }
         return Inscription.loadInscriptions(
             [JSON.stringify(query)], 
             `i.map @> $1 AND t.spend=decode('', 'hex')`, 
-            `i.height ${dir}, i.idx ${dir}`, 
+            orderBy, 
             limit, 
             offset,
         );
@@ -141,6 +150,38 @@ export class InscriptionsController extends Controller {
                 address,
                 valid: true
             }]) , limit, offset]
+        )
+        return rows.rows.map(row => Inscription.fromRow(row));
+    }
+
+    // @Get("geohash/{geohash}")
+    // public async searchGeohash(
+    //     @Path() geohash: string,
+    // ): Promise<Inscription[]> {
+    //     const rows = await pool.query(`SELECT * FROM inscriptions
+    //         WHERE geohash LIKE $1`,
+    //         [`${geohash}%`]
+    //     )
+    //     return rows.rows.map(row => Inscription.fromRow(row));
+    // }
+
+    @Get("geohash/{geohashes}")
+    public async searchGeohashes(
+        @Path() geohashes: string,
+    ): Promise<Inscription[]> {
+        const params: string[] = []
+        const hashes: string[] = geohashes.split(',')
+        if(!hashes.length) {
+            throw new BadRequest();
+        }
+        const where: string[] = []
+        hashes.forEach(h => {
+            params.push(`${h}%`)
+            where.push(`geohash LIKE $${params.length}`)
+        })
+        const rows = await pool.query(`SELECT * FROM inscriptions
+            WHERE ${where.join(' OR ')}`,
+            params
         )
         return rows.rows.map(row => Inscription.fromRow(row));
     }

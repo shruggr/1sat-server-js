@@ -7,6 +7,12 @@ import { Outpoint } from "./outpoint";
 
 const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 
+export enum InscriptionSort {
+    none = '',
+    height = 'height',
+    listing = 'listing'
+}
+
 export interface Sigma {
     algorithm: string;
     address: string;
