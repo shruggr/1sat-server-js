@@ -1,25 +1,41 @@
 import { NotFound } from 'http-errors';
-import { Controller, Get, Path, Query, Route } from "tsoa";
+import { Controller, Deprecated, Get, Path, Query, Route } from "tsoa";
 import { Inscription, Sigma } from "../models/inscription";
 import { pool } from "../db";
 import { Outpoint } from '../models/outpoint';
 
 @Route("api/collections")
 export class CollectionsController extends Controller {
-    @Get("recent")
-    public async getRecentListings(
+    @Get("")
+    public async getCollections(
+        @Query() search: string = '',
         @Query() limit: number = 100,
         @Query() offset: number = 0
     ): Promise<Inscription[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        let where = `WHERE map @> '{"subType": "collection"}'::jsonb `;
+        const params: any[] = [limit, offset];
+        if(search != "") {
+            where += "AND search_text_en @@ plainto_tsquery('english', $3)";
+            params.push(search);
+        }
         const {rows} = await pool.query(`SELECT * FROM inscriptions 
-            WHERE map @> '{"subType": "collection"}'::jsonb
+            ${where}
             ORDER BY height DESC, idx DESC
             LIMIT $1 OFFSET $2`,
-            [limit, offset]
+            params,
         )
 
         return rows.map(row => Inscription.fromRow(row));
+    }
+
+    @Deprecated()
+    @Get("recent")
+    public async getRecentCollections(
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
+    ): Promise<Inscription[]> {
+        return this.getCollections('', limit, offset)
     }
     
     @Get("sigma/{address}")
@@ -73,21 +89,26 @@ export class CollectionsController extends Controller {
         @Query() offset: number = 0
     ): Promise<Inscription[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        const {rows} = await pool.query(`SELECT * FROM inscriptions 
-            WHERE map @> $1::jsonb
-            ORDER BY height DESC, idx DESC
-            LIMIT $2 OFFSET $3`,
-            [
-                JSON.stringify({
-                    type: 'ord',
-                    subType: 'collectionItem',
-                    subTypeData: { collectionId }
-                }),
-                limit,
-                offset
-            ]
-        )
 
-        return rows.map(row => Inscription.fromRow(row));
+        const params: any[] = [JSON.stringify({
+            type: 'ord',
+            subType: 'collectionItem',
+            subTypeData: { collectionId }
+        })];
+        const where = `i.map @> $1::jsonb AND t.spend='\\x'`
+        const orderBy = 'height DESC, idx DESC'
+        return Inscription.loadInscriptions(params, where, orderBy, limit, offset)
+        // const {rows} = await pool.query(`SELECT * FROM inscriptions 
+        //     WHERE map @> $1::jsonb
+        //     ORDER BY height DESC, idx DESC
+        //     LIMIT $2 OFFSET $3`,
+        //     [
+        //         ,
+        //         limit,
+        //         offset =
+        //     ]
+        // )
+
+        // return rows.map(row => Inscription.fromRow(row));
     }
 }

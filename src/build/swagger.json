@@ -385,9 +385,9 @@
 	},
 	"openapi": "3.0.0",
 	"paths": {
-		"/api/collections/recent": {
+		"/api/collections": {
 			"get": {
-				"operationId": "GetRecentListings",
+				"operationId": "GetCollections",
 				"responses": {
 					"200": {
 						"description": "Ok",
@@ -403,6 +403,59 @@
 						}
 					}
 				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "search",
+						"required": false,
+						"schema": {
+							"default": "",
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/collections/recent": {
+			"get": {
+				"operationId": "GetRecentCollections",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Inscription"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"deprecated": true,
 				"security": [],
 				"parameters": [
 					{
@@ -1663,6 +1716,15 @@
 				},
 				"security": [],
 				"parameters": [
+					{
+						"in": "query",
+						"name": "search",
+						"required": false,
+						"schema": {
+							"default": "",
+							"type": "string"
+						}
+					},
 					{
 						"in": "query",
 						"name": "sort",

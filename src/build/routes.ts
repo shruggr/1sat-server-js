@@ -183,11 +183,38 @@ export function RegisterRoutes(app: Router) {
     //  NOTE: If you do not see routes for all of your controllers in this file, then you might not have informed tsoa of where to look
     //      Please look into the "controllerPathGlobs" config option described in the readme: https://github.com/lukeautry/tsoa
     // ###########################################################################################################
+        app.get('/api/collections',
+            ...(fetchMiddlewares<RequestHandler>(CollectionsController)),
+            ...(fetchMiddlewares<RequestHandler>(CollectionsController.prototype.getCollections)),
+
+            function CollectionsController_getCollections(request: any, response: any, next: any) {
+            const args = {
+                    search: {"default":"","in":"query","name":"search","dataType":"string"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new CollectionsController();
+
+
+              const promise = controller.getCollections.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/collections/recent',
             ...(fetchMiddlewares<RequestHandler>(CollectionsController)),
-            ...(fetchMiddlewares<RequestHandler>(CollectionsController.prototype.getRecentListings)),
+            ...(fetchMiddlewares<RequestHandler>(CollectionsController.prototype.getRecentCollections)),
 
-            function CollectionsController_getRecentListings(request: any, response: any, next: any) {
+            function CollectionsController_getRecentCollections(request: any, response: any, next: any) {
             const args = {
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
@@ -202,7 +229,7 @@ export function RegisterRoutes(app: Router) {
                 const controller = new CollectionsController();
 
 
-              const promise = controller.getRecentListings.apply(controller, validatedArgs as any);
+              const promise = controller.getRecentCollections.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
@@ -1019,6 +1046,7 @@ export function RegisterRoutes(app: Router) {
 
             function MarketController_getOpenListings(request: any, response: any, next: any) {
             const args = {
+                    search: {"default":"","in":"query","name":"search","dataType":"string"},
                     sort: {"default":"recent","in":"query","name":"sort","ref":"ListingSort"},
                     dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},

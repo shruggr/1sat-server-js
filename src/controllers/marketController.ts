@@ -13,6 +13,7 @@ const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 export class MarketController extends Controller {
     @Get("")
     public async getOpenListings(
+        @Query() search: string = '',
         @Query() sort: ListingSort = ListingSort.recent,
         @Query() dir: SortDirection = SortDirection.desc,
         @Query() limit: number = 100,
@@ -30,15 +31,22 @@ export class MarketController extends Controller {
             default:
                 orderBy += `l.height ${dir}, l.idx ${dir}`;
         }
+        let where = "WHERE l.spend = '\\x' and l.bsv20 = false ";
+        const params: any[] = [limit, offset];
+        if(search != "") {
+            where += "AND i.search_text_en @@ plainto_tsquery('english', $3)";
+            params.push(search);
+        }
+
         const { rows } = await pool.query(`
             SELECT l.num, l.txid, l.vout, i.filehash, i.filesize, i.filetype, i.origin, l.height, l.idx, t.lock, l.spend, i.map, true as listing, l.price, l.payout, i.sigma
             FROM ordinal_lock_listings l
             JOIN inscriptions i ON i.origin=l.origin
             JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
-            WHERE l.spend = decode('', 'hex') and l.bsv20 = false
+            ${where}
             ${orderBy}
             LIMIT $1 OFFSET $2`,
-            [limit, offset],
+            params,
         );
         return rows.map((r: any) => Inscription.fromRow(r));
     }
@@ -129,7 +137,7 @@ export class MarketController extends Controller {
         @Query() offset: number = 0,
         @Query() bsv20: boolean = true,
     ): Promise<Inscription[]> {
-        return this.getOpenListings(ListingSort.recent, SortDirection.desc, limit, offset);
+        return this.getOpenListings('', ListingSort.recent, SortDirection.desc, limit, offset);
     }
 
     @Get("{outpoint}")
