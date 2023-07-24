@@ -1399,6 +1399,7 @@ export function RegisterRoutes(app: Router) {
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
                     excludeBsv20: {"default":false,"in":"query","name":"excludeBsv20","dataType":"boolean"},
+                    type: {"default":"","in":"query","name":"type","dataType":"string"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

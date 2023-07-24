@@ -57,9 +57,24 @@ export class UtxosController extends Controller {
         @Query() offset: number = 0,
         @Query() dir: SortDirection = SortDirection.desc,
         @Query() excludeBsv20: boolean = false,
+        @Query() type: string = "",
     ): Promise<Inscription[]> {
+        const lock = Hash.sha256(
+            Address.fromString(address).toTxOutScript().toBuffer()
+        ).reverse();
+
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        return Txo.loadInscriptionsByAddress(address, limit, offset, dir, excludeBsv20);
+        let where = "t.spend = '\\x' AND t.lock=$1 "
+        const params: any[] = [lock]
+        if(type != '') {
+            where += 'AND i.filetype like $2 '
+            params.push(`${type}%`)
+        }
+        if(excludeBsv20) {
+            where += 'AND t.bsv20 = false '
+        }
+        const orderBy = `t.height ${dir}, t.idx ${dir}`
+        return Inscription.loadInscriptions(params, where, orderBy, limit, offset)
     }
 
     @Get("address/{address}/tick/{tick}")

@@ -2377,6 +2377,15 @@
 							"default": false,
 							"type": "boolean"
 						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"default": "",
+							"type": "string"
+						}
 					}
 				]
 			}

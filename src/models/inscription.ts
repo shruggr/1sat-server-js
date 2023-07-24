@@ -143,6 +143,7 @@ export class Inscription {
             sql += `OFFSET $${params.length+1}`;
             params.push(limit);
         }
+        console.log("Lookup Inscriptions:", sql, params)
         const { rows } = await pool.query(sql, params);
         return rows.map(r => Inscription.fromRow(r));
     }
