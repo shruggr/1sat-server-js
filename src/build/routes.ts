@@ -77,6 +77,16 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "InscriptionSort": {
+        "dataType": "refEnum",
+        "enums": ["","height","listing"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SortDirection": {
+        "dataType": "refEnum",
+        "enums": ["asc","desc","ASC","DESC"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Bsv20": {
         "dataType": "refObject",
         "properties": {
@@ -121,11 +131,6 @@ const models: TsoaRoute.Models = {
         "enums": ["pct_minted","available","tick","max","height"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "SortDirection": {
-        "dataType": "refEnum",
-        "enums": ["asc","desc","ASC","DESC"],
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "BalanceItem": {
         "dataType": "refObject",
         "properties": {
@@ -143,11 +148,6 @@ const models: TsoaRoute.Models = {
             "tick": {"dataType":"string","default":""},
         },
         "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "InscriptionSort": {
-        "dataType": "refEnum",
-        "enums": ["","height","listing"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ListingSort": {
@@ -297,6 +297,8 @@ export function RegisterRoutes(app: Router) {
                     collectionId: {"in":"path","name":"collectionId","required":true,"dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    sort: {"default":"height","in":"query","name":"sort","ref":"InscriptionSort"},
+                    dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

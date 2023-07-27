@@ -122,7 +122,7 @@ export class InscriptionsController extends Controller {
         let orderBy = '';
         switch(sort) {
             case InscriptionSort.listing:
-                orderBy += `t.listing ${dir}, i.height ASC`;
+                orderBy += `t.listing ${dir}, i.height ASC, i.idx ASC`;
                 break;
             default:
                 orderBy += `i.height ${dir}, i.idx ${dir}`;

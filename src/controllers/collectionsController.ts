@@ -1,8 +1,9 @@
 import { NotFound } from 'http-errors';
 import { Controller, Deprecated, Get, Path, Query, Route } from "tsoa";
-import { Inscription, Sigma } from "../models/inscription";
+import { Inscription, InscriptionSort, Sigma } from "../models/inscription";
 import { pool } from "../db";
 import { Outpoint } from '../models/outpoint';
+import { SortDirection } from '../models/listing';
 
 @Route("api/collections")
 export class CollectionsController extends Controller {
@@ -86,29 +87,26 @@ export class CollectionsController extends Controller {
     public async getCollectionItems(
         @Path() collectionId: string,
         @Query() limit: number = 100,
-        @Query() offset: number = 0
+        @Query() offset: number = 0,
+        @Query() sort: InscriptionSort = InscriptionSort.height,
+        @Query() dir: SortDirection = SortDirection.desc,
     ): Promise<Inscription[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-
+        let orderBy = '';
+        switch(sort) {
+            case InscriptionSort.listing:
+                orderBy += `t.listing ${dir}, i.height ASC, i.idx ASC`;
+                break;
+            default:
+                orderBy += `i.height ${dir}, i.idx ${dir}`;
+        }
         const params: any[] = [JSON.stringify({
             type: 'ord',
             subType: 'collectionItem',
             subTypeData: { collectionId }
         })];
         const where = `i.map @> $1::jsonb AND t.spend='\\x'`
-        const orderBy = 'height DESC, idx DESC'
+        // const orderBy = 'height DESC, idx DESC'
         return Inscription.loadInscriptions(params, where, orderBy, limit, offset)
-        // const {rows} = await pool.query(`SELECT * FROM inscriptions 
-        //     WHERE map @> $1::jsonb
-        //     ORDER BY height DESC, idx DESC
-        //     LIMIT $2 OFFSET $3`,
-        //     [
-        //         ,
-        //         limit,
-        //         offset =
-        //     ]
-        // )
-
-        // return rows.map(row => Inscription.fromRow(row));
     }
 }

@@ -141,9 +141,9 @@ export class Inscription {
         }
         if(offset) {
             sql += `OFFSET $${params.length+1}`;
-            params.push(limit);
+            params.push(offset);
         }
-        console.log("Lookup Inscriptions:", sql, params)
+        // console.log("Lookup Inscriptions:", sql, params)
         const { rows } = await pool.query(sql, params);
         return rows.map(r => Inscription.fromRow(r));
     }

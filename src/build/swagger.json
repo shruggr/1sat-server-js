@@ -136,6 +136,23 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"InscriptionSort": {
+				"enum": [
+					"",
+					"height",
+					"listing"
+				],
+				"type": "string"
+			},
+			"SortDirection": {
+				"enum": [
+					"asc",
+					"desc",
+					"ASC",
+					"DESC"
+				],
+				"type": "string"
+			},
 			"Bsv20": {
 				"properties": {
 					"id": {
@@ -265,15 +282,6 @@
 				],
 				"type": "string"
 			},
-			"SortDirection": {
-				"enum": [
-					"asc",
-					"desc",
-					"ASC",
-					"DESC"
-				],
-				"type": "string"
-			},
 			"BalanceItem": {
 				"properties": {
 					"confirmed": {
@@ -305,14 +313,6 @@
 				},
 				"type": "object",
 				"additionalProperties": false
-			},
-			"InscriptionSort": {
-				"enum": [
-					"",
-					"height",
-					"listing"
-				],
-				"type": "string"
 			},
 			"ListingSort": {
 				"enum": [
@@ -631,6 +631,22 @@
 							"default": 0,
 							"format": "double",
 							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/InscriptionSort"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
 						}
 					}
 				]

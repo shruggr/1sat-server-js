@@ -73,7 +73,7 @@ export class UtxosController extends Controller {
         if(excludeBsv20) {
             where += 'AND t.bsv20 = false '
         }
-        const orderBy = `t.height ${dir}, t.idx ${dir}`
+        const orderBy = `i.height ${dir}, i.idx ${dir}, i.vout ${dir}`
         return Inscription.loadInscriptions(params, where, orderBy, limit, offset)
     }
 
