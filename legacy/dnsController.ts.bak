@@ -1,17 +1,14 @@
 
 import {JungleBusClient} from "@gorillapool/js-junglebus";
 import * as dns from 'dns/promises'
-import * as fs from 'fs/promises';
 import { Request as ExpRequest } from "express";
 import { NotFound } from 'http-errors';
 import { Controller, Get, Path, Request, Route } from "tsoa";
 import { Inscription, InscriptionData } from "../models/inscription";
 import { Outpoint } from "../models/outpoint";
 import { Tx } from "@ts-bitcoin/core";
-import Redis from "ioredis";
 
 const jb = new JungleBusClient('https://junglebus.gorillapool.io');
-const redis = new Redis();
 
 @Route("")
 export class DnsController extends Controller {

@@ -1,13 +1,13 @@
-import { JungleBusClient } from "@gorillapool/js-junglebus";
-import { Tx } from '@ts-bitcoin/core';
-import { BodyProp, Controller, Get, Path, Post, Query, Route } from "tsoa";
-import { Listing, ListingSort, SortDirection } from "../models/listing";
-import { Outpoint } from '../models/outpoint';
-import { Inscription } from "../models/inscription";
+import { Body, Controller, Get, Post, Query, Route } from "tsoa";
 import { pool } from "../db";
-import { Bsv20 } from "../models/bsv20";
+import { Txo } from "../models/txo";
+import { SortDirection } from "../models/sort-direction";
 
-const jb = new JungleBusClient('https://junglebus.gorillapool.io');
+export enum ListingSort {
+    recent = 'recent',
+    num = 'num',
+    price = 'price',
+}
 
 @Route("api/market")
 export class MarketController extends Controller {
@@ -15,112 +15,79 @@ export class MarketController extends Controller {
     public async getOpenListings(
         @Query() sort: ListingSort = ListingSort.recent,
         @Query() dir: SortDirection = SortDirection.desc,
-        @Query() limit: number = 100,
-        @Query() offset: number = 0
-    ): Promise<Inscription[]> {
-        // this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        let orderBy = 'ORDER BY ';
-        switch(sort) {
-            case ListingSort.num:
-                orderBy += `l.num ${dir}`;
-                break;
-            case ListingSort.price:
-                orderBy += `l.price ${dir}`;
-                break;
-            default:
-                orderBy += `l.height ${dir}, l.idx ${dir}`;
-        }
-        const { rows } = await pool.query(`
-            SELECT l.num, l.txid, l.vout, i.filehash, i.filesize, i.filetype, i.origin, l.height, l.idx, t.lock, l.spend, i.map, true as listing, l.price, l.payout, i.sigma
-            FROM ordinal_lock_listings l
-            JOIN inscriptions i ON i.origin=l.origin
-            JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
-            WHERE l.spend = decode('', 'hex') and l.bsv20 = false
-            ${orderBy}
-            LIMIT $1 OFFSET $2`,
-            [limit, offset],
-        );
-        return rows.map((r: any) => Inscription.fromRow(r));
-    }
-
-    @Post("search/map")
-    public async searchMap(
-        @BodyProp() query: {[key: string]: any},
-        @Query() sort: ListingSort = ListingSort.recent,
-        @Query() dir: SortDirection = SortDirection.desc,
-        @Query() limit: number = 100,
-        @Query() offset: number = 0
-    ): Promise<Inscription[]> {
-        let orderBy = 'ORDER BY ';
-        switch(sort) {
-            case ListingSort.num:
-                orderBy += `l.num ${dir}`;
-                break;
-            case ListingSort.price:
-                orderBy += `l.price ${dir}`;
-                break;
-            default:
-                orderBy += `l.height ${dir}, l.idx ${dir}`;
-        }
-        const { rows } = await pool.query(`
-            SELECT l.num, l.txid, l.vout, i.filehash, i.filesize, i.filetype, i.origin, l.height, l.idx, t.lock, l.spend, i.map, true as listing, l.price, l.payout, i.sigma
-            FROM ordinal_lock_listings l
-            JOIN inscriptions i ON i.origin=l.origin
-            JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
-            WHERE l.spend = decode('', 'hex') and l.bsv20 = false AND i.map @> $3
-            ${orderBy}
-            LIMIT $1 OFFSET $2`,
-            [limit, offset, JSON.stringify(query)],
-        );
-        return rows.map((r: any) => Inscription.fromRow(r));
-    }
-
-    @Get("bsv20")
-    public async getOpenBsv20(
-        @Query() sort: ListingSort = ListingSort.recent,
-        @Query() dir: SortDirection = SortDirection.desc,
-        @Query() limit: number = 100,
-        @Query() offset: number = 0
-    ): Promise<Bsv20[]> {
-        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        let orderBy = 'ORDER BY ';
-        switch(sort) {
-            case ListingSort.num:
-                orderBy += `l.num ${dir}`;
-                break;
-            case ListingSort.price:
-                orderBy += `l.price ${dir}`;
-                break;
-            default:
-                orderBy += `l.height ${dir}, l.idx ${dir}`;
-        }
-        const { rows } = await pool.query(`
-            SELECT b.*, l.price, l.payout
-            FROM ordinal_lock_listings l
-            JOIN bsv20_txos b ON b.txid=l.txid AND b.vout=l.vout AND b.valid=true
-            WHERE b.spend = decode('', 'hex')
-            ${orderBy}
-            LIMIT $1 OFFSET $2`,
-            [limit, offset],
-        );
-        return rows.map((r: any) => Bsv20.fromRow(r));
-    }
-
-    @Get("recent")
-    public async getRecentListings(
+        @Query() mapQ?: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
-        @Query() bsv20: boolean = true,
-    ): Promise<Inscription[]> {
-        return this.getOpenListings(ListingSort.recent, SortDirection.desc, limit, offset);
+        @Query() type?: string,
+        @Query() bsv20 = false,
+        @Query() text = ''
+    ): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        let map: {[key: string]: any} | undefined;
+        if (mapQ) {
+            map = JSON.parse(Buffer.from(mapQ, 'base64').toString('utf8'));
+        }
+        return this.searchListings(bsv20, sort, dir, type, map, text, limit, offset);
     }
 
-    @Get("{outpoint}")
-    public async getByOutpoint(@Path() outpoint: string): Promise<Listing> {
-        const listing = await Listing.loadOneByOutpoint(Outpoint.fromString(outpoint));
-        const txnData = await jb.GetTransaction(listing.txid);
-        const tx = Tx.fromBuffer(Buffer.from(txnData?.transaction || '', 'base64'));
-        listing.script = tx.txOuts[listing.vout].script.toBuffer().toString('base64');
-        return listing
+    @Post("")
+    public async searchMap(
+        @Body() map?: {[key: string]: any},
+        @Query() sort: ListingSort = ListingSort.recent,
+        @Query() dir: SortDirection = SortDirection.desc,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+        @Query() type?: string,
+        @Query() bsv20 = false,
+        @Query() text = ''
+    ): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        return this.searchListings(bsv20, sort, dir, type, map, text, limit, offset);
     }
+
+    public async searchListings(bsv20: boolean, sort: ListingSort, dir: SortDirection, type?: string, map?: {[key:string]:any}, text = '', limit: number = 100, offset: number = 0): Promise<Txo[]> {
+        const params: any[] = [bsv20];
+        let sql = [`SELECT t.*, o.insc, o.map, o.num
+            FROM listings l
+            JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
+            JOIN origins o ON o.origin = t.origin
+            WHERE l.spend = '\\x' and l.bsv20 = $1`];
+
+        if(type) {
+            params.push(`${type}%`);
+            sql.push(`AND l.filetype like $${params.length}`)
+        }
+
+        if(map) {
+            params.push(map);
+            sql.push(`AND l.map @> $${params.length}`)
+        }
+
+        if(text) {
+            params.push(text);
+            sql.push(`AND l.search_text_en @@ plainto_tsquery('english', $${params.length})`)
+        }
+
+        switch(sort) {
+            case ListingSort.num:
+                sql.push(`ORDER BY l.num ${dir}`);
+                break;
+            case ListingSort.price:
+                sql.push(`ORDER BY l.price ${dir}`);
+                break;
+            default:
+                sql.push(`ORDER BY l.height ${dir}, l.idx ${dir}`);
+        }
+
+        params.push(limit);
+        sql.push(`LIMIT $${params.length}`)
+        params.push(offset);
+        sql.push(`OFFSET $${params.length}`)
+        
+        console.log(sql, params)
+        const { rows } = await pool.query(sql.join(' '), params);
+        return rows.map((row: any) => Txo.fromRow(row));
+    }
+
+
 }

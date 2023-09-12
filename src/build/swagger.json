@@ -6,273 +6,6 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
-			"Outpoint": {
-				"type": "string"
-			},
-			"File": {
-				"properties": {
-					"hash": {
-						"type": "string",
-						"default": ""
-					},
-					"size": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"type": {
-						"type": "string",
-						"default": ""
-					}
-				},
-				"type": "object",
-				"additionalProperties": false
-			},
-			"Sigma": {
-				"properties": {
-					"algorithm": {
-						"type": "string"
-					},
-					"address": {
-						"type": "string"
-					},
-					"signature": {
-						"type": "string"
-					},
-					"vin": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"required": [
-					"algorithm",
-					"address",
-					"signature",
-					"vin"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"Inscription": {
-				"properties": {
-					"id": {
-						"type": "number",
-						"format": "double"
-					},
-					"num": {
-						"type": "number",
-						"format": "double"
-					},
-					"txid": {
-						"type": "string",
-						"default": ""
-					},
-					"vout": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"outpoint": {
-						"$ref": "#/components/schemas/Outpoint"
-					},
-					"file": {
-						"$ref": "#/components/schemas/File"
-					},
-					"origin": {
-						"$ref": "#/components/schemas/Outpoint"
-					},
-					"height": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"idx": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"lock": {
-						"type": "string",
-						"default": ""
-					},
-					"spend": {
-						"type": "string",
-						"default": ""
-					},
-					"MAP": {
-						"properties": {},
-						"additionalProperties": {
-							"type": "string"
-						},
-						"type": "object"
-					},
-					"B": {
-						"$ref": "#/components/schemas/File"
-					},
-					"SIGMA": {
-						"items": {
-							"$ref": "#/components/schemas/Sigma"
-						},
-						"type": "array",
-						"default": []
-					},
-					"listing": {
-						"type": "boolean",
-						"default": false
-					},
-					"price": {
-						"type": "number",
-						"format": "double"
-					},
-					"payout": {
-						"type": "string"
-					},
-					"script": {
-						"type": "string"
-					},
-					"bsv20": {
-						"type": "boolean",
-						"default": false
-					}
-				},
-				"type": "object",
-				"additionalProperties": false
-			},
-			"Bsv20": {
-				"properties": {
-					"id": {
-						"$ref": "#/components/schemas/Outpoint"
-					},
-					"txid": {
-						"type": "string"
-					},
-					"vout": {
-						"type": "number",
-						"format": "double"
-					},
-					"height": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"idx": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"tick": {
-						"type": "string",
-						"default": ""
-					},
-					"op": {
-						"type": "string"
-					},
-					"max": {
-						"type": "number",
-						"format": "double"
-					},
-					"lim": {
-						"type": "number",
-						"format": "double"
-					},
-					"dec": {
-						"type": "number",
-						"format": "double"
-					},
-					"supply": {
-						"type": "number",
-						"format": "double"
-					},
-					"amt": {
-						"type": "number",
-						"format": "double"
-					},
-					"lock": {
-						"type": "string",
-						"default": ""
-					},
-					"spend": {
-						"type": "string",
-						"default": ""
-					},
-					"MAP": {
-						"properties": {},
-						"additionalProperties": {},
-						"type": "object"
-					},
-					"B": {
-						"$ref": "#/components/schemas/File"
-					},
-					"valid": {
-						"type": "boolean"
-					},
-					"accounts": {
-						"type": "number",
-						"format": "double"
-					},
-					"reason": {
-						"type": "string",
-						"default": ""
-					},
-					"unconfirmed": {
-						"type": "number",
-						"format": "double"
-					},
-					"available": {
-						"type": "number",
-						"format": "double"
-					},
-					"pctMinted": {
-						"type": "number",
-						"format": "double"
-					},
-					"price": {
-						"type": "number",
-						"format": "double"
-					},
-					"payout": {
-						"type": "string"
-					},
-					"script": {
-						"type": "string"
-					},
-					"listing": {
-						"type": "boolean",
-						"default": false
-					}
-				},
-				"type": "object",
-				"additionalProperties": false
-			},
-			"Status": {
-				"enum": [
-					"invalid",
-					"valid",
-					"pending",
-					"valid_pending",
-					"all"
-				],
-				"type": "string"
-			},
-			"Bsv20Sort": {
-				"enum": [
-					"pct_minted",
-					"available",
-					"tick",
-					"max",
-					"height"
-				],
-				"type": "string"
-			},
-			"SortDirection": {
-				"enum": [
-					"asc",
-					"desc",
-					"ASC",
-					"DESC"
-				],
-				"type": "string"
-			},
 			"BalanceItem": {
 				"properties": {
 					"confirmed": {
@@ -305,50 +38,150 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"ListingSort": {
-				"enum": [
-					"recent",
-					"num",
-					"price"
-				],
+			"Outpoint": {
 				"type": "string"
 			},
-			"Listing": {
+			"File": {
 				"properties": {
-					"txid": {
+					"hash": {
 						"type": "string",
 						"default": ""
 					},
-					"vout": {
+					"size": {
 						"type": "number",
 						"format": "double",
 						"default": 0
 					},
-					"height": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"idx": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"price": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"payout": {
+					"type": {
 						"type": "string",
 						"default": ""
-					},
-					"script": {
-						"type": "string",
-						"default": ""
-					},
-					"origin": {
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Origin": {
+				"properties": {
+					"outpoint": {
 						"$ref": "#/components/schemas/Outpoint"
+					},
+					"insc": {
+						"$ref": "#/components/schemas/File"
+					},
+					"map": {
+						"properties": {},
+						"additionalProperties": {},
+						"type": "object"
+					},
+					"num": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Sigma": {
+				"properties": {
+					"algorithm": {
+						"type": "string"
+					},
+					"address": {
+						"type": "string"
+					},
+					"signature": {
+						"type": "string"
+					},
+					"vin": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"algorithm",
+					"address",
+					"signature",
+					"vin"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Bsv20Status": {
+				"enum": [
+					-1,
+					0,
+					1
+				],
+				"type": "number"
+			},
+			"TxoData": {
+				"properties": {
+					"types": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"insc": {
+						"$ref": "#/components/schemas/File"
+					},
+					"map": {
+						"properties": {},
+						"additionalProperties": {},
+						"type": "object"
+					},
+					"b": {
+						"$ref": "#/components/schemas/File"
+					},
+					"sigma": {
+						"items": {
+							"$ref": "#/components/schemas/Sigma"
+						},
+						"type": "array"
+					},
+					"listing": {
+						"properties": {
+							"payout": {
+								"type": "string"
+							},
+							"price": {
+								"type": "number",
+								"format": "double"
+							}
+						},
+						"required": [
+							"payout",
+							"price"
+						],
+						"type": "object"
+					},
+					"bsv20": {
+						"properties": {
+							"status": {
+								"$ref": "#/components/schemas/Bsv20Status"
+							},
+							"amt": {
+								"type": "string"
+							},
+							"tick": {
+								"type": "string"
+							},
+							"op": {
+								"type": "string"
+							},
+							"p": {
+								"type": "string"
+							},
+							"id": {
+								"$ref": "#/components/schemas/Outpoint"
+							}
+						},
+						"required": [
+							"amt",
+							"op",
+							"p"
+						],
+						"type": "object"
 					}
 				},
 				"type": "object",
@@ -375,20 +208,17 @@
 						"format": "double",
 						"default": 0
 					},
-					"lock": {
-						"type": "string",
-						"default": ""
+					"owner": {
+						"type": "string"
 					},
 					"script": {
-						"type": "string",
-						"default": ""
+						"type": "string"
 					},
 					"spend": {
-						"type": "string",
-						"default": ""
+						"type": "string"
 					},
 					"origin": {
-						"$ref": "#/components/schemas/Outpoint"
+						"$ref": "#/components/schemas/Origin"
 					},
 					"height": {
 						"type": "number",
@@ -400,13 +230,29 @@
 						"format": "double",
 						"default": 0
 					},
-					"listing": {
-						"type": "boolean",
-						"default": false
+					"data": {
+						"$ref": "#/components/schemas/TxoData"
 					}
 				},
 				"type": "object",
 				"additionalProperties": false
+			},
+			"SortDirection": {
+				"enum": [
+					"asc",
+					"desc",
+					"ASC",
+					"DESC"
+				],
+				"type": "string"
+			},
+			"ListingSort": {
+				"enum": [
+					"recent",
+					"num",
+					"price"
+				],
+				"type": "string"
 			}
 		},
 		"securitySchemes": {}
@@ -417,100 +263,6 @@
 	},
 	"openapi": "3.0.0",
 	"paths": {
-		"/api/collections/recent": {
-			"get": {
-				"operationId": "GetRecentListings",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Inscription"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					}
-				]
-			}
-		},
-		"/api/collections/sigma/{address}": {
-			"get": {
-				"operationId": "SearchSigmaCollections",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Inscription"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "address",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					}
-				]
-			}
-		},
 		"/api/collections/{collectionId}/stats": {
 			"get": {
 				"operationId": "GetCollection",
@@ -553,718 +305,12 @@
 				]
 			}
 		},
-		"/api/collections/{collectionId}/items": {
-			"get": {
-				"operationId": "GetCollectionItems",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Inscription"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "collectionId",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					}
-				]
-			}
-		},
-		"/": {
-			"get": {
-				"operationId": "GetDnsInscription",
-				"responses": {
-					"204": {
-						"description": "No content"
-					}
-				},
-				"security": [],
-				"parameters": []
-			}
-		},
-		"/{filename}": {
-			"get": {
-				"operationId": "GetOrdfs",
-				"responses": {
-					"204": {
-						"description": "No content"
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "filename",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/{origin}/{filename}": {
+		"/content/{outpoint}": {
 			"get": {
 				"operationId": "GetOrdfsFile",
 				"responses": {
 					"204": {
 						"description": "No content"
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "origin",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "path",
-						"name": "filename",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/files/inscriptions/{origin}": {
-			"get": {
-				"operationId": "GetInscription",
-				"responses": {
-					"204": {
-						"description": "No content"
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "origin",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/bsv20": {
-			"get": {
-				"operationId": "GetRecent",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Bsv20"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "status",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/Status"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "sort",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/Bsv20Sort"
-						}
-					},
-					{
-						"in": "query",
-						"name": "dir",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/SortDirection"
-						}
-					}
-				]
-			}
-		},
-		"/api/bsv20/outpoint/{txid}/{vout}": {
-			"get": {
-				"operationId": "GetByOutpoint",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Bsv20"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "txid",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "path",
-						"name": "vout",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					}
-				]
-			}
-		},
-		"/api/bsv20/id/{id}": {
-			"get": {
-				"operationId": "GetById",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Bsv20"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "id",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/bsv20/{ticker}": {
-			"get": {
-				"operationId": "GetByTicker",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Bsv20"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "ticker",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/bsv20/{ticker}/activity": {
-			"get": {
-				"operationId": "GetByTickerActivity",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Bsv20"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "ticker",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "fromHeight",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "fromIdx",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "status",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/Status"
-						}
-					}
-				]
-			}
-		},
-		"/api/bsv20/address/{address}": {
-			"get": {
-				"operationId": "GetByAddress",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Bsv20"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "address",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "status",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/Status"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					}
-				]
-			}
-		},
-		"/api/bsv20/lock/{lock}": {
-			"get": {
-				"operationId": "GetByLock",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Bsv20"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "lock",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "status",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/Status"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					}
-				]
-			}
-		},
-		"/api/bsv20/address/{address}/balance": {
-			"get": {
-				"operationId": "GetBalanceByAddress",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"properties": {},
-									"additionalProperties": {
-										"type": "number",
-										"format": "double"
-									},
-									"type": "object"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "address",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/bsv20/lock/{lock}/balance": {
-			"get": {
-				"operationId": "GetBalanceByLock",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"properties": {},
-									"additionalProperties": {
-										"type": "number",
-										"format": "double"
-									},
-									"type": "object"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "lock",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/bsv20/address/{address}/balance/sorted": {
-			"get": {
-				"operationId": "GetSortedBalanceByAddress",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/TokenBalance"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "address",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/bsv20/lock/{lock}/balance/sorted": {
-			"get": {
-				"operationId": "GetSortedBalanceByLock",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/TokenBalance"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "lock",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/inscriptions/origin/{origin}": {
-			"get": {
-				"operationId": "GetByOrigin",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Inscription"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "origin",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/inscriptions/origin/{origin}/latest": {
-			"get": {
-				"operationId": "GetOneByOrigin",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Inscription"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "origin",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/inscriptions/origin/{origin}/metadata": {
-			"get": {
-				"operationId": "GetMetadataByOrigin",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Inscription"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "origin",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/inscriptions/outpoint/{outpoint}": {
-			"get": {
-				"operationId": "GetByOutpoint",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Inscription"
-								}
-							}
-						}
 					}
 				},
 				"security": [],
@@ -1280,9 +326,9 @@
 				]
 			}
 		},
-		"/api/inscriptions/txid/{txid}": {
+		"/api/bsv20/{address}/balance": {
 			"get": {
-				"operationId": "GetByTxid",
+				"operationId": "GetBalanceByAddress",
 				"responses": {
 					"200": {
 						"description": "Ok",
@@ -1290,219 +336,7 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/Inscription"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "txid",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/inscriptions/count": {
-			"get": {
-				"operationId": "GetCount",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"properties": {
-										"count": {
-											"type": "number",
-											"format": "double"
-										}
-									},
-									"required": [
-										"count"
-									],
-									"type": "object"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": []
-			}
-		},
-		"/api/inscriptions/{id}": {
-			"get": {
-				"operationId": "GetOneById",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Inscription"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "id",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					}
-				]
-			}
-		},
-		"/api/inscriptions/search/text": {
-			"post": {
-				"operationId": "SearchText",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Inscription"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"properties": {
-									"query": {
-										"type": "string"
-									}
-								},
-								"required": [
-									"query"
-								],
-								"type": "object"
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/inscriptions/search/map": {
-			"post": {
-				"operationId": "SearchMap",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Inscription"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"properties": {
-									"query": {
-										"properties": {},
-										"additionalProperties": {},
-										"type": "object"
-									}
-								},
-								"required": [
-									"query"
-								],
-								"type": "object"
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/inscriptions/sigma/{address}": {
-			"get": {
-				"operationId": "SearchSigma",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Inscription"
+										"$ref": "#/components/schemas/TokenBalance"
 									},
 									"type": "array"
 								}
@@ -1519,6 +353,82 @@
 						"schema": {
 							"type": "string"
 						}
+					}
+				]
+			}
+		},
+		"/api/inscriptions/{outpoint}": {
+			"get": {
+				"operationId": "GetTxoByOutpoint",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Txo"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "outpoint",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "script",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/inscriptions/search": {
+			"get": {
+				"operationId": "GetSearch",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "q",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
 					},
 					{
 						"in": "query",
@@ -1541,6 +451,65 @@
 						}
 					}
 				]
+			},
+			"post": {
+				"operationId": "PostUnspentByAddress",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/TxoData"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/api/market": {
@@ -1553,7 +522,7 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/Inscription"
+										"$ref": "#/components/schemas/Txo"
 									},
 									"type": "array"
 								}
@@ -1581,61 +550,10 @@
 					},
 					{
 						"in": "query",
-						"name": "limit",
+						"name": "mapQ",
 						"required": false,
 						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					}
-				]
-			}
-		},
-		"/api/market/search/map": {
-			"post": {
-				"operationId": "SearchMap",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Inscription"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "sort",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/ListingSort"
-						}
-					},
-					{
-						"in": "query",
-						"name": "dir",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/SortDirection"
+							"type": "string"
 						}
 					},
 					{
@@ -1657,127 +575,13 @@
 							"format": "double",
 							"type": "number"
 						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"properties": {
-									"query": {
-										"properties": {},
-										"additionalProperties": {},
-										"type": "object"
-									}
-								},
-								"required": [
-									"query"
-								],
-								"type": "object"
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/market/bsv20": {
-			"get": {
-				"operationId": "GetOpenBsv20",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Bsv20"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "sort",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/ListingSort"
-						}
 					},
 					{
 						"in": "query",
-						"name": "dir",
+						"name": "type",
 						"required": false,
 						"schema": {
-							"$ref": "#/components/schemas/SortDirection"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					}
-				]
-			}
-		},
-		"/api/market/recent": {
-			"get": {
-				"operationId": "GetRecentListings",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Inscription"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
+							"type": "string"
 						}
 					},
 					{
@@ -1785,106 +589,23 @@
 						"name": "bsv20",
 						"required": false,
 						"schema": {
-							"default": true,
+							"default": false,
 							"type": "boolean"
-						}
-					}
-				]
-			}
-		},
-		"/api/market/{outpoint}": {
-			"get": {
-				"operationId": "GetByOutpoint",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Listing"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "outpoint",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
-		"/api/ordfs/{origin}/{filename}": {
-			"get": {
-				"operationId": "GetOrdfsFile",
-				"responses": {
-					"204": {
-						"description": "No content"
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "origin",
-						"required": true,
-						"schema": {
-							"type": "string"
 						}
 					},
 					{
-						"in": "path",
-						"name": "filename",
-						"required": true,
+						"in": "query",
+						"name": "text",
+						"required": false,
 						"schema": {
+							"default": "",
 							"type": "string"
 						}
 					}
 				]
-			}
-		},
-		"/api/stats": {
-			"get": {
-				"operationId": "GetOpenListings",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"properties": {
-										"indexed": {
-											"type": "number",
-											"format": "double"
-										},
-										"settled": {
-											"type": "number",
-											"format": "double"
-										}
-									},
-									"required": [
-										"indexed",
-										"settled"
-									],
-									"type": "object"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": []
-			}
-		},
-		"/api/utxos/lock/{lock}": {
-			"get": {
-				"operationId": "GetByLock",
+			},
+			"post": {
+				"operationId": "SearchMap",
 				"responses": {
 					"200": {
 						"description": "Ok",
@@ -1903,19 +624,85 @@
 				"security": [],
 				"parameters": [
 					{
-						"in": "path",
-						"name": "lock",
-						"required": true,
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/ListingSort"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
 						"schema": {
 							"type": "string"
 						}
+					},
+					{
+						"in": "query",
+						"name": "bsv20",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "text",
+						"required": false,
+						"schema": {
+							"default": "",
+							"type": "string"
+						}
 					}
-				]
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {},
+								"additionalProperties": {},
+								"type": "object"
+							}
+						}
+					}
+				}
 			}
 		},
-		"/api/utxos/address/{address}": {
+		"/api/txos/address/{address}/unspent": {
 			"get": {
-				"operationId": "GetByAddress",
+				"operationId": "GetUnspentByAddress",
 				"responses": {
 					"200": {
 						"description": "Ok",
@@ -1940,13 +727,39 @@
 						"schema": {
 							"type": "string"
 						}
+					},
+					{
+						"in": "query",
+						"name": "q",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
 					}
 				]
-			}
-		},
-		"/api/utxos/lock/{lock}/history": {
-			"get": {
-				"operationId": "GetHistoryByLock",
+			},
+			"post": {
+				"operationId": "PostUnspentByAddress",
 				"responses": {
 					"200": {
 						"description": "Ok",
@@ -1966,16 +779,46 @@
 				"parameters": [
 					{
 						"in": "path",
-						"name": "lock",
+						"name": "address",
 						"required": true,
 						"schema": {
 							"type": "string"
 						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
 					}
-				]
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/TxoData"
+							}
+						}
+					}
+				}
 			}
 		},
-		"/api/utxos/address/{address}/history": {
+		"/api/txos/address/{address}/history": {
 			"get": {
 				"operationId": "GetHistoryByAddress",
 				"responses": {
@@ -2002,34 +845,11 @@
 						"schema": {
 							"type": "string"
 						}
-					}
-				]
-			}
-		},
-		"/api/utxos/lock/{lock}/inscriptions": {
-			"get": {
-				"operationId": "GetInscriptionsByLock",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Inscription"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
+					},
 					{
-						"in": "path",
-						"name": "lock",
-						"required": true,
+						"in": "query",
+						"name": "q",
+						"required": false,
 						"schema": {
 							"type": "string"
 						}
@@ -2053,30 +873,11 @@
 							"format": "double",
 							"type": "number"
 						}
-					},
-					{
-						"in": "query",
-						"name": "dir",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/SortDirection"
-						}
-					},
-					{
-						"in": "query",
-						"name": "excludeBsv20",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
 					}
 				]
-			}
-		},
-		"/api/utxos/address/{address}/inscriptions": {
-			"get": {
-				"operationId": "GetInscriptionsByAddress",
+			},
+			"post": {
+				"operationId": "PostHistoryByAddress",
 				"responses": {
 					"200": {
 						"description": "Ok",
@@ -2084,7 +885,7 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/Inscription"
+										"$ref": "#/components/schemas/Txo"
 									},
 									"type": "array"
 								}
@@ -2121,193 +922,18 @@
 							"format": "double",
 							"type": "number"
 						}
-					},
-					{
-						"in": "query",
-						"name": "dir",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/SortDirection"
-						}
-					},
-					{
-						"in": "query",
-						"name": "excludeBsv20",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
 					}
-				]
-			}
-		},
-		"/api/utxos/address/{address}/tick/{tick}": {
-			"get": {
-				"operationId": "GetBsv20sByAddress",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Bsv20"
-									},
-									"type": "array"
-								}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/TxoData"
 							}
 						}
 					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "address",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "path",
-						"name": "tick",
-						"required": true,
-						"schema": {
-							"default": "",
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "fromHeight",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "fromIdx",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					}
-				]
-			}
-		},
-		"/api/utxos/lock/{lock}/tick/{tick}": {
-			"get": {
-				"operationId": "GetBsv20sByLock",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Bsv20"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "lock",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "path",
-						"name": "tick",
-						"required": true,
-						"schema": {
-							"default": "",
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "fromHeight",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "fromIdx",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					}
-				]
-			}
-		},
-		"/api/utxos/origin/{origin}": {
-			"get": {
-				"operationId": "GetTxoByOrigin",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Txo"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "origin",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
+				}
 			}
 		}
 	},

@@ -1,95 +1,81 @@
-import { BodyProp, Controller, Get, Path, Post, Query, Route } from "tsoa";
-import { Inscription } from "./../models/inscription";
-import { Outpoint } from "./../models/outpoint";
-import { Txo } from "../models/txo";
+import { JungleBusClient } from "@gorillapool/js-junglebus";
+import { Body, Controller, Get, Path, Post, Query, Route } from "tsoa";
 import { pool } from "../db";
+import { Txo } from "../models/txo";
+import { Outpoint } from "../models/outpoint";
+import { Tx } from "@ts-bitcoin/core";
+import { TxoData } from "../models/txo";
+import { SortDirection } from "../models/sort-direction";
+
+const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 
 @Route("api/inscriptions")
 export class InscriptionsController extends Controller {
-    @Get("origin/{origin}")
-    public async getByOrigin(@Path() origin: string): Promise<Inscription[]> {
-        return Inscription.loadByOrigin(Outpoint.fromString(origin));
+    @Get("{outpoint}")
+    public async getTxoByOutpoint(
+        @Path() outpoint: string,
+        @Query() script = false
+    ): Promise<Txo> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        const txo = await Txo.loadByOutpoint(Outpoint.fromString(outpoint));
+        if(script) {
+            // TODO: Add Caching
+            const txnData = await jb.GetTransaction(txo.txid);
+            const tx = Tx.fromBuffer(Buffer.from(txnData?.transaction || '', 'base64'));
+            txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
+        }
+        return txo
     }
 
-    @Get("origin/{origin}/latest")
-    public async getOneByOrigin(@Path() origin: string): Promise<Inscription> {
-        return Inscription.loadOneByOrigin(Outpoint.fromString(origin));
-    }
-
-    @Get("origin/{origin}/metadata")
-    public async getMetadataByOrigin(@Path() origin: string): Promise<Inscription[]> {
-        this.setHeader('Cache-Control', 'public,immutable,max-age=31536000')
-        return Inscription.loadMetadataByOrigin(Outpoint.fromString(origin));
-    }
-
-    @Get("outpoint/{outpoint}")
-    public async getByOutpoint(@Path() outpoint: string): Promise<Inscription> {
-        this.setHeader('Cache-Control', 'public,immutable,max-age=31536000')
-        return Txo.loadInscriptionByOutpoint(Outpoint.fromString(outpoint));
-    }
-
-    @Get("txid/{txid}")
-    public async getByTxid(@Path() txid: string): Promise<Inscription[]> {
-        this.setHeader('Cache-Control', 'public,immutable,max-age=31536000')
-        return Inscription.loadByTxid(Buffer.from(txid, 'hex'));
-    }
-
-    @Get("count")
-    public async getCount(): Promise<{count: number}> {
-        const count = await Inscription.count();
-        return { count };
-    }
-
-    @Get("{id}")
-    public async getOneById(@Path() id: number): Promise<Inscription> {
-        return Inscription.loadOneById(id);
-    }
-
-    @Post("search/text")
-    public async searchText(
-        @BodyProp() query: string,
+    @Get("search")
+    public async getSearch(
+        @Query() q?: string,
+        @Query() sort?: SortDirection,
         @Query() limit: number = 100,
         @Query() offset: number = 0
-    ): Promise<Inscription[]> {
-        const rows = await pool.query(`SELECT * FROM inscriptions
-            WHERE search_text_en @@ plainto_tsquery('english', $1)
-            ORDER BY height DESC, idx DESC
-            LIMIT $2 OFFSET $3`,
-            [query, limit, offset]
-        )
-        return rows.rows.map(row => Inscription.fromRow(row));
+
+    ): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        let query: TxoData | undefined;
+        if (q) {
+            query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
+        }
+        return this.search(query, sort, limit, offset);
     }
 
-    @Post("search/map")
-    public async searchMap(
-        @BodyProp() query: {[key: string]: any},
+    @Post("search")
+    public async postUnspentByAddress(
+        @Body() query?: TxoData,
+        @Query() sort?: SortDirection,
         @Query() limit: number = 100,
         @Query() offset: number = 0
-    ): Promise<Inscription[]> {
-        const rows = await pool.query(`SELECT * FROM inscriptions
-            WHERE map @> $1
-            ORDER BY height DESC, idx DESC
-            LIMIT $2 OFFSET $3`,
-            [JSON.stringify(query) , limit, offset]
-        )
-        return rows.rows.map(row => Inscription.fromRow(row));
+    ): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        return this.search(query, sort, limit, offset);
     }
 
-    @Get("sigma/{address}")
-    public async searchSigma(
-        @Path() address: string,
-        @Query() limit: number = 100,
-        @Query() offset: number = 0
-    ): Promise<Inscription[]> {
-        const rows = await pool.query(`SELECT * FROM inscriptions
-            WHERE sigma @> $1
-            ORDER BY height DESC, idx DESC
-            LIMIT $2 OFFSET $3`,
-            [JSON.stringify([{
-                address,
-                valid: true
-            }]) , limit, offset]
-        )
-        return rows.rows.map(row => Inscription.fromRow(row));
+    public async search(query?: TxoData, sort?: SortDirection, limit = 100, offset = 0): Promise<Txo[]> {
+        const params: any[] = [];
+        let sql = `SELECT t.*, o.insc, o.map, o.num
+            FROM txos t
+            JOIN origins o ON o.origin = t.origin `;
+        
+        if(query) {
+            params.push(JSON.stringify(query));
+            sql += `WHERE data @> $${params.length} `
+        }
+
+        if(sort) {
+            sql += `ORDER BY height ${sort}, idx ${sort} `
+        }
+
+        params.push(limit);
+        sql += `LIMIT $${params.length} `
+        params.push(offset);
+        sql += `OFFSET $${params.length} `
+        
+        console.log(sql, params)
+        const { rows } = await pool.query(sql, params);
+        return rows.map((row: any) => Txo.fromRow(row));
     }
 }

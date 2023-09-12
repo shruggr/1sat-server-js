@@ -1,3 +1,4 @@
+import { File } from "./file";
 import { Outpoint } from "./outpoint";
 
 export class Bsv20 {
