@@ -15,7 +15,7 @@ export class MarketController extends Controller {
     public async getOpenListings(
         @Query() sort: ListingSort = ListingSort.recent,
         @Query() dir: SortDirection = SortDirection.desc,
-        @Query() mapQ?: string,
+        @Query() q?: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() type?: string,
@@ -23,11 +23,11 @@ export class MarketController extends Controller {
         @Query() text = ''
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        let map: {[key: string]: any} | undefined;
-        if (mapQ) {
-            map = JSON.parse(Buffer.from(mapQ, 'base64').toString('utf8'));
+        let query: {[key: string]: any} | undefined;
+        if (q) {
+            query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
-        return this.searchListings(bsv20, sort, dir, type, map, text, limit, offset);
+        return this.searchListings(bsv20, sort, dir, type, query, text, limit, offset);
     }
 
     @Post("")
@@ -45,9 +45,9 @@ export class MarketController extends Controller {
         return this.searchListings(bsv20, sort, dir, type, map, text, limit, offset);
     }
 
-    public async searchListings(bsv20: boolean, sort: ListingSort, dir: SortDirection, type?: string, map?: {[key:string]:any}, text = '', limit: number = 100, offset: number = 0): Promise<Txo[]> {
+    public async searchListings(bsv20: boolean, sort: ListingSort, dir: SortDirection, type?: string, data?: {[key:string]:any}, text = '', limit: number = 100, offset: number = 0): Promise<Txo[]> {
         const params: any[] = [bsv20];
-        let sql = [`SELECT t.*, o.insc, o.map, o.num
+        let sql = [`SELECT t.*, o.data as odata, o.num
             FROM listings l
             JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
             JOIN origins o ON o.origin = t.origin
@@ -58,9 +58,9 @@ export class MarketController extends Controller {
             sql.push(`AND l.filetype like $${params.length}`)
         }
 
-        if(map) {
-            params.push(map);
-            sql.push(`AND l.map @> $${params.length}`)
+        if(data) {
+            params.push(data);
+            sql.push(`AND l.data @> $${params.length}`)
         }
 
         if(text) {

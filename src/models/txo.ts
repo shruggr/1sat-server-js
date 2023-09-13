@@ -14,8 +14,7 @@ export class InscriptionData {
 
 export class Origin {
     outpoint: Outpoint = new Outpoint();
-    insc?: File;
-    map?: {[key: string]:any};
+    data?: TxoData;
     num?: number;
 }
 
@@ -31,7 +30,7 @@ export class TxoData {
     map?: {[key: string]:any};
     b?: File;
     sigma?: Sigma[];
-    listing?: {
+    list?: {
         price: number;
         payout: string;
     };
@@ -54,6 +53,7 @@ export interface Inscription {
 export class Txo {
     txid: string = '';
     vout: number = 0;
+    outpoint: Outpoint = new Outpoint();
     satoshis: number = 0;
     accSats: number = 0;
     owner?: string;
@@ -65,7 +65,7 @@ export class Txo {
     data?: TxoData;
 
     static async loadByOutpoint(outpoint: Outpoint): Promise<Txo> {
-        const { rows: [row] } = await pool.query(`SELECT t.*, o.insc, o.map, o.num
+        const { rows: [row] } = await pool.query(`SELECT t.*, o.data as odata, o.num
             FROM txos t
             JOIN origins o ON o.origin = t.origin
             WHERE t.txid = $1 AND t.vout = $2`,
@@ -87,6 +87,7 @@ export class Txo {
         const txo = new Txo();
         txo.txid = row.txid.toString('hex');
         txo.vout = row.vout;
+        txo.outpoint = new Outpoint(row.txid, row.vout);
         txo.satoshis = parseInt(row.satoshis, 10);
         txo.accSats = row.outacc;
         txo.owner = row.pkhash && Address.fromPubKeyHashBuf(row.pkhash).toString();
@@ -97,8 +98,7 @@ export class Txo {
         txo.data = row.data;
         txo.origin = {
             outpoint: Outpoint.fromBuffer(row.origin),
-            insc: row.insc ? row.insc : undefined,
-            map: row.map ? row.map : undefined,
+            data: row.data ? row.data : undefined,
             num: row.num ? parseInt(row.num, 10) : undefined,
         }
         return txo;

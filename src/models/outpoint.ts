@@ -2,6 +2,11 @@ export class Outpoint {
     txid: Buffer = Buffer.alloc(32);
     vout: number = 0;
 
+    constructor(txid?: Buffer, vout?: number) {
+        if(txid) this.txid = txid;
+        if(vout) this.vout = vout;
+    }
+    
     toString() {
         return this.txid.toString('hex') + '_' + this.vout;
     }

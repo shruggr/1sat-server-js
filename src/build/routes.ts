@@ -53,17 +53,6 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Origin": {
-        "dataType": "refObject",
-        "properties": {
-            "outpoint": {"ref":"Outpoint"},
-            "insc": {"ref":"File"},
-            "map": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
-            "num": {"dataType":"double"},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Sigma": {
         "dataType": "refObject",
         "properties": {
@@ -88,8 +77,18 @@ const models: TsoaRoute.Models = {
             "map": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
             "b": {"ref":"File"},
             "sigma": {"dataType":"array","array":{"dataType":"refObject","ref":"Sigma"}},
-            "listing": {"dataType":"nestedObjectLiteral","nestedProperties":{"payout":{"dataType":"string","required":true},"price":{"dataType":"double","required":true}}},
+            "list": {"dataType":"nestedObjectLiteral","nestedProperties":{"payout":{"dataType":"string","required":true},"price":{"dataType":"double","required":true}}},
             "bsv20": {"dataType":"nestedObjectLiteral","nestedProperties":{"status":{"ref":"Bsv20Status"},"amt":{"dataType":"string","required":true},"tick":{"dataType":"string"},"op":{"dataType":"string","required":true},"p":{"dataType":"string","required":true},"id":{"ref":"Outpoint"}}},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Origin": {
+        "dataType": "refObject",
+        "properties": {
+            "outpoint": {"ref":"Outpoint"},
+            "data": {"ref":"TxoData"},
+            "num": {"dataType":"double"},
         },
         "additionalProperties": false,
     },
@@ -99,6 +98,7 @@ const models: TsoaRoute.Models = {
         "properties": {
             "txid": {"dataType":"string","default":""},
             "vout": {"dataType":"double","default":0},
+            "outpoint": {"ref":"Outpoint"},
             "satoshis": {"dataType":"double","default":0},
             "accSats": {"dataType":"double","default":0},
             "owner": {"dataType":"string"},
@@ -298,7 +298,7 @@ export function RegisterRoutes(app: Router) {
             const args = {
                     sort: {"default":"recent","in":"query","name":"sort","ref":"ListingSort"},
                     dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
-                    mapQ: {"in":"query","name":"mapQ","dataType":"string"},
+                    q: {"in":"query","name":"q","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     type: {"in":"query","name":"type","dataType":"string"},

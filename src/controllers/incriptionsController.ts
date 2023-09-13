@@ -56,7 +56,7 @@ export class InscriptionsController extends Controller {
 
     public async search(query?: TxoData, sort?: SortDirection, limit = 100, offset = 0): Promise<Txo[]> {
         const params: any[] = [];
-        let sql = `SELECT t.*, o.insc, o.map, o.num
+        let sql = `SELECT t.*, o.data as odata, o.num
             FROM txos t
             JOIN origins o ON o.origin = t.origin `;
         

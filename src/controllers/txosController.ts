@@ -64,7 +64,7 @@ export class TxosController extends Controller {
     public async searchByAddress(address: string, unspent = true, query?: TxoData, limit: number = 100, offset: number = 0): Promise<Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf];
-        let sql = [`SELECT t.*, o.insc, o.map, o.num
+        let sql = [`SELECT t.*, o.data as odata, o.num
             FROM txos t
             JOIN origins o ON o.origin = t.origin 
             WHERE pkhash = $1`]

@@ -60,27 +60,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"Origin": {
-				"properties": {
-					"outpoint": {
-						"$ref": "#/components/schemas/Outpoint"
-					},
-					"insc": {
-						"$ref": "#/components/schemas/File"
-					},
-					"map": {
-						"properties": {},
-						"additionalProperties": {},
-						"type": "object"
-					},
-					"num": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"type": "object",
-				"additionalProperties": false
-			},
 			"Sigma": {
 				"properties": {
 					"algorithm": {
@@ -139,7 +118,7 @@
 						},
 						"type": "array"
 					},
-					"listing": {
+					"list": {
 						"properties": {
 							"payout": {
 								"type": "string"
@@ -187,6 +166,22 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"Origin": {
+				"properties": {
+					"outpoint": {
+						"$ref": "#/components/schemas/Outpoint"
+					},
+					"data": {
+						"$ref": "#/components/schemas/TxoData"
+					},
+					"num": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
 			"Txo": {
 				"properties": {
 					"txid": {
@@ -197,6 +192,9 @@
 						"type": "number",
 						"format": "double",
 						"default": 0
+					},
+					"outpoint": {
+						"$ref": "#/components/schemas/Outpoint"
 					},
 					"satoshis": {
 						"type": "number",
@@ -550,7 +548,7 @@
 					},
 					{
 						"in": "query",
-						"name": "mapQ",
+						"name": "q",
 						"required": false,
 						"schema": {
 							"type": "string"
