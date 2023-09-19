@@ -330,6 +330,8 @@ export function RegisterRoutes(app: Router) {
                     type: {"in":"query","name":"type","dataType":"string"},
                     bsv20: {"default":false,"in":"query","name":"bsv20","dataType":"boolean"},
                     text: {"default":"","in":"query","name":"text","dataType":"string"},
+                    minPrice: {"in":"query","name":"minPrice","dataType":"double"},
+                    maxPrice: {"in":"query","name":"maxPrice","dataType":"double"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -354,7 +356,7 @@ export function RegisterRoutes(app: Router) {
 
             function MarketController_searchMap(request: any, response: any, next: any) {
             const args = {
-                    map: {"in":"body","name":"map","dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
+                    data: {"in":"body","name":"data","dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
                     sort: {"default":"recent","in":"query","name":"sort","ref":"ListingSort"},
                     dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
@@ -362,6 +364,8 @@ export function RegisterRoutes(app: Router) {
                     type: {"in":"query","name":"type","dataType":"string"},
                     bsv20: {"default":false,"in":"query","name":"bsv20","dataType":"boolean"},
                     text: {"default":"","in":"query","name":"text","dataType":"string"},
+                    minPrice: {"in":"query","name":"minPrice","dataType":"double"},
+                    maxPrice: {"in":"query","name":"maxPrice","dataType":"double"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

@@ -9,6 +9,18 @@ export enum ListingSort {
     price = 'price',
 }
 
+export class MarketSearch {
+    bsv20 = false
+    sort: ListingSort = ListingSort.recent
+    dir: SortDirection = SortDirection.desc
+    type?: string
+    data?: {[key:string]:any}
+    text = ''
+    minPrice?: number
+    maxPrice?: number
+    limit: number = 100
+    offset: number = 0
+}
 @Route("api/market")
 export class MarketController extends Controller {
     @Get("")
@@ -20,32 +32,37 @@ export class MarketController extends Controller {
         @Query() offset: number = 0,
         @Query() type?: string,
         @Query() bsv20 = false,
-        @Query() text = ''
+        @Query() text = '',
+        @Query() minPrice?: number,
+        @Query() maxPrice?: number,
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        let query: {[key: string]: any} | undefined;
+        let data: {[key: string]: any} | undefined;
         if (q) {
-            query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
+            data = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
-        return this.searchListings(bsv20, sort, dir, type, query, text, limit, offset);
+        return this.searchListings({bsv20, sort, dir, type, data, text, minPrice, maxPrice, limit, offset});
     }
 
     @Post("")
     public async searchMap(
-        @Body() map?: {[key: string]: any},
+        @Body() data?: {[key: string]: any},
         @Query() sort: ListingSort = ListingSort.recent,
         @Query() dir: SortDirection = SortDirection.desc,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() type?: string,
         @Query() bsv20 = false,
-        @Query() text = ''
+        @Query() text = '',
+        @Query() minPrice?: number,
+        @Query() maxPrice?: number,
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        return this.searchListings(bsv20, sort, dir, type, map, text, limit, offset);
+        return this.searchListings({bsv20, sort, dir, type, data, text, minPrice, maxPrice, limit, offset});
     }
 
-    public async searchListings(bsv20: boolean, sort: ListingSort, dir: SortDirection, type?: string, data?: {[key:string]:any}, text = '', limit: number = 100, offset: number = 0): Promise<Txo[]> {
+    public async searchListings(search: MarketSearch): Promise<Txo[]> {
+        const { bsv20, sort, dir, type, data, text, minPrice, maxPrice, limit, offset } = search;
         const params: any[] = [bsv20];
         let sql = [`SELECT t.*, o.data as odata, o.num
             FROM listings l
@@ -66,6 +83,16 @@ export class MarketController extends Controller {
         if(text) {
             params.push(text);
             sql.push(`AND l.search_text_en @@ plainto_tsquery('english', $${params.length})`)
+        }
+
+        if (minPrice) {
+            params.push(minPrice);
+            sql.push(`AND l.price >= $${params.length}`)
+        }
+
+        if (maxPrice) {
+            params.push(maxPrice);
+            sql.push(`AND l.price <= $${params.length}`)
         }
 
         switch(sort) {
