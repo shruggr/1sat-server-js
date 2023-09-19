@@ -208,14 +208,14 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/inscriptions/:outpoint',
-            ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
-            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getTxoByOutpoint)),
+        app.get('/api/bsv20/:address/tick/:tick',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20UtxosByTick)),
 
-            function InscriptionsController_getTxoByOutpoint(request: any, response: any, next: any) {
+            function FungiblesController_getBsv20UtxosByTick(request: any, response: any, next: any) {
             const args = {
-                    outpoint: {"in":"path","name":"outpoint","required":true,"dataType":"string"},
-                    script: {"default":false,"in":"query","name":"script","dataType":"boolean"},
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+                    tick: {"in":"path","name":"tick","required":true,"dataType":"string"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -224,10 +224,10 @@ export function RegisterRoutes(app: Router) {
             try {
                 validatedArgs = getValidatedArgs(args, request, response);
 
-                const controller = new InscriptionsController();
+                const controller = new FungiblesController();
 
 
-              const promise = controller.getTxoByOutpoint.apply(controller, validatedArgs as any);
+              const promise = controller.getBsv20UtxosByTick.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
@@ -284,6 +284,32 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.postUnspentByAddress.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/inscriptions/:outpoint',
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getTxoByOutpoint)),
+
+            function InscriptionsController_getTxoByOutpoint(request: any, response: any, next: any) {
+            const args = {
+                    outpoint: {"in":"path","name":"outpoint","required":true,"dataType":"string"},
+                    script: {"default":false,"in":"query","name":"script","dataType":"boolean"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new InscriptionsController();
+
+
+              const promise = controller.getTxoByOutpoint.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
@@ -362,8 +388,10 @@ export function RegisterRoutes(app: Router) {
             const args = {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
                     q: {"in":"query","name":"q","dataType":"string"},
+                    type: {"in":"query","name":"type","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    bsv20: {"default":false,"in":"query","name":"bsv20","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -390,8 +418,10 @@ export function RegisterRoutes(app: Router) {
             const args = {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
                     query: {"in":"body","name":"query","ref":"TxoData"},
+                    type: {"in":"query","name":"type","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    bsv20: {"default":false,"in":"query","name":"bsv20","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -418,8 +448,10 @@ export function RegisterRoutes(app: Router) {
             const args = {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
                     q: {"in":"query","name":"q","dataType":"string"},
+                    type: {"in":"query","name":"type","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    bsv20: {"default":false,"in":"query","name":"bsv20","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -446,8 +478,10 @@ export function RegisterRoutes(app: Router) {
             const args = {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
                     query: {"in":"body","name":"query","ref":"TxoData"},
+                    type: {"in":"query","name":"type","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    bsv20: {"default":false,"in":"query","name":"bsv20","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

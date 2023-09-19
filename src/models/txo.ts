@@ -76,11 +76,10 @@ export class Txo {
     }
 
     static async loadFileByOrigin(origin: Outpoint) {
-        const txo = await Txo.loadByOutpoint(origin);
-        const jbTxn = await jb.GetTransaction(txo.txid);
+        const jbTxn = await jb.GetTransaction(origin.txid.toString('hex'));
         if (!jbTxn) throw new NotFound('not-found');
         const tx = Tx.fromBuffer(Buffer.from(jbTxn.transaction, 'base64'));
-        return Txo.parseOutputScript(tx.txOuts[txo.vout].script);
+        return Txo.parseOutputScript(tx.txOuts[origin.vout].script);
     }
 
     static fromRow(row: any) {
@@ -98,8 +97,8 @@ export class Txo {
         txo.data = row.data;
         txo.origin = {
             outpoint: Outpoint.fromBuffer(row.origin),
-            data: row.data ? row.data : undefined,
-            num: row.num ? parseInt(row.num, 10) : undefined,
+            data: row.odata ? row.odata : undefined,
+            num: row.num && parseInt(row.num, 10),
         }
         return txo;
     }

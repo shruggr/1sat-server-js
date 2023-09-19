@@ -44,15 +44,15 @@ export class CollectionsController extends Controller {
         @Path() collectionId: string,
     ): Promise<{count: number, max: number}> {
         const { rows: [row]} = await pool.query(`
-            SELECT MAX((data->'map'->'subTypeData'->>'mintNumber')::INTEGER) as maxNum, 
+            SELECT MAX((data->'map'->'subTypeData'->>'mintNumber')::INTEGER) as maxnum, 
             COUNT(1)::INTEGER as count
-            FROM txos
-            WHERE map @> $1`, 
+            FROM origins
+            WHERE data @> $1`, 
             [JSON.stringify({map: {subTypeData: {collectionId}}})],
         )
 
         if (!row) throw new NotFound();
-        return row
+        return {count: row.count, max: row.maxnum};
     }
 
     // @Get("{collectionId}/items")

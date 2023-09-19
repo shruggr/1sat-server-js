@@ -2,6 +2,7 @@ import { Address } from '@ts-bitcoin/core';
 // import { NotFound } from 'http-errors';
 import { Controller, Get, Path, Route } from "tsoa";
 import { pool } from "../db";
+import { Txo } from '../models/txo';
 // import { Txo } from '../models/txo';
 // import { Bsv20 } from "../models/bsv20";
 // import { SortDirection } from '../models/listing.ts.bak';
@@ -254,7 +255,7 @@ export class FungiblesController extends Controller {
             WHERE pkhash=$1 AND spend='\\x' AND 
                 (data->'bsv20'->>'status' = '0' OR data->'bsv20'->>'status' = '1') AND
                 data->'bsv20'->>'op' != 'deploy'
-            GROUP BY tick`,
+            GROUP BY tick, status`,
             [Address.fromString(address).hashBuf],
         )
 
@@ -281,6 +282,31 @@ export class FungiblesController extends Controller {
             }
         }
         return Object.values(results)
+    }
+
+    @Get("{address}/tick/{tick}")
+    public async getBsv20UtxosByTick(
+        @Path() address: string,
+        @Path() tick: string,
+    ): Promise<Txo[]> {
+        const add = Address.fromString(address);
+        const params: any[] = [add.hashBuf, tick];
+        let sql = `SELECT t.*, o.data as odata, o.num
+            FROM txos t
+            JOIN origins o ON o.origin = t.origin 
+            WHERE pkhash = $1 AND spend = '\\x' AND 
+                t.data->'bsv20'->>'status' = '1' AND
+                (t.data->'bsv20'->>'tick' = $2 OR t.data->'bsv20'->>'id' = $2)`
+
+        // sql.push(`ORDER BY height DESC, idx DESC`)
+        // params.push(limit);
+        // sql.push(`LIMIT $${params.length}`)
+        // params.push(offset);
+        // sql.push(`OFFSET $${params.length}`)
+        
+        console.log(sql, params)
+        const { rows } = await pool.query(sql, params);
+        return rows.map((row: any) => Txo.fromRow(row));
     }
 }
 

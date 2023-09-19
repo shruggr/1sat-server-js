@@ -11,22 +11,6 @@ const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 
 @Route("api/inscriptions")
 export class InscriptionsController extends Controller {
-    @Get("{outpoint}")
-    public async getTxoByOutpoint(
-        @Path() outpoint: string,
-        @Query() script = false
-    ): Promise<Txo> {
-        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        const txo = await Txo.loadByOutpoint(Outpoint.fromString(outpoint));
-        if(script) {
-            // TODO: Add Caching
-            const txnData = await jb.GetTransaction(txo.txid);
-            const tx = Tx.fromBuffer(Buffer.from(txnData?.transaction || '', 'base64'));
-            txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
-        }
-        return txo
-    }
-
     @Get("search")
     public async getSearch(
         @Query() q?: string,
@@ -58,11 +42,12 @@ export class InscriptionsController extends Controller {
         const params: any[] = [];
         let sql = `SELECT t.*, o.data as odata, o.num
             FROM txos t
-            JOIN origins o ON o.origin = t.origin `;
+            JOIN origins o ON o.origin = t.origin 
+            WHERE t.spend='\\x' `;
         
         if(query) {
             params.push(JSON.stringify(query));
-            sql += `WHERE data @> $${params.length} `
+            sql += `AND o.data @> $${params.length} `
         }
 
         if(sort) {
@@ -77,5 +62,21 @@ export class InscriptionsController extends Controller {
         console.log(sql, params)
         const { rows } = await pool.query(sql, params);
         return rows.map((row: any) => Txo.fromRow(row));
+    }
+
+    @Get("{outpoint}")
+    public async getTxoByOutpoint(
+        @Path() outpoint: string,
+        @Query() script = false
+    ): Promise<Txo> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        const txo = await Txo.loadByOutpoint(Outpoint.fromString(outpoint));
+        if(script) {
+            // TODO: Add Caching
+            const txnData = await jb.GetTransaction(txo.txid);
+            const tx = Tx.fromBuffer(Buffer.from(txnData?.transaction || '', 'base64'));
+            txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
+        }
+        return txo
     }
 }

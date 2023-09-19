@@ -355,16 +355,19 @@
 				]
 			}
 		},
-		"/api/inscriptions/{outpoint}": {
+		"/api/bsv20/{address}/tick/{tick}": {
 			"get": {
-				"operationId": "GetTxoByOutpoint",
+				"operationId": "GetBsv20UtxosByTick",
 				"responses": {
 					"200": {
 						"description": "Ok",
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/Txo"
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
 								}
 							}
 						}
@@ -374,19 +377,18 @@
 				"parameters": [
 					{
 						"in": "path",
-						"name": "outpoint",
+						"name": "address",
 						"required": true,
 						"schema": {
 							"type": "string"
 						}
 					},
 					{
-						"in": "query",
-						"name": "script",
-						"required": false,
+						"in": "path",
+						"name": "tick",
+						"required": true,
 						"schema": {
-							"default": false,
-							"type": "boolean"
+							"type": "string"
 						}
 					}
 				]
@@ -508,6 +510,43 @@
 						}
 					}
 				}
+			}
+		},
+		"/api/inscriptions/{outpoint}": {
+			"get": {
+				"operationId": "GetTxoByOutpoint",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Txo"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "outpoint",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "script",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				]
 			}
 		},
 		"/api/market": {
@@ -736,6 +775,14 @@
 					},
 					{
 						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
 						"name": "limit",
 						"required": false,
 						"schema": {
@@ -752,6 +799,15 @@
 							"default": 0,
 							"format": "double",
 							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "bsv20",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
 						}
 					}
 				]
@@ -785,6 +841,14 @@
 					},
 					{
 						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
 						"name": "limit",
 						"required": false,
 						"schema": {
@@ -801,6 +865,15 @@
 							"default": 0,
 							"format": "double",
 							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "bsv20",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
 						}
 					}
 				],
@@ -854,6 +927,14 @@
 					},
 					{
 						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
 						"name": "limit",
 						"required": false,
 						"schema": {
@@ -870,6 +951,15 @@
 							"default": 0,
 							"format": "double",
 							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "bsv20",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
 						}
 					}
 				]
@@ -903,6 +993,14 @@
 					},
 					{
 						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
 						"name": "limit",
 						"required": false,
 						"schema": {
@@ -919,6 +1017,15 @@
 							"default": 0,
 							"format": "double",
 							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "bsv20",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
 						}
 					}
 				],
