@@ -1,5 +1,5 @@
-import { Address } from '@ts-bitcoin/core';
-import { createHash } from 'crypto';
+// import { Address } from '@ts-bitcoin/core';
+// import { createHash } from 'crypto';
 import * as cors from 'cors';
 import * as dotenv from 'dotenv';
 dotenv.config();
@@ -9,16 +9,18 @@ import { HttpError, NotFound } from 'http-errors';
 import "isomorphic-fetch";
 import * as swaggerUi from 'swagger-ui-express'
 import { RegisterRoutes } from "./build/routes";
-import Redis from "ioredis";
-import { Outpoint } from './models/outpoint';
-import { Txo } from './models/txo';
-import { Listing } from './models/listing';
+// import Redis from "ioredis";
+// import { Outpoint } from './models/outpoint';
+// import { Txo } from './models/txo';
+// import { Listing } from './models/listing.ts.bak';
+import axios from 'axios';
 
 const server = express();
-const pubClient = new Redis();
+// const pubClient = new Redis();
 
 async function main() {
-    const PORT = process.env.PORT || 8080;
+    // const PORT = process.env.PORT || 8081;
+    const PORT = 8081;
     server.listen(PORT, () => {
         console.log(`Server listening on port ${PORT}`);
     });
@@ -35,82 +37,115 @@ server.use((req, res, next) => {
 })
 
 server.use("/api/subscribe", (req, res, next) => {
-    try {
-        let channels: string[] = []
-        let addresses: string[] = [];
-        const addressMap = new Map<string, string>();
-        if (Array.isArray(req.query['address'])) {
-            addresses = req.query['address'] as string[];
-        } else if (typeof req.query['address'] == 'string') {
-            addresses = [req.query['address']]
-        }
-        for (let a of addresses) {
-            const lock = createHash('sha256')
-                .update(Address.fromString(a).toTxOutScript().toBuffer())
-                .digest()
-                .reverse()
-                .toString('hex')
-            channels.push(lock)
-            addressMap.set(lock, a)
-        }
-        if (Array.isArray(req.query['lock'])) {
-            channels.push(...req.query['lock'] as string[]);
-        } else if (typeof req.query['lock'] == 'string') {
-            channels.push(req.query['lock']);
-        }
-        if (Array.isArray(req.query['channel'])) {
-            channels.push(...req.query['channel'] as string[]);
-        } else if (typeof req.query['channel'] == 'string') {
-            channels.push(req.query['channel']);
-        }
+    // try {
+    //     let channels: string[] = []
+    //     let addresses: string[] = [];
+    //     const addressMap = new Map<string, string>();
+    //     if (Array.isArray(req.query['address'])) {
+    //         addresses = req.query['address'] as string[];
+    //     } else if (typeof req.query['address'] == 'string') {
+    //         addresses = [req.query['address']]
+    //     }
+    //     for (let a of addresses) {
+    //         const lock = createHash('sha256')
+    //             .update(Address.fromString(a).toTxOutScript().toBuffer())
+    //             .digest()
+    //             .reverse()
+    //             .toString('hex')
+    //         channels.push(lock)
+    //         addressMap.set(lock, a)
+    //     }
+    //     if (Array.isArray(req.query['lock'])) {
+    //         channels.push(...req.query['lock'] as string[]);
+    //     } else if (typeof req.query['lock'] == 'string') {
+    //         channels.push(req.query['lock']);
+    //     }
+    //     if (Array.isArray(req.query['channel'])) {
+    //         channels.push(...req.query['channel'] as string[]);
+    //     } else if (typeof req.query['channel'] == 'string') {
+    //         channels.push(req.query['channel']);
+    //     }
 
-        res.writeHead(200, {
-            'Content-Type': 'text/event-stream',
-            'Connection': 'keep-alive',
-            'Cache-Control': 'no-cache',
-            'X-Accel-Buffering': 'no'
-        });
-        const subClient = pubClient.duplicate();
-        subClient.subscribe(...channels);
-        const interval = setInterval(() => res.write('event: ping\n'), 5000)
+    //     res.writeHead(200, {
+    //         'Content-Type': 'text/event-stream',
+    //         'Connection': 'keep-alive',
+    //         'Cache-Control': 'no-cache',
+    //         'X-Accel-Buffering': 'no'
+    //     });
+    //     const subClient = pubClient.duplicate();
+    //     subClient.subscribe(...channels);
+    //     const interval = setInterval(() => res.write('event: ping\n'), 5000)
 
-        res.on("close", () => {
-            clearInterval(interval)
-            subClient.quit()
-        })
+    //     res.on("close", () => {
+    //         clearInterval(interval)
+    //         subClient.quit()
+    //     })
 
-        subClient.on("message", async (channel, message) => {
-            channel = addressMap.has(channel) ?
-                addressMap.get(channel) as string :
-                channel;
+    //     subClient.on("message", async (channel, message) => {
+    //         channel = addressMap.has(channel) ?
+    //             addressMap.get(channel) as string :
+    //             channel;
 
-            let id = ''
-            if (message.length > 60) {
-                const outpoint = Outpoint.fromString(message)
-                if (channel == 'list') {
-                    const data = await Listing.loadOneByOutpoint(outpoint);
-                    message = JSON.stringify(data);
-                    id = `${outpoint.txid}_${outpoint.vout}_list}`
+    //         let id = ''
+    //         if (message.length > 60) {
+    //             const outpoint = Outpoint.fromString(message)
+    //             if (channel == 'list') {
+    //                 const data = await Listing.loadOneByOutpoint(outpoint);
+    //                 message = JSON.stringify(data);
+    //                 id = `${outpoint.txid}_${outpoint.vout}_list}`
 
-                } else if (channel.length) {
-                    const data = await Txo.loadInscriptionByOutpoint(outpoint)
-                    message = JSON.stringify(data);
-                    id = `${outpoint.txid}_${outpoint.vout}_${data.spend}}`
-                }
-            }
-            res.write(`event: ${channel}\n`)
-            res.write(`data: ${message}\n`)
-            if (id) {
-                res.write(`id: ${id}\n\n`)
-            } else {
-                res.write(`\n`)
-            }
-        });
-        // setTimeout(() => res.end(), 60000)
-    } catch (e: any) {
-        return next(e);
-    }
+    //             } else if (channel.length) {
+    //                 const data = await Txo.loadInscriptionByOutpoint(outpoint)
+    //                 message = JSON.stringify(data);
+    //                 id = `${outpoint.txid}_${outpoint.vout}_${data.spend}}`
+    //             }
+    //         }
+    //         res.write(`event: ${channel}\n`)
+    //         res.write(`data: ${message}\n`)
+    //         if (id) {
+    //             res.write(`id: ${id}\n\n`)
+    //         } else {
+    //             res.write(`\n`)
+    //         }
+    //     });
+    //     // setTimeout(() => res.end(), 60000)
+    // } catch (e: any) {
+    //     return next(e);
+    // }
 });
+
+server.get('/rest/*', async (req, res, next) => {
+    try {
+        const resp = await axios.get(`http://localhost:8332${req.originalUrl}`, {
+            responseType: 'stream'
+        });
+        resp.headers
+        for (let [k, v] of Object.entries(resp.headers)) {
+            res.set(k, v);
+        }
+        resp.data.pipe(res);
+    } catch (e: any) {
+        let status = 500
+        if (e.response) {
+            // The request was made and the server responded with a status code
+            // that falls out of the range of 2xx
+            console.log(e.response.data);
+            console.log(e.response.status);
+            console.log(e.response.headers);
+            status = e.response.status;
+        } else if (e.request) {
+            // The request was made but no response was received
+            // `error.request` is an instance of XMLHttpRequest in the browser and an instance of
+            // http.ClientRequest in node.js
+            console.log(e.request);
+        } else {
+            // Something happened in setting up the request that triggered an Error
+            console.log('Error', e.message);
+        }
+        console.log(e.config);
+        next(new Error(`${status} ${e.message}`))
+    };
+})
 
 server.use("/api/docs",
     swaggerUi.serve,
@@ -127,7 +162,7 @@ server.use((req, res, next) => {
     next(new NotFound("Not Found"));
 });
 const errorMiddleware = ((err: TypeError | HttpError, req: Request, res: Response, next: NextFunction) => {
-    console.error(req.path, (err as HttpError).status || 500, err);
+    console.error(req.path, (err as HttpError).status || 500, err.message);
     res.status((err as HttpError).status || 500).json({ message: err.message })
 }) as ErrorRequestHandler
 

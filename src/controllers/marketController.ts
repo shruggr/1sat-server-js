@@ -1,14 +1,26 @@
-import { JungleBusClient } from "@gorillapool/js-junglebus";
-import { Tx } from '@ts-bitcoin/core';
-import { BodyProp, Controller, Deprecated, Get, Path, Post, Query, Route } from "tsoa";
-import { ListingSort, SortDirection } from "../models/listing";
-import { Outpoint } from '../models/outpoint';
-import { Inscription } from "../models/inscription";
+import { Body, Controller, Get, Post, Query, Route } from "tsoa";
 import { pool } from "../db";
-import { Bsv20 } from "../models/bsv20";
+import { Txo } from "../models/txo";
+import { SortDirection } from "../models/sort-direction";
 
-const jb = new JungleBusClient('https://junglebus.gorillapool.io');
+export enum ListingSort {
+    recent = 'recent',
+    num = 'num',
+    price = 'price',
+}
 
+export class MarketSearch {
+    bsv20 = false
+    sort: ListingSort = ListingSort.recent
+    dir: SortDirection = SortDirection.desc
+    type?: string
+    data?: {[key:string]:any}
+    text = ''
+    minPrice?: number
+    maxPrice?: number
+    limit: number = 100
+    offset: number = 0
+}
 @Route("api/market")
 export class MarketController extends Controller {
     @Get("")
@@ -16,150 +28,94 @@ export class MarketController extends Controller {
         @Query() search: string = '',
         @Query() sort: ListingSort = ListingSort.recent,
         @Query() dir: SortDirection = SortDirection.desc,
-        @Query() limit: number = 100,
-        @Query() offset: number = 0
-    ): Promise<Inscription[]> {
-        // this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        let orderBy = 'ORDER BY ';
-        switch(sort) {
-            case ListingSort.num:
-                orderBy += `l.num ${dir}`;
-                break;
-            case ListingSort.price:
-                orderBy += `l.price ${dir}`;
-                break;
-            default:
-                orderBy += `l.height ${dir}, l.idx ${dir}`;
-        }
-        let where = "WHERE l.spend = '\\x' and l.bsv20 = false ";
-        const params: any[] = [limit, offset];
-        if(search != "") {
-            where += "AND i.search_text_en @@ plainto_tsquery('english', $3)";
-            params.push(search);
-        }
-
-        const { rows } = await pool.query(`
-            SELECT l.num, l.txid, l.vout, i.filehash, i.filesize, i.filetype, i.origin, l.height, l.idx, t.lock, l.spend, i.map, true as listing, l.price, l.payout, i.sigma
-            FROM ordinal_lock_listings l
-            JOIN inscriptions i ON i.origin=l.origin
-            JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
-            ${where}
-            ${orderBy}
-            LIMIT $1 OFFSET $2`,
-            params,
-        );
-        return rows.map((r: any) => Inscription.fromRow(r));
-    }
-
-    @Post("search/map")
-    public async searchMarketByMap(
-        @BodyProp() query: {[key: string]: any},
-        @Query() sort: ListingSort = ListingSort.recent,
-        @Query() dir: SortDirection = SortDirection.desc,
-        @Query() limit: number = 100,
-        @Query() offset: number = 0
-    ): Promise<Inscription[]> {
-        let orderBy = 'ORDER BY ';
-        switch(sort) {
-            case ListingSort.num:
-                orderBy += `l.num ${dir}`;
-                break;
-            case ListingSort.price:
-                orderBy += `l.price ${dir}`;
-                break;
-            default:
-                orderBy += `l.height ${dir}, l.idx ${dir}`;
-        }
-        const { rows } = await pool.query(`
-            SELECT l.num, l.txid, l.vout, i.filehash, i.filesize, i.filetype, i.origin, l.height, l.idx, t.lock, l.spend, i.map, true as listing, l.price, l.payout, i.sigma
-            FROM ordinal_lock_listings l
-            JOIN inscriptions i ON i.origin=l.origin
-            JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
-            WHERE l.spend = decode('', 'hex') and l.bsv20 = false AND i.map @> $3
-            ${orderBy}
-            LIMIT $1 OFFSET $2`,
-            [limit, offset, JSON.stringify(query)],
-        );
-        return rows.map((r: any) => Inscription.fromRow(r));
-    }
-
-    @Get("bsv20")
-    public async getOpenBsv20(
-        @Query() tick: string = '',
-        @Query() sort: ListingSort = ListingSort.recent,
-        @Query() dir: SortDirection = SortDirection.desc,
-        @Query() limit: number = 1000,
-        @Query() offset: number = 0
-    ): Promise<Bsv20[]> {
-        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        let orderBy = 'ORDER BY ';
-        switch(sort) {
-            case ListingSort.num:
-                orderBy += `l.num ${dir}`;
-                break;
-            case ListingSort.price:
-                orderBy += `l.price ${dir}`;
-                break;
-            default:
-                orderBy += `l.height ${dir}, l.idx ${dir}`;
-        }
-        const params: any[] = [limit, offset]
-        if (tick) {
-            params.push(tick.toUpperCase())
-        }
-        const { rows } = await pool.query(`
-            SELECT b.*, l.price, l.payout
-            FROM ordinal_lock_listings l
-            JOIN bsv20_txos b ON b.txid=l.txid AND b.vout=l.vout AND b.valid=true
-            WHERE b.spend = decode('', 'hex') ${tick ? `AND b.tick=$3` : ''}
-            ${orderBy}
-            LIMIT $1 OFFSET $2`,
-            params,
-        );
-        return rows.map((r: any) => Bsv20.fromRow(r));
-    }
-
-    @Get("bsv20/{tick}")
-    public async getOpenBsv20ByTicker(
-        @Path() tick: string,
-        @Query() sort: ListingSort = ListingSort.recent,
-        @Query() dir: SortDirection = SortDirection.desc,
-        @Query() limit: number = 100,
-        @Query() offset: number = 0
-    ): Promise<Bsv20[]> {
-        return this.getOpenBsv20(tick, sort, dir, limit, offset);
-    }
-
-    @Deprecated()
-    @Get("recent")
-    public async getRecentListings(
+        @Query() q?: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
-        @Query() bsv20: boolean = true,
-    ): Promise<Inscription[]> {
-        return this.getOpenListings('', ListingSort.recent, SortDirection.desc, limit, offset);
+        @Query() type?: string,
+        @Query() bsv20 = false,
+        @Query() text = '',
+        @Query() minPrice?: number,
+        @Query() maxPrice?: number,
+    ): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        let data: {[key: string]: any} | undefined;
+        if (q) {
+            data = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
+        }
+        return this.searchListings({bsv20, sort, dir, type, data, text, minPrice, maxPrice, limit, offset});
     }
 
-    @Get("{outpoint}")
-    public async getByOutpoint(@Path() outpoint: string): Promise<Inscription> {
-        const op = Outpoint.fromString(outpoint)
-        // SELECT o.*, i.filehash, i.filesize, i.filetype, i.map, true as listing, i.sigma
-        // FROM ordinal_lock_listings o
-        // JOIN inscriptions i ON i.origin=o.origin
+    @Post("")
+    public async searchMap(
+        @Body() data?: {[key: string]: any},
+        @Query() sort: ListingSort = ListingSort.recent,
+        @Query() dir: SortDirection = SortDirection.desc,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+        @Query() type?: string,
+        @Query() bsv20 = false,
+        @Query() text = '',
+        @Query() minPrice?: number,
+        @Query() maxPrice?: number,
+    ): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        return this.searchListings({bsv20, sort, dir, type, data, text, minPrice, maxPrice, limit, offset});
+    }
 
-        const { rows } = await pool.query(`
-            SELECT l.num, l.txid, l.vout, i.filehash, i.filesize, i.filetype, i.origin, l.height, l.idx, t.lock, l.spend, i.map, true as listing, l.price, l.payout, i.sigma
-            FROM ordinal_lock_listings l
-            JOIN inscriptions i ON i.origin=l.origin
+    public async searchListings(search: MarketSearch): Promise<Txo[]> {
+        const { bsv20, sort, dir, type, data, text, minPrice, maxPrice, limit, offset } = search;
+        const params: any[] = [bsv20];
+        let sql = [`SELECT t.*, o.data as odata, o.num
+            FROM listings l
             JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
-            WHERE l.txid=$1 AND l.vout=$2`,
-            [op.txid, op.vout]
-        );
-        const listing = Inscription.fromRow(rows[0])
-        // const listing = await Listing.loadOneByOutpoint(Outpoint.fromString(outpoint));
-        const txnData = await jb.GetTransaction(listing.txid);
-        const tx = Tx.fromBuffer(Buffer.from(txnData?.transaction || '', 'base64'));
-        listing.script = tx.txOuts[listing.vout].script.toBuffer().toString('base64');
-        return listing
+            JOIN origins o ON o.origin = t.origin
+            WHERE l.spend = '\\x' and l.bsv20 = $1`];
+
+        if(type) {
+            params.push(`${type}%`);
+            sql.push(`AND l.filetype like $${params.length}`)
+        }
+
+        if(data) {
+            params.push(data);
+            sql.push(`AND l.data @> $${params.length}`)
+        }
+
+        if(text) {
+            params.push(text);
+            sql.push(`AND l.search_text_en @@ plainto_tsquery('english', $${params.length})`)
+        }
+
+        if (minPrice) {
+            params.push(minPrice);
+            sql.push(`AND l.price >= $${params.length}`)
+        }
+
+        if (maxPrice) {
+            params.push(maxPrice);
+            sql.push(`AND l.price <= $${params.length}`)
+        }
+
+        switch(sort) {
+            case ListingSort.num:
+                sql.push(`ORDER BY l.num ${dir}`);
+                break;
+            case ListingSort.price:
+                sql.push(`ORDER BY l.price ${dir}`);
+                break;
+            default:
+                sql.push(`ORDER BY l.height ${dir}, l.idx ${dir}`);
+        }
+
+        params.push(limit);
+        sql.push(`LIMIT $${params.length}`)
+        params.push(offset);
+        sql.push(`OFFSET $${params.length}`)
+        
+        console.log(sql, params)
+        const { rows } = await pool.query(sql.join(' '), params);
+        return rows.map((row: any) => Txo.fromRow(row));
     }
+
+
 }

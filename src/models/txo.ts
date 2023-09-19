@@ -1,129 +1,144 @@
-import { Address, Hash } from '@ts-bitcoin/core';
+import { JungleBusClient } from "@gorillapool/js-junglebus";
+import { Address, OpCode, Script, Tx } from '@ts-bitcoin/core';
 import { NotFound } from 'http-errors';
-import { pool } from "../db";
 import { Outpoint } from "./outpoint";
-import { Inscription } from "./inscription";
-import { SortDirection } from './listing';
+import { pool } from "../db";
+import { File } from "./file";
+import { Sigma } from "./sigma";
 
+const jb = new JungleBusClient('https://junglebus.gorillapool.io');
+export class InscriptionData {
+    type?: string = '';
+    data?: Buffer = Buffer.alloc(0);
+}
+
+export class Origin {
+    outpoint: Outpoint = new Outpoint();
+    data?: TxoData;
+    num?: number;
+}
+
+export enum Bsv20Status {
+    Invalid = -1,
+    Pending = 0,
+    Valid = 1
+}
+
+export class TxoData {
+    types?: string[];
+    insc?: File;
+    map?: {[key: string]:any};
+    b?: File;
+    sigma?: Sigma[];
+    list?: {
+        price: number;
+        payout: string;
+    };
+    bsv20?: {
+        id?:  Outpoint;
+        p: string;
+        op: string;
+        tick?: string;
+        amt: string;
+        status?: Bsv20Status 
+    };
+}
+
+export interface Inscription {
+    json?: any;
+    text?: string;
+    words?: string[];
+    file: File;
+}
 export class Txo {
     txid: string = '';
     vout: number = 0;
+    outpoint: Outpoint = new Outpoint();
     satoshis: number = 0;
     accSats: number = 0;
-    lock: string = '';
-    script: string = '';
-    spend: string = '';
-    origin: Outpoint = new Outpoint();
+    owner?: string;
+    script?: string;
+    spend?: string;
+    origin?: Origin;
     height: number = 0;
     idx: number = 0;
-    listing: boolean = false;
+    data?: TxoData;
 
-    static async loadUtxosByLock(lock: string): Promise<Txo[]> {
-        const { rows } = await pool.query(`
-            SELECT * 
-            FROM txos 
-            WHERE lock = $1 AND spend = decode('', 'hex')`,
-            [Buffer.from(lock, 'hex')],
-        );
-        return rows.map((r: any) => Txo.fromRow(r));
-    }
-
-    static async loadUtxosByAddress(address: string): Promise<Txo[]> {
-        const lock = Hash.sha256(
-            Address.fromString(address).toTxOutScript().toBuffer()
-        )
-            .reverse()
-            .toString('hex');
-        return Txo.loadUtxosByLock(lock);
-    }
-
-    static async loadHistoryByLock(lock: string): Promise<Txo[]> {
-        const { rows } = await pool.query(`
-            SELECT * 
-            FROM txos 
-            WHERE lock = $1 AND spend = decode('', 'hex')`,
-            [Buffer.from(lock, 'hex')],
-        );
-        return rows.map((r: any) => Txo.fromRow(r));
-    }
-
-    static async loadHistoryByAddress(address: string): Promise<Txo[]> {
-        const lock = Hash.sha256(
-            Address.fromString(address).toTxOutScript().toBuffer()
-        )
-            .reverse()
-            .toString('hex');
-        return Txo.loadHistoryByLock(lock);
-    }
-
-    static async loadInscriptionsByLock(lock: string, limit = 100, offset = 0, dir = SortDirection.asc, excludeBsv20: boolean): Promise<Inscription[]> {
-        let where = excludeBsv20 ? 'AND t.bsv20 = false' : '';
-        const query = `
-            SELECT i.num, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing, l.price, l.payout, i.sigma, t.bsv20
+    static async loadByOutpoint(outpoint: Outpoint): Promise<Txo> {
+        const { rows: [row] } = await pool.query(`SELECT t.*, o.data as odata, o.num
             FROM txos t
-            JOIN inscriptions i ON i.origin=t.origin
-            LEFT JOIN ordinal_lock_listings l ON l.txid=t.txid AND l.vout=t.vout
-            WHERE t.lock = $1 AND t.spend = decode('', 'hex')
-            ${where}
-            ORDER BY i.num ${dir.toLowerCase() == SortDirection.desc ? 'DESC' : 'ASC'} NULLS FIRST
-            LIMIT $2 OFFSET $3`
-        const { rows } = await pool.query(query,
-            [Buffer.from(lock, 'hex'), limit, offset],
-        );
-        return rows.map((r: any) => Inscription.fromRow(r));
-    }
-
-    static async loadInscriptionByOutpoint(outpoint: Outpoint): Promise<Inscription> {
-        const { rows } = await pool.query(`
-            SELECT i.num, t.txid, t.vout, i.filehash, i.filesize, i.filetype, t.origin, t.height, t.idx, t.lock, t.spend, i.map, t.listing, l.price, l.payout, i.sigma, t.bsv20
-            FROM txos t
-            JOIN inscriptions i ON i.origin=t.origin
-            LEFT JOIN ordinal_lock_listings l ON l.txid=t.txid AND l.vout=t.vout
-            WHERE t.txid=$1 AND t.vout=$2
-            ORDER BY i.num ASC
-            LIMIT 1`,
+            JOIN origins o ON o.origin = t.origin
+            WHERE t.txid = $1 AND t.vout = $2`,
             [outpoint.txid, outpoint.vout],
         );
-        if(!rows.length) {
-            throw new NotFound(`Inscription not found: ${outpoint.toString()}`);
-        }
-        const ins = Inscription.fromRow(rows[0]);
 
-        return ins;
+        return Txo.fromRow(row);
     }
 
-    static async loadInscriptionsByAddress(address: string, limit = 100, offset = 0, dir = SortDirection.asc, excludeBsv20: boolean): Promise<Inscription[]> {
-        const lock = Hash.sha256(
-            Address.fromString(address).toTxOutScript().toBuffer()
-        )
-            .reverse()
-            .toString('hex');
-        return Txo.loadInscriptionsByLock(lock, limit, offset, dir, excludeBsv20);
-    }
-
-    static async loadOneByOrigin(origin: string): Promise<Txo> {
-        const { rows } = await pool.query(`
-            SELECT *
-            FROM txos
-            WHERE origin = $1 AND spend = decode('', 'hex')`,
-            [Outpoint.fromString(origin).toBuffer()],
-        );
-        if (rows.length === 0) throw new NotFound('Txo not found');
-        return Txo.fromRow(rows[0]);
+    static async loadFileByOrigin(origin: Outpoint) {
+        const jbTxn = await jb.GetTransaction(origin.txid.toString('hex'));
+        if (!jbTxn) throw new NotFound('not-found');
+        const tx = Tx.fromBuffer(Buffer.from(jbTxn.transaction, 'base64'));
+        return Txo.parseOutputScript(tx.txOuts[origin.vout].script);
     }
 
     static fromRow(row: any) {
         const txo = new Txo();
         txo.txid = row.txid.toString('hex');
         txo.vout = row.vout;
+        txo.outpoint = new Outpoint(row.txid, row.vout);
         txo.satoshis = parseInt(row.satoshis, 10);
-        txo.accSats = row.accsats;
-        txo.lock = row.lock.toString('hex');
+        txo.accSats = row.outacc;
+        txo.owner = row.pkhash && Address.fromPubKeyHashBuf(row.pkhash).toString();
         txo.spend = row.spend?.toString('hex');
         txo.origin = row.origin && Outpoint.fromBuffer(row.origin);
         txo.height = row.height;
         txo.idx = row.idx;
-        txo.listing = row.listing;
+        txo.data = row.data;
+        txo.origin = {
+            outpoint: Outpoint.fromBuffer(row.origin),
+            data: row.odata ? row.odata : undefined,
+            num: row.num && parseInt(row.num, 10),
+        }
         return txo;
+    }
+
+    static parseOutputScript(script: Script): InscriptionData {
+        let opFalse = 0;
+        let opIf = 0;
+        let opORD = 0;
+        const lock = new Script();
+        for (let [i, chunk] of script.chunks.entries()) {
+            if (chunk.opCodeNum === OpCode.OP_FALSE) {
+                opFalse = i;
+            }
+            if (chunk.opCodeNum === OpCode.OP_IF) {
+                opIf = i;
+            }
+            if (chunk.buf?.equals(Buffer.from('ord', 'utf8'))) {
+                if (opFalse === i - 2 && opIf === i - 1) {
+                    opORD = i;
+                    lock.chunks = script.chunks.slice(0, i - 2);
+                    break;
+                }
+            }
+            lock.chunks.push(chunk);
+        }
+
+        let insData = new InscriptionData();
+        for (let i = opORD + 1; i < script.chunks.length; i += 2) {
+            if (script.chunks[i].buf) break;
+            switch (script.chunks[i].opCodeNum) {
+                case OpCode.OP_0:
+                    insData.data = script.chunks[i + 1].buf;
+                    break;
+                case OpCode.OP_1:
+                    insData.type = script.chunks[i + 1].buf?.toString('utf8');
+                    break;
+                case OpCode.OP_ENDIF:
+                    break;
+            }
+        }
+        return insData;
     }
 }
