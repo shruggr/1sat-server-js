@@ -65,10 +65,11 @@ export class MarketController extends Controller {
     public async searchListings(search: MarketSearch): Promise<Txo[]> {
         const { bsv20, sort, dir, type, data, text, minPrice, maxPrice, limit, offset } = search;
         const params: any[] = [bsv20];
-        let sql = [`SELECT t.*, o.data as odata, o.num
+        let sql = [`SELECT t.*, o.data as odata, n.num
             FROM listings l
             JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
-            JOIN origins o ON o.origin = t.origin
+            JOIN txos o ON o.outpoint = t.origin
+            JOIN origins n ON n.origin = t.origin
             WHERE l.spend = '\\x' and l.bsv20 = $1`];
 
         if(type) {

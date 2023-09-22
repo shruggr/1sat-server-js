@@ -10,7 +10,8 @@ export class FungiblesController extends Controller {
         @Path() address: string,
     ): Promise<TokenBalance[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        const { rows } = await pool.query(`SELECT 
+        const hashBuf = Address.fromString(address).hashBuf
+        const sql = `SELECT 
                 COALESCE(data->'bsv20'->>'tick', data->'bsv20'->>'id') as tick,
                 data->'bsv20'->>'status' as status,
                 SUM(COALESCE(data->'bsv20'->>'amt', '0')::NUMERIC) as amt
@@ -18,9 +19,9 @@ export class FungiblesController extends Controller {
             WHERE pkhash=$1 AND spend='\\x' AND 
                 (data->'bsv20'->>'status' = '0' OR data->'bsv20'->>'status' = '1') AND
                 data->'bsv20'->>'op' != 'deploy'
-            GROUP BY tick, status`,
-            [Address.fromString(address).hashBuf],
-        )
+            GROUP BY tick, status`
+        console.log(sql, hashBuf.toString('hex'))
+        const { rows } = await pool.query(sql, [hashBuf]);
 
         // console.log("BALANCE ROWS:", rows)
         const results: {[ticker: string]:TokenBalance} = {};
@@ -54,9 +55,10 @@ export class FungiblesController extends Controller {
     ): Promise<Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf, tick];
-        let sql = `SELECT t.*, o.data as odata, o.num
+        let sql = `SELECT t.*, o.data as odata, n.num
             FROM txos t
-            JOIN origins o ON o.origin = t.origin 
+            JOIN txos o ON o.outpoint = t.origin
+            JOIN origins n ON n.origin = t.origin 
             WHERE pkhash = $1 AND spend = '\\x' AND 
                 t.data->'bsv20'->>'status' = '1' AND
                 (t.data->'bsv20'->>'tick' = $2 OR t.data->'bsv20'->>'id' = $2)`

@@ -11,7 +11,7 @@ export class CollectionsController extends Controller {
         const { rows: [row]} = await pool.query(`
             SELECT MAX((data->'map'->'subTypeData'->>'mintNumber')::INTEGER) as maxnum, 
             COUNT(1)::INTEGER as count
-            FROM origins
+            FROM txos
             WHERE data @> $1`, 
             [JSON.stringify({map: {subTypeData: {collectionId}}})],
         )

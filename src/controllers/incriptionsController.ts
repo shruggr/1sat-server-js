@@ -1,13 +1,10 @@
-import { JungleBusClient } from "@gorillapool/js-junglebus";
+
 import { Body, Controller, Get, Path, Post, Query, Route } from "tsoa";
-import { pool } from "../db";
+import { loadTx, pool } from "../db";
 import { Txo } from "../models/txo";
-import { Outpoint } from "../models/outpoint";
-import { Tx } from "@ts-bitcoin/core";
 import { TxoData } from "../models/txo";
 import { SortDirection } from "../models/sort-direction";
-
-const jb = new JungleBusClient('https://junglebus.gorillapool.io');
+import { Outpoint } from "../models/outpoint";
 
 @Route("api/inscriptions")
 export class InscriptionsController extends Controller {
@@ -40,9 +37,10 @@ export class InscriptionsController extends Controller {
 
     public async search(query?: TxoData, sort?: SortDirection, limit = 100, offset = 0): Promise<Txo[]> {
         const params: any[] = [];
-        let sql = `SELECT t.*, o.data as odata, o.num
+        let sql = `SELECT t.*, o.data as odata, n.num
             FROM txos t
-            JOIN origins o ON o.origin = t.origin 
+            JOIN txos o ON o.outpoint = t.origin
+            JOIN origins n ON n.origin = t.origin 
             WHERE t.spend='\\x' `;
         
         if(query) {
@@ -62,22 +60,6 @@ export class InscriptionsController extends Controller {
         console.log(sql, params)
         const { rows } = await pool.query(sql, params);
         return rows.map((row: any) => Txo.fromRow(row));
-    }
-
-    @Get("{outpoint}")
-    public async getTxoByOutpoint(
-        @Path() outpoint: string,
-        @Query() script = false
-    ): Promise<Txo> {
-        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        const txo = await Txo.loadByOutpoint(Outpoint.fromString(outpoint));
-        if(script) {
-            // TODO: Add Caching
-            const txnData = await jb.GetTransaction(txo.txid);
-            const tx = Tx.fromBuffer(Buffer.from(txnData?.transaction || '', 'base64'));
-            txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
-        }
-        return txo
     }
 
     // @Get("geohash/{geohashes}")
@@ -100,4 +82,42 @@ export class InscriptionsController extends Controller {
     //     )
     //     return rows.rows.map(row => Inscription.fromRow(row));
     // }
+
+    @Get("{outpoint}")
+    public async getTxoByOutpoint(
+        @Path() outpoint: string,
+        @Query() script = false
+    ): Promise<Txo> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        const txo = await Txo.loadByOutpoint(Outpoint.fromString(outpoint));
+        if(script) {
+            const tx = await loadTx(txo.txid);
+            txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
+        }
+        return txo
+    }
+
+    @Get("{origin}/latest")
+    public async getLatestByOrigin(
+        @Path() origin: string,
+        @Query() script = false
+    ): Promise<Txo> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        const {rows: [lastest]} = await pool.query(`
+            SELECT t.*, o.data as odata, n.num
+            FROM txos t
+            JOIN txos o ON o.outpoint = t.origin
+            JOIN origins n ON n.origin = t.origin 
+            WHERE t.origin = $1
+            ORDER BY t.height DESC, t.idx DESC`,
+            [Outpoint.fromString(origin).toBuffer()]
+        );
+
+        const txo = Txo.fromRow(lastest);
+        if(script) {
+            const tx = await loadTx(txo.txid);
+            txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
+        }
+        return txo;
+    }
 }

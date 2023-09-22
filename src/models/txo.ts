@@ -1,12 +1,9 @@
-import { JungleBusClient } from "@gorillapool/js-junglebus";
-import { Address, OpCode, Script, Tx } from '@ts-bitcoin/core';
-import { NotFound } from 'http-errors';
+import { Address, OpCode, Script } from '@ts-bitcoin/core';
 import { Outpoint } from "./outpoint";
-import { pool } from "../db";
+import { loadTx, pool } from "../db";
 import { File } from "./file";
 import { Sigma } from "./sigma";
 
-const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 export class InscriptionData {
     type?: string = '';
     data?: Buffer = Buffer.alloc(0);
@@ -65,9 +62,10 @@ export class Txo {
     data?: TxoData;
 
     static async loadByOutpoint(outpoint: Outpoint): Promise<Txo> {
-        const { rows: [row] } = await pool.query(`SELECT t.*, o.data as odata, o.num
+        const { rows: [row] } = await pool.query(`SELECT t.*, o.data as odata, n.num
             FROM txos t
-            JOIN origins o ON o.origin = t.origin
+            JOIN txos o ON o.outpoint = t.origin
+            JOIN origins n ON n.origin = t.origin
             WHERE t.txid = $1 AND t.vout = $2`,
             [outpoint.txid, outpoint.vout],
         );
@@ -76,9 +74,7 @@ export class Txo {
     }
 
     static async loadFileByOrigin(origin: Outpoint) {
-        const jbTxn = await jb.GetTransaction(origin.txid.toString('hex'));
-        if (!jbTxn) throw new NotFound('not-found');
-        const tx = Tx.fromBuffer(Buffer.from(jbTxn.transaction, 'base64'));
+        const tx = await loadTx(origin.txid.toString('hex'));
         return Txo.parseOutputScript(tx.txOuts[origin.vout].script);
     }
 
