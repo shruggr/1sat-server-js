@@ -91,7 +91,7 @@ export class TxosController extends Controller {
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
             JOIN origins n ON n.origin = t.origin 
-            WHERE outpoint = ANY($1)`, 
+            WHERE t.outpoint = ANY($1)`, 
             [op]
         );
         return Promise.all(rows.map(async (row: any) => {
