@@ -116,9 +116,9 @@ export class TxosController extends Controller {
             sql.push(`AND spend = '\\x'`)
         }
         if(bsv20) {
-            sql.push(`AND o.data->'bsv20' IS NOT NULL`)
+            sql.push(`AND t.data->'bsv20' IS NOT NULL`)
         } else {
-            sql.push(`AND o.data->'bsv20' IS NULL`)
+            sql.push(`AND t.data->'bsv20' IS NULL`)
         }
         if(query) {
             params.push(query);
@@ -127,7 +127,7 @@ export class TxosController extends Controller {
 
         if(type) {
             params.push(`${type}%`);
-            sql.push(`AND o.data->'insc'->'file'->>'type' like $${params.length}`)
+            sql.push(`AND t.data->'insc'->'file'->>'type' like $${params.length}`)
         }
 
         sql.push(`ORDER BY height DESC, idx DESC`)

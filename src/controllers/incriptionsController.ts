@@ -5,6 +5,7 @@ import { Txo } from "../models/txo";
 import { TxoData } from "../models/txo";
 import { SortDirection } from "../models/sort-direction";
 import { Outpoint } from "../models/outpoint";
+import { BadRequest } from "http-errors";
 
 @Route("api/inscriptions")
 export class InscriptionsController extends Controller {
@@ -45,7 +46,7 @@ export class InscriptionsController extends Controller {
         
         if(query) {
             params.push(JSON.stringify(query));
-            sql += `AND o.data @> $${params.length} `
+            sql += `AND t.data @> $${params.length} `
         }
 
         if(sort) {
@@ -62,26 +63,29 @@ export class InscriptionsController extends Controller {
         return rows.map((row: any) => Txo.fromRow(row));
     }
 
-    // @Get("geohash/{geohashes}")
-    // public async searchGeohashes(
-    //     @Path() geohashes: string,
-    // ): Promise<Inscription[]> {
-    //     const params: string[] = []
-    //     const hashes: string[] = geohashes.split(',')
-    //     if(!hashes.length) {
-    //         throw new BadRequest();
-    //     }
-    //     const where: string[] = []
-    //     hashes.forEach(h => {
-    //         params.push(`${h}%`)
-    //         where.push(`geohash LIKE $${params.length}`)
-    //     })
-    //     const rows = await pool.query(`SELECT * FROM inscriptions
-    //         WHERE ${where.join(' OR ')}`,
-    //         params
-    //     )
-    //     return rows.rows.map(row => Inscription.fromRow(row));
-    // }
+    @Get("geohash/{geohashes}")
+    public async searchGeohashes(
+        @Path() geohashes: string,
+    ): Promise<Txo[]> {
+        const params: string[] = []
+        const hashes: string[] = geohashes.split(',')
+        if(!hashes.length) {
+            throw new BadRequest();
+        }
+        const where: string[] = []
+        hashes.forEach(h => {
+            params.push(`${h}%`)
+            where.push(`t.geohash LIKE $${params.length}`)
+        })
+        const {rows} = await pool.query(`SELECT t.*, o.data as odata, n.num
+            FROM txos t
+            JOIN txos o ON o.outpoint = t.origin
+            JOIN origins n ON n.origin = t.origin 
+            WHERE ${where.join(' OR ')}`,
+            params
+        )
+        return rows.map(row => Txo.fromRow(row));
+    }
 
     @Get("{outpoint}")
     public async getTxoByOutpoint(
