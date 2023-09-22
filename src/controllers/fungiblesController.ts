@@ -59,9 +59,10 @@ export class FungiblesController extends Controller {
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
             JOIN origins n ON n.origin = t.origin 
-            WHERE pkhash = $1 AND spend = '\\x' AND 
+            WHERE t.pkhash = $1 AND t.spend = '\\x' AND 
                 t.data->'bsv20'->>'status' = '1' AND
-                (t.data->'bsv20'->>'tick' = $2 OR t.data->'bsv20'->>'id' = $2)`
+                (t.data->'bsv20'->>'tick' = $2 OR t.data->'bsv20'->>'id' = $2) AND
+                t.data->'bsv20'->>'amt' IS NOT NULL`
         
         console.log(sql, params)
         const { rows } = await pool.query(sql, params);

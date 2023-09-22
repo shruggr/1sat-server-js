@@ -111,9 +111,9 @@ export class TxosController extends Controller {
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
             JOIN origins n ON n.origin = t.origin 
-            WHERE pkhash = $1`]
+            WHERE t.pkhash = $1`]
         if(unspent) {
-            sql.push(`AND spend = '\\x'`)
+            sql.push(`AND t.spend = '\\x'`)
         }
         if(bsv20) {
             sql.push(`AND t.data->'bsv20' IS NOT NULL`)
