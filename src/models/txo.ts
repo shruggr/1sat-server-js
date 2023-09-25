@@ -103,7 +103,6 @@ export class Txo {
         let opFalse = 0;
         let opIf = 0;
         let opORD = 0;
-        const lock = new Script();
         for (let [i, chunk] of script.chunks.entries()) {
             if (chunk.opCodeNum === OpCode.OP_FALSE) {
                 opFalse = i;
@@ -114,11 +113,9 @@ export class Txo {
             if (chunk.buf?.equals(Buffer.from('ord', 'utf8'))) {
                 if (opFalse === i - 2 && opIf === i - 1) {
                     opORD = i;
-                    lock.chunks = script.chunks.slice(0, i - 2);
                     break;
                 }
             }
-            lock.chunks.push(chunk);
         }
 
         let insData = new InscriptionData();
@@ -127,7 +124,7 @@ export class Txo {
             switch (script.chunks[i].opCodeNum) {
                 case OpCode.OP_0:
                     insData.data = script.chunks[i + 1].buf;
-                    break;
+                    return insData;
                 case OpCode.OP_1:
                     insData.type = script.chunks[i + 1].buf?.toString('utf8');
                     break;
