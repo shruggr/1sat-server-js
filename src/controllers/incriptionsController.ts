@@ -41,12 +41,11 @@ export class InscriptionsController extends Controller {
         let sql = `SELECT t.*, o.data as odata, n.num
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
-            JOIN origins n ON n.origin = t.origin 
-            WHERE t.spend='\\x' `;
+            JOIN origins n ON n.origin = t.origin `;
         
         if(query) {
             params.push(JSON.stringify(query));
-            sql += `AND t.data @> $${params.length} `
+            sql += `WHERE t.data @> $${params.length} `
         }
 
         if(sort) {
