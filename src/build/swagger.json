@@ -396,7 +396,7 @@
 		},
 		"/api/inscriptions/search": {
 			"get": {
-				"operationId": "GetSearch",
+				"operationId": "GetInscriptionSearch",
 				"responses": {
 					"200": {
 						"description": "Ok",
@@ -453,7 +453,7 @@
 				]
 			},
 			"post": {
-				"operationId": "PostUnspentByAddress",
+				"operationId": "PostInscriptionSearch",
 				"responses": {
 					"200": {
 						"description": "Ok",

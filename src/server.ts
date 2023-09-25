@@ -1,22 +1,15 @@
-// import { Address } from '@ts-bitcoin/core';
-// import { createHash } from 'crypto';
 import * as cors from 'cors';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import * as express from 'express';
-import { ErrorRequestHandler, Request, Response, NextFunction } from 'express';
-import { HttpError, NotFound } from 'http-errors';
+import { Request, Response } from 'express';
+import { NotFound } from 'http-errors';
 import "isomorphic-fetch";
 import * as swaggerUi from 'swagger-ui-express'
 import { RegisterRoutes } from "./build/routes";
-// import Redis from "ioredis";
-// import { Outpoint } from './models/outpoint';
-// import { Txo } from './models/txo';
-// import { Listing } from './models/listing.ts.bak';
 import axios from 'axios';
 
 const server = express();
-// const pubClient = new Redis();
 
 async function main() {
     // const PORT = process.env.PORT || 8081;
@@ -161,11 +154,10 @@ server.use((req, res, next) => {
     console.log(req.path)
     next(new NotFound("Not Found"));
 });
-const errorMiddleware = ((err: TypeError | HttpError, req: Request, res: Response, next: NextFunction) => {
-    console.error(req.path, (err as HttpError).status || 500, err.message);
-    res.status((err as HttpError).status || 500).json({ message: err.message })
-}) as ErrorRequestHandler
 
-server.use(errorMiddleware);
+server.use((err, req, res, next) => {
+    console.error(req.path, err.status || 500, err.message);
+    res.status(err.status || 500).json({ message: err.message })
+}); 
 
 main().catch(console.error);

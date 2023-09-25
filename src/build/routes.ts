@@ -240,9 +240,9 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/inscriptions/search',
             ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
-            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getSearch)),
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getInscriptionSearch)),
 
-            function InscriptionsController_getSearch(request: any, response: any, next: any) {
+            function InscriptionsController_getInscriptionSearch(request: any, response: any, next: any) {
             const args = {
                     q: {"in":"query","name":"q","dataType":"string"},
                     sort: {"in":"query","name":"sort","ref":"SortDirection"},
@@ -259,7 +259,7 @@ export function RegisterRoutes(app: Router) {
                 const controller = new InscriptionsController();
 
 
-              const promise = controller.getSearch.apply(controller, validatedArgs as any);
+              const promise = controller.getInscriptionSearch.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
@@ -268,9 +268,9 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.post('/api/inscriptions/search',
             ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
-            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.postUnspentByAddress)),
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.postInscriptionSearch)),
 
-            function InscriptionsController_postUnspentByAddress(request: any, response: any, next: any) {
+            function InscriptionsController_postInscriptionSearch(request: any, response: any, next: any) {
             const args = {
                     query: {"in":"body","name":"query","ref":"TxoData"},
                     sort: {"in":"query","name":"sort","ref":"SortDirection"},
@@ -287,7 +287,7 @@ export function RegisterRoutes(app: Router) {
                 const controller = new InscriptionsController();
 
 
-              const promise = controller.postUnspentByAddress.apply(controller, validatedArgs as any);
+              const promise = controller.postInscriptionSearch.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

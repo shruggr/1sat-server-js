@@ -10,7 +10,7 @@ import { BadRequest } from "http-errors";
 @Route("api/inscriptions")
 export class InscriptionsController extends Controller {
     @Get("search")
-    public async getSearch(
+    public async getInscriptionSearch(
         @Query() q?: string,
         @Query() sort?: SortDirection,
         @Query() limit: number = 100,
@@ -26,7 +26,7 @@ export class InscriptionsController extends Controller {
     }
 
     @Post("search")
-    public async postUnspentByAddress(
+    public async postInscriptionSearch(
         @Body() query?: TxoData,
         @Query() sort?: SortDirection,
         @Query() limit: number = 100,
@@ -37,6 +37,7 @@ export class InscriptionsController extends Controller {
     }
 
     public async search(query?: TxoData, sort?: SortDirection, limit = 100, offset = 0): Promise<Txo[]> {
+        if ((query as any)?.txid !== undefined) throw BadRequest('This is not a valid query. Reach out on 1sat discord for assistance.')
         const params: any[] = [];
         let sql = `SELECT t.*, o.data as odata, n.num
             FROM txos t
