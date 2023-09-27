@@ -9,10 +9,17 @@ export class InscriptionData {
     data?: Buffer = Buffer.alloc(0);
 }
 
+export interface Claim {
+    sub: string;
+    type: string;
+    value: string;
+}
 export class Origin {
     outpoint: Outpoint = new Outpoint();
     data?: TxoData;
     num?: number;
+    map?: {[key: string]:any};
+    claims?: Claim[]
 }
 
 export enum Bsv20Status {

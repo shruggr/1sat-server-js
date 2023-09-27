@@ -13,6 +13,8 @@ import { InscriptionsController } from './../controllers/incriptionsController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { MarketController } from './../controllers/marketController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { OriginsController } from './../controllers/originsController';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { StatsController } from './../controllers/statsController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { TxController } from './../controllers/txController';
@@ -87,12 +89,24 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Claim": {
+        "dataType": "refObject",
+        "properties": {
+            "sub": {"dataType":"string","required":true},
+            "type": {"dataType":"string","required":true},
+            "value": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Origin": {
         "dataType": "refObject",
         "properties": {
             "outpoint": {"ref":"Outpoint"},
             "data": {"ref":"TxoData"},
             "num": {"dataType":"double"},
+            "map": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
+            "claims": {"dataType":"array","array":{"dataType":"refObject","ref":"Claim"}},
         },
         "additionalProperties": false,
     },
@@ -232,6 +246,32 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getBsv20UtxosByTick.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/bsv20/:address/id/:id',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20UtxosById)),
+
+            function FungiblesController_getBsv20UtxosById(request: any, response: any, next: any) {
+            const args = {
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+                    id: {"in":"path","name":"id","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new FungiblesController();
+
+
+              const promise = controller.getBsv20UtxosById.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
@@ -434,6 +474,31 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.searchMap.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/origins/:origin/claims',
+            ...(fetchMiddlewares<RequestHandler>(OriginsController)),
+            ...(fetchMiddlewares<RequestHandler>(OriginsController.prototype.getClaims)),
+
+            function OriginsController_getClaims(request: any, response: any, next: any) {
+            const args = {
+                    origin: {"in":"path","name":"origin","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new OriginsController();
+
+
+              const promise = controller.getClaims.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
