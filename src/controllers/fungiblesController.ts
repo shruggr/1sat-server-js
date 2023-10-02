@@ -13,13 +13,14 @@ export class FungiblesController extends Controller {
         const hashBuf = Address.fromString(address).hashBuf
         const sql = `SELECT 
                 COALESCE(data->'bsv20'->>'tick', data->'bsv20'->>'id') as tick,
+                CASE WHEN data->>'list' IS NOT NULL THEN true ELSE false END as listing,
                 data->'bsv20'->>'status' as status,
                 SUM(COALESCE(data->'bsv20'->>'amt', '0')::NUMERIC) as amt
             FROM txos
             WHERE pkhash=$1 AND spend='\\x' AND 
                 (data->'bsv20'->>'status' = '0' OR data->'bsv20'->>'status' = '1') AND
                 data->'bsv20'->>'op' != 'deploy'
-            GROUP BY tick, status`
+            GROUP BY tick, listing, status`
         console.log(sql, hashBuf.toString('hex'))
         const { rows } = await pool.query(sql, [hashBuf]);
 

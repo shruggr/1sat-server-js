@@ -70,7 +70,7 @@ export class MarketController extends Controller {
             JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
             JOIN txos o ON o.outpoint = t.origin
             JOIN origins n ON n.origin = t.origin
-            WHERE l.spend = '\\x' and l.bsv20 = $1`];
+            WHERE l.spend = '\\x' AND l.bsv20 = $1`];
 
         if(type) {
             params.push(`${type}%`);
