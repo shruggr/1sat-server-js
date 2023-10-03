@@ -1,7 +1,25 @@
 import { Address } from '@ts-bitcoin/core';
+import { BadRequest } from 'http-errors';
 import { Controller, Get, Path, Route } from "tsoa";
 import { pool } from "../db";
-import { Txo } from '../models/txo';
+import { Bsv20Status, Txo } from '../models/txo';
+
+export interface Token {
+    txid: string,
+    vout: number,
+    height: number,
+    idx: number,
+    tick: string,
+    max: string,
+    lim: string,
+    dec: number,
+    supply: string,
+    status: Bsv20Status,
+    available: number,
+    pctMinted: number,
+    accounts: number,
+    pending: number,
+}
 
 @Route("api/bsv20")
 export class FungiblesController extends Controller {
@@ -89,6 +107,32 @@ export class FungiblesController extends Controller {
         console.log(sql, params)
         const { rows } = await pool.query(sql, params);
         return rows.map((row: any) => Txo.fromRow(row));
+    }
+
+    @Get("tick/{tick}")
+    public async getBsv20TickStats(
+        @Path() tick: string
+    ): Promise<Token> {
+        if(tick.length > 4 || tick.includes("'") || tick.includes('"')) {
+            throw new BadRequest();
+        }
+        const { rows: [token] } = await pool.query(`SELECT b.*, a.accounts, p.pending
+            FROM bsv20 b, (
+                SELECT COUNT(DISTINCT pkhash) as accounts 
+                FROM txos 
+                WHERE spend = '\\x' AND data @> '{"bsv20": {"status": 1, "tick": "${tick}"}}'
+            ) a, (
+                SELECT COALESCE(SUM(amt), 0) as pending
+                FROM bsv20_mints m
+                WHERE tick=$1 AND status=0
+            ) p
+            WHERE b.status = 1 AND tick=$1`,
+            [tick],
+        );
+        return {...token, 
+            txid: token.txid.toString('hex'),
+            idx: parseInt(token.idx, 10)
+        } as Token;
     }
 }
 

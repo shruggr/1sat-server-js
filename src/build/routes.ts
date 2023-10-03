@@ -130,6 +130,27 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Token": {
+        "dataType": "refObject",
+        "properties": {
+            "txid": {"dataType":"string","required":true},
+            "vout": {"dataType":"double","required":true},
+            "height": {"dataType":"double","required":true},
+            "idx": {"dataType":"double","required":true},
+            "tick": {"dataType":"string","required":true},
+            "max": {"dataType":"string","required":true},
+            "lim": {"dataType":"string","required":true},
+            "dec": {"dataType":"double","required":true},
+            "supply": {"dataType":"string","required":true},
+            "status": {"ref":"Bsv20Status","required":true},
+            "available": {"dataType":"double","required":true},
+            "pctMinted": {"dataType":"double","required":true},
+            "accounts": {"dataType":"double","required":true},
+            "pending": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "SortDirection": {
         "dataType": "refEnum",
         "enums": ["asc","desc","ASC","DESC"],
@@ -278,6 +299,31 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/bsv20/tick/:tick',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20TickStats)),
+
+            function FungiblesController_getBsv20TickStats(request: any, response: any, next: any) {
+            const args = {
+                    tick: {"in":"path","name":"tick","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new FungiblesController();
+
+
+              const promise = controller.getBsv20TickStats.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/inscriptions/search',
             ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
             ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getInscriptionSearch)),
@@ -417,7 +463,6 @@ export function RegisterRoutes(app: Router) {
 
             function MarketController_getOpenListings(request: any, response: any, next: any) {
             const args = {
-                    search: {"default":"","in":"query","name":"search","dataType":"string"},
                     sort: {"default":"recent","in":"query","name":"sort","ref":"ListingSort"},
                     dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
                     q: {"in":"query","name":"q","dataType":"string"},

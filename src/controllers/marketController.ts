@@ -25,7 +25,6 @@ export class MarketSearch {
 export class MarketController extends Controller {
     @Get("")
     public async getOpenListings(
-        @Query() search: string = '',
         @Query() sort: ListingSort = ListingSort.recent,
         @Query() dir: SortDirection = SortDirection.desc,
         @Query() q?: string,

@@ -266,6 +266,78 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"Token": {
+				"properties": {
+					"txid": {
+						"type": "string"
+					},
+					"vout": {
+						"type": "number",
+						"format": "double"
+					},
+					"height": {
+						"type": "number",
+						"format": "double"
+					},
+					"idx": {
+						"type": "number",
+						"format": "double"
+					},
+					"tick": {
+						"type": "string"
+					},
+					"max": {
+						"type": "string"
+					},
+					"lim": {
+						"type": "string"
+					},
+					"dec": {
+						"type": "number",
+						"format": "double"
+					},
+					"supply": {
+						"type": "string"
+					},
+					"status": {
+						"$ref": "#/components/schemas/Bsv20Status"
+					},
+					"available": {
+						"type": "number",
+						"format": "double"
+					},
+					"pctMinted": {
+						"type": "number",
+						"format": "double"
+					},
+					"accounts": {
+						"type": "number",
+						"format": "double"
+					},
+					"pending": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"txid",
+					"vout",
+					"height",
+					"idx",
+					"tick",
+					"max",
+					"lim",
+					"dec",
+					"supply",
+					"status",
+					"available",
+					"pctMinted",
+					"accounts",
+					"pending"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"SortDirection": {
 				"enum": [
 					"asc",
@@ -456,6 +528,34 @@
 					{
 						"in": "path",
 						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/tick/{tick}": {
+			"get": {
+				"operationId": "GetBsv20TickStats",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Token"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "tick",
 						"required": true,
 						"schema": {
 							"type": "string"
@@ -707,15 +807,6 @@
 				},
 				"security": [],
 				"parameters": [
-					{
-						"in": "query",
-						"name": "search",
-						"required": false,
-						"schema": {
-							"default": "",
-							"type": "string"
-						}
-					},
 					{
 						"in": "query",
 						"name": "sort",
