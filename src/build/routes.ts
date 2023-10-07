@@ -9,7 +9,7 @@ import { ContentController } from './../controllers/contentController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { FungiblesController } from './../controllers/fungiblesController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-import { InscriptionsController } from './../controllers/incriptionsController';
+import { InscriptionsController } from './../controllers/inscriptionsController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { MarketController } from './../controllers/marketController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -159,6 +159,15 @@ const models: TsoaRoute.Models = {
     "ListingSort": {
         "dataType": "refEnum",
         "enums": ["recent","num","price"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "PreviousOutput": {
+        "dataType": "refObject",
+        "properties": {
+            "lockingScript": {"dataType":"string","required":true},
+            "satoshis": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
@@ -568,6 +577,32 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getOpenListings.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/tx',
+            ...(fetchMiddlewares<RequestHandler>(TxController)),
+            ...(fetchMiddlewares<RequestHandler>(TxController.prototype.broadcast)),
+
+            function TxController_broadcast(request: any, response: any, next: any) {
+            const args = {
+                    rawtx: {"in":"body-prop","name":"rawtx","required":true,"dataType":"string"},
+                    parents: {"in":"body-prop","name":"parents","dataType":"array","array":{"dataType":"refObject","ref":"PreviousOutput"}},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new TxController();
+
+
+              const promise = controller.broadcast.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

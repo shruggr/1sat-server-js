@@ -354,6 +354,23 @@
 					"price"
 				],
 				"type": "string"
+			},
+			"PreviousOutput": {
+				"properties": {
+					"lockingScript": {
+						"type": "string"
+					},
+					"satoshis": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"lockingScript",
+					"satoshis"
+				],
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {}
@@ -1073,6 +1090,49 @@
 				},
 				"security": [],
 				"parameters": []
+			}
+		},
+		"/api/tx": {
+			"post": {
+				"operationId": "Broadcast",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {
+									"rawtx": {
+										"type": "string"
+									},
+									"parents": {
+										"items": {
+											"$ref": "#/components/schemas/PreviousOutput"
+										},
+										"type": "array"
+									}
+								},
+								"required": [
+									"rawtx"
+								],
+								"type": "object"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/api/tx/{txid}/submit": {

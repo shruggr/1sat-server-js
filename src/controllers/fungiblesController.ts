@@ -3,6 +3,7 @@ import { BadRequest } from 'http-errors';
 import { Controller, Get, Path, Route } from "tsoa";
 import { pool } from "../db";
 import { Bsv20Status, Txo } from '../models/txo';
+import { Outpoint } from '../models/outpoint';
 
 export interface Token {
     txid: string,
@@ -94,14 +95,14 @@ export class FungiblesController extends Controller {
         @Path() id: string,
     ): Promise<Txo[]> {
         const add = Address.fromString(address);
-        const params: any[] = [add.hashBuf, id];
+        const params: any[] = [add.hashBuf, id, Outpoint.fromString(id).toBuffer()];
         let sql = `SELECT t.*, o.data as odata, n.num
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
             JOIN origins n ON n.origin = t.origin 
             WHERE t.pkhash = $1 AND t.spend = '\\x' AND 
                 t.data->'bsv20'->>'status' = '1' AND
-                t.data->'bsv20'->>'id' = $2 AND
+                (t.data->'bsv20'->>'id' = $2 OR t.outpoint=$3)AND
                 t.data->'bsv20'->>'amt' IS NOT NULL`
         
         console.log(sql, params)
