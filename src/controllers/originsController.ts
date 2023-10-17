@@ -20,4 +20,10 @@ export class OriginsController extends Controller {
         rows.forEach(({oclaims}) => claims.push(...oclaims))
         return claims;
     }
+
+    @Get("count")
+    public async getCount(): Promise<number> {
+        const { rows: [{num}] } = await pool.query(`SELECT MAX(num) as num FROM origins`);
+        return num;
+    }
 }

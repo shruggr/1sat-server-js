@@ -36,6 +36,15 @@ export class InscriptionsController extends Controller {
         return this.search(query, sort, limit, offset);
     }
 
+    @Get("recent")
+    public async getRecentInscriptions(
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
+    ): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        return this.search(undefined, SortDirection.DESC, limit, offset);
+    }
+
     public async search(query?: TxoData, sort?: SortDirection, limit = 100, offset = 0): Promise<Txo[]> {
         if ((query as any)?.txid !== undefined) throw BadRequest('This is not a valid query. Reach out on 1sat discord for assistance.')
         const params: any[] = [];
@@ -50,7 +59,7 @@ export class InscriptionsController extends Controller {
         }
 
         if(sort) {
-            sql += `ORDER BY height ${sort}, idx ${sort} `
+            sql += `ORDER BY t.height ${sort}, t.idx ${sort} `
         }
 
         params.push(limit);

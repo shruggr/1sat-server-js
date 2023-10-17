@@ -1,5 +1,5 @@
 import { JungleBusClient } from "@gorillapool/js-junglebus";
-import createError from "http-errors";
+import * as createError from "http-errors";
 import { Redis } from "ioredis";
 import { BodyProp, Controller, Path, Post, Route } from "tsoa";
 import { Tx } from "@ts-bitcoin/core";
@@ -51,7 +51,7 @@ export class TxController extends Controller {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${process.env.ARC_TOKEN}`,
-                    ContentType: 'application/octet-stream',
+                    'Content-Type': 'application/octet-stream',
                     'X-WaitForStatus': '7'
                 },
                 body: eftx,
