@@ -60,6 +60,28 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"Inscription": {
+				"properties": {
+					"json": {},
+					"text": {
+						"type": "string"
+					},
+					"words": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"file": {
+						"$ref": "#/components/schemas/File"
+					}
+				},
+				"required": [
+					"file"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"Sigma": {
 				"properties": {
 					"algorithm": {
@@ -102,7 +124,7 @@
 						"type": "array"
 					},
 					"insc": {
-						"$ref": "#/components/schemas/File"
+						"$ref": "#/components/schemas/Inscription"
 					},
 					"map": {
 						"properties": {},
@@ -1111,8 +1133,16 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"type": "number",
-									"format": "double"
+									"properties": {
+										"count": {
+											"type": "number",
+											"format": "double"
+										}
+									},
+									"required": [
+										"count"
+									],
+									"type": "object"
 								}
 							}
 						}
@@ -1120,6 +1150,35 @@
 				},
 				"security": [],
 				"parameters": []
+			}
+		},
+		"/api/origins/num/{num}": {
+			"get": {
+				"operationId": "GetLatestByOrigin",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Txo"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "num",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
 			}
 		},
 		"/api/stats": {

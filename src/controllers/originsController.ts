@@ -1,6 +1,6 @@
 import { Controller, Get, Path, Route } from "tsoa";
 import { pool } from "../db";
-import { Claim } from '../models/txo';
+import { Claim, Txo } from '../models/txo';
 import { Outpoint } from '../models/outpoint';
 
 @Route("api/origins")
@@ -22,8 +22,26 @@ export class OriginsController extends Controller {
     }
 
     @Get("count")
-    public async getCount(): Promise<number> {
-        const { rows: [{num}] } = await pool.query(`SELECT MAX(num) as num FROM origins`);
-        return num;
+    public async getCount(): Promise<{count: number}> {
+        const { rows: [{count}] } = await pool.query(`SELECT MAX(num) as count FROM origins`);
+        return {count};
+    }
+
+    @Get("num/{num}")
+    public async getLatestByOrigin(
+        @Path() num: number,
+    ): Promise<Txo> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        const {rows: [lastest]} = await pool.query(`
+            SELECT t.*, o.data as odata, n.num
+            FROM txos t
+            JOIN txos o ON o.outpoint = t.origin
+            JOIN origins n ON n.origin = t.origin 
+            WHERE n.num = $1 AND t.spend = '\\x'
+            ORDER BY t.height DESC, t.idx DESC`,
+            [num]
+        );
+
+        return Txo.fromRow(lastest);
     }
 }

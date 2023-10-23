@@ -59,6 +59,17 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Inscription": {
+        "dataType": "refObject",
+        "properties": {
+            "json": {"dataType":"any"},
+            "text": {"dataType":"string"},
+            "words": {"dataType":"array","array":{"dataType":"string"}},
+            "file": {"ref":"File","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Sigma": {
         "dataType": "refObject",
         "properties": {
@@ -79,7 +90,7 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "types": {"dataType":"array","array":{"dataType":"string"}},
-            "insc": {"ref":"File"},
+            "insc": {"ref":"Inscription"},
             "map": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
             "b": {"ref":"File"},
             "sigma": {"dataType":"array","array":{"dataType":"refObject","ref":"Sigma"}},
@@ -603,6 +614,31 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getCount.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/origins/num/:num',
+            ...(fetchMiddlewares<RequestHandler>(OriginsController)),
+            ...(fetchMiddlewares<RequestHandler>(OriginsController.prototype.getLatestByOrigin)),
+
+            function OriginsController_getLatestByOrigin(request: any, response: any, next: any) {
+            const args = {
+                    num: {"in":"path","name":"num","required":true,"dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new OriginsController();
+
+
+              const promise = controller.getLatestByOrigin.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

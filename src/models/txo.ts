@@ -30,7 +30,7 @@ export enum Bsv20Status {
 
 export class TxoData {
     types?: string[];
-    insc?: File;
+    insc?: Inscription;
     map?: {[key: string]:any};
     b?: File;
     sigma?: Sigma[];
