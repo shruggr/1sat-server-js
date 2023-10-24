@@ -47,6 +47,22 @@ export class InscriptionsController extends Controller {
         return this.search(undefined, SortDirection.DESC, limit, offset);
     }
 
+    @Get("txid/{txid}")
+    public async getInscriptionsByTxid(
+        @Path() txid: string,
+    ): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        const params: any[] = [Buffer.from(txid, 'hex')];
+        let sql = `SELECT t.*, o.data as odata, n.num
+            FROM txos t
+            JOIN txos o ON o.outpoint = t.origin
+            JOIN origins n ON n.origin = t.origin 
+            WHERE t.txid=$1`;
+        
+        const { rows } = await pool.query(sql, params);
+        return rows.map((row: any) => Txo.fromRow(row));
+    }
+
     public async search(query?: TxoData, sort?: SortDirection, limit = 100, offset = 0): Promise<Txo[]> {
         if ((query as any)?.txid !== undefined) throw BadRequest('This is not a valid query. Reach out on 1sat discord for assistance.')
         const params: any[] = [];
