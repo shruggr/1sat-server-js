@@ -73,10 +73,10 @@ const models: TsoaRoute.Models = {
     "Sigma": {
         "dataType": "refObject",
         "properties": {
-            "algorithm": {"dataType":"string","required":true},
-            "address": {"dataType":"string","required":true},
-            "signature": {"dataType":"string","required":true},
-            "vin": {"dataType":"double","required":true},
+            "algorithm": {"dataType":"string"},
+            "address": {"dataType":"string"},
+            "signature": {"dataType":"string"},
+            "vin": {"dataType":"double"},
         },
         "additionalProperties": false,
     },

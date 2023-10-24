@@ -1,6 +1,7 @@
 import * as cors from 'cors';
 import * as dotenv from 'dotenv';
 dotenv.config();
+import { Address } from '@ts-bitcoin/core';
 import * as express from 'express';
 import { Request, Response } from 'express';
 import { NotFound } from 'http-errors';
@@ -8,6 +9,7 @@ import "isomorphic-fetch";
 import * as swaggerUi from 'swagger-ui-express'
 import { RegisterRoutes } from "./build/routes";
 import axios from 'axios';
+import { Redis } from 'ioredis';
 
 const server = express();
 
@@ -30,81 +32,54 @@ server.use((req, res, next) => {
 })
 
 server.use("/api/subscribe", (req, res, next) => {
-    // try {
-    //     let channels: string[] = []
-    //     let addresses: string[] = [];
-    //     const addressMap = new Map<string, string>();
-    //     if (Array.isArray(req.query['address'])) {
-    //         addresses = req.query['address'] as string[];
-    //     } else if (typeof req.query['address'] == 'string') {
-    //         addresses = [req.query['address']]
-    //     }
-    //     for (let a of addresses) {
-    //         const lock = createHash('sha256')
-    //             .update(Address.fromString(a).toTxOutScript().toBuffer())
-    //             .digest()
-    //             .reverse()
-    //             .toString('hex')
-    //         channels.push(lock)
-    //         addressMap.set(lock, a)
-    //     }
-    //     if (Array.isArray(req.query['lock'])) {
-    //         channels.push(...req.query['lock'] as string[]);
-    //     } else if (typeof req.query['lock'] == 'string') {
-    //         channels.push(req.query['lock']);
-    //     }
-    //     if (Array.isArray(req.query['channel'])) {
-    //         channels.push(...req.query['channel'] as string[]);
-    //     } else if (typeof req.query['channel'] == 'string') {
-    //         channels.push(req.query['channel']);
-    //     }
+    try {
+        let channels: string[] = []
+        let addresses: string[] = [];
+        if (Array.isArray(req.query['address'])) {
+            addresses = req.query['address'] as string[];
+        } else if (typeof req.query['address'] == 'string') {
+            addresses = [req.query['address']]
+        }
+        for (let a of addresses) {
+            const address = Address.fromString(a);
+            channels.push(address.hashBuf.toString('base64'))
+        }
+        if (Array.isArray(req.query['channel'])) {
+            channels.push(...req.query['channel'] as string[]);
+        } else if (typeof req.query['channel'] == 'string') {
+            channels.push(req.query['channel']);
+        }
 
-    //     res.writeHead(200, {
-    //         'Content-Type': 'text/event-stream',
-    //         'Connection': 'keep-alive',
-    //         'Cache-Control': 'no-cache',
-    //         'X-Accel-Buffering': 'no'
-    //     });
-    //     const subClient = pubClient.duplicate();
-    //     subClient.subscribe(...channels);
-    //     const interval = setInterval(() => res.write('event: ping\n'), 5000)
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Connection': 'keep-alive',
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no'
+        });
+        const subClient = new Redis();
+        subClient.subscribe(...channels);
+        const interval = setInterval(() => res.write('event: ping\n'), 5000)
 
-    //     res.on("close", () => {
-    //         clearInterval(interval)
-    //         subClient.quit()
-    //     })
+        res.on("close", () => {
+            clearInterval(interval)
+            subClient.quit()
+        })
 
-    //     subClient.on("message", async (channel, message) => {
-    //         channel = addressMap.has(channel) ?
-    //             addressMap.get(channel) as string :
-    //             channel;
+        subClient.on("message", async (channel, message) => {
+            let id = ''
 
-    //         let id = ''
-    //         if (message.length > 60) {
-    //             const outpoint = Outpoint.fromString(message)
-    //             if (channel == 'list') {
-    //                 const data = await Listing.loadOneByOutpoint(outpoint);
-    //                 message = JSON.stringify(data);
-    //                 id = `${outpoint.txid}_${outpoint.vout}_list}`
-
-    //             } else if (channel.length) {
-    //                 const data = await Txo.loadInscriptionByOutpoint(outpoint)
-    //                 message = JSON.stringify(data);
-    //                 id = `${outpoint.txid}_${outpoint.vout}_${data.spend}}`
-    //             }
-    //         }
-    //         res.write(`event: ${channel}\n`)
-    //         res.write(`data: ${message}\n`)
-    //         if (id) {
-    //             res.write(`id: ${id}\n\n`)
-    //         } else {
-    //             res.write(`\n`)
-    //         }
-    //     });
-    //     // setTimeout(() => res.end(), 60000)
-    // } catch (e: any) {
-    //     return next(e);
-    // }
+            res.write(`event: ${channel}\n`)
+            res.write(`data: ${message}\n`)
+            if (id) {
+                res.write(`id: ${id}\n\n`)
+            } else {
+                res.write(`\n`)
+            }
+        });
+        // setTimeout(() => res.end(), 60000)
+    } catch (e: any) {
+        return next(e);
+    }
 });
 
 server.get('/rest/*', async (req, res, next) => {

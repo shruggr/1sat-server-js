@@ -22,6 +22,7 @@ export class InscriptionsController extends Controller {
         if (q) {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
+        console.log("Query:", query)
         return this.search(query, sort, limit, offset);
     }
 
@@ -33,6 +34,7 @@ export class InscriptionsController extends Controller {
         @Query() offset: number = 0
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        console.log("POST search")
         return this.search(query, sort, limit, offset);
     }
 

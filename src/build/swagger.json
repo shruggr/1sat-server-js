@@ -98,12 +98,6 @@
 						"format": "double"
 					}
 				},
-				"required": [
-					"algorithm",
-					"address",
-					"signature",
-					"vin"
-				],
 				"type": "object",
 				"additionalProperties": false
 			},

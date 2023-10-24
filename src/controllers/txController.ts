@@ -24,29 +24,31 @@ export class TxController extends Controller {
         const txid = tx.id();
         console.log('Broadcasting TX:', txid, tx.toHex(), JSON.stringify(parents))
 
-        let eftx: Buffer
-        if (!parents) {
-            const outputs: {lockingScript: Buffer, satoshis: number}[] = [];
-            for (let txin of tx.txIns) {
-                const txid = txin.txHashBuf.reverse().toString('hex');
-                const txData = await jb.GetTransaction(txid);
-                const prevTx = Tx.fromBuffer(Buffer.from(txData?.transaction || '', 'base64'));
-                outputs.push({
-                    lockingScript: prevTx.txOuts[txin.txOutNum].script.toBuffer(),
-                    satoshis: prevTx.txOuts[txin.txOutNum].valueBn.toNumber(),
-                })
-            }
-            eftx = StandardToExtended(txbuf, outputs) as Buffer;
-        } else {
-            eftx = StandardToExtended(
-                txbuf,
-                parents.map(p => ({
-                    lockingScript: Buffer.from(p.lockingScript, 'base64'),
-                    satoshis: p.satoshis,
-                }))
-            ) as Buffer;
-        }
         try {
+            let eftx: Buffer
+            if (!parents) {
+                const outputs: { lockingScript: Buffer, satoshis: number }[] = [];
+                for (let txin of tx.txIns) {
+                    const txid = txin.txHashBuf.reverse().toString('hex');
+                    console.log("fetching", txid)
+                    const txData = await jb.GetTransaction(txid);
+                    console.log("TxData:", txData)
+                    const prevTx = Tx.fromBuffer(Buffer.from(txData?.transaction || '', 'base64'));
+                    outputs.push({
+                        lockingScript: prevTx.txOuts[txin.txOutNum].script.toBuffer(),
+                        satoshis: prevTx.txOuts[txin.txOutNum].valueBn.toNumber(),
+                    })
+                }
+                eftx = StandardToExtended(txbuf, outputs) as Buffer;
+            } else {
+                eftx = StandardToExtended(
+                    txbuf,
+                    parents.map(p => ({
+                        lockingScript: Buffer.from(p.lockingScript, 'base64'),
+                        satoshis: p.satoshis,
+                    }))
+                ) as Buffer;
+            }
             const resp = await fetch('https://api.taal.com/arc/v1/tx', {
                 method: 'POST',
                 headers: {
@@ -61,10 +63,10 @@ export class TxController extends Controller {
             console.log("Broadcast:", respText);
             const result = JSON.parse(respText);
 
-            if(result.status != 200) {
+            if (result.status != 200) {
                 throw createError(result.status || 500, `Broadcast failed: ${result.detail}`);
             }
-    
+
             pubClient.publish('submit', txid);
             return result.txid;
         } catch (e) {
