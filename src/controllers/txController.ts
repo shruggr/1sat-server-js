@@ -1,12 +1,12 @@
-import { JungleBusClient } from "@gorillapool/js-junglebus";
 import * as createError from "http-errors";
 import { Redis } from "ioredis";
 import { BodyProp, Controller, Path, Post, Route } from "tsoa";
 import { Tx } from "@ts-bitcoin/core";
+import { loadTx } from "../db";
 
+const { ARC } = process.env;
 const { StandardToExtended } = require("bitcoin-ef");
 const pubClient = new Redis();
-const jb = new JungleBusClient("junglebus.gorillapool.io");
 export interface PreviousOutput {
     lockingScript: string,
     satoshis: number
@@ -30,10 +30,7 @@ export class TxController extends Controller {
                 const outputs: { lockingScript: Buffer, satoshis: number }[] = [];
                 for (let txin of tx.txIns) {
                     const txid = txin.txHashBuf.reverse().toString('hex');
-                    console.log("fetching", txid)
-                    const txData = await jb.GetTransaction(txid);
-                    console.log("TxData:", txData)
-                    const prevTx = Tx.fromBuffer(Buffer.from(txData?.transaction || '', 'base64'));
+                    const prevTx = await loadTx(txid);
                     outputs.push({
                         lockingScript: prevTx.txOuts[txin.txOutNum].script.toBuffer(),
                         satoshis: prevTx.txOuts[txin.txOutNum].valueBn.toNumber(),
@@ -49,7 +46,7 @@ export class TxController extends Controller {
                     }))
                 ) as Buffer;
             }
-            const resp = await fetch('https://api.taal.com/arc/v1/tx', {
+            const resp = await fetch(`${ARC}/v1/tx`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${process.env.ARC_TOKEN}`,
