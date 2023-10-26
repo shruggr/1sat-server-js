@@ -4,7 +4,7 @@ import { Tx } from '@ts-bitcoin/core';
 import { JungleBusClient } from "@gorillapool/js-junglebus";
 import * as createError from 'http-errors';
 
-const { POSTGRES } = process.env;
+const { POSTGRES, BITCOIN_HOST, BITCOIN_PORT } = process.env;
 export const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 export const redis = new Redis();
 export const pool = new Pool({ connectionString: POSTGRES});
@@ -12,7 +12,8 @@ export const pool = new Pool({ connectionString: POSTGRES});
 export async function loadTx(txid: string): Promise<Tx> {
     let rawtx = await redis.getBuffer(txid);
     if (!rawtx) {
-        const resp = await fetch(`https://junglebus.gorillapool.io/v1/transaction/get/${txid}/bin`);
+        const url = `http://${BITCOIN_HOST}:${BITCOIN_PORT}/rest/tx/${txid}.bin`
+        const resp = await fetch(url);
         if(!resp.ok) {
             throw createError(resp.status, resp.statusText)
         }

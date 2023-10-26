@@ -82,12 +82,14 @@ server.use("/api/subscribe", (req, res, next) => {
     }
 });
 
+const { BITCOIN_HOST, BITCOIN_PORT } = process.env;
 server.get('/rest/*', async (req, res, next) => {
     try {
-        const resp = await axios.get(`http://localhost:8332${req.originalUrl}`, {
+        const url = `http://${BITCOIN_HOST}:${BITCOIN_PORT}${req.originalUrl}`
+        console.log('REST:', url)
+        const resp = await axios.get(url, {
             responseType: 'stream'
         });
-        resp.headers
         for (let [k, v] of Object.entries(resp.headers)) {
             res.set(k, v);
         }

@@ -2,15 +2,20 @@ import * as createError from "http-errors";
 import { Redis } from "ioredis";
 import { BodyProp, Controller, Path, Post, Route } from "tsoa";
 import { Tx } from "@ts-bitcoin/core";
-import { loadTx } from "../db";
+// import { loadTx } from "../db";
+// import * as Client from 'bitcoin-core';
+
 
 const { ARC } = process.env;
-const { StandardToExtended } = require("bitcoin-ef");
+// const { StandardToExtended } = require("bitcoin-ef");
 const pubClient = new Redis();
 export interface PreviousOutput {
     lockingScript: string,
     satoshis: number
 }
+// const { BITCOIN_HOST, BITCOIN_PORT } = process.env;
+
+// const client = new Client({ host: BITCOIN_HOST, port: parseInt(BITCOIN_PORT!, 10) });
 
 @Route("api/tx")
 export class TxController extends Controller {
@@ -25,27 +30,27 @@ export class TxController extends Controller {
         console.log('Broadcasting TX:', txid, tx.toHex(), JSON.stringify(parents))
 
         try {
-            let eftx: Buffer
-            if (!parents) {
-                const outputs: { lockingScript: Buffer, satoshis: number }[] = [];
-                for (let txin of tx.txIns) {
-                    const txid = txin.txHashBuf.reverse().toString('hex');
-                    const prevTx = await loadTx(txid);
-                    outputs.push({
-                        lockingScript: prevTx.txOuts[txin.txOutNum].script.toBuffer(),
-                        satoshis: prevTx.txOuts[txin.txOutNum].valueBn.toNumber(),
-                    })
-                }
-                eftx = StandardToExtended(txbuf, outputs) as Buffer;
-            } else {
-                eftx = StandardToExtended(
-                    txbuf,
-                    parents.map(p => ({
-                        lockingScript: Buffer.from(p.lockingScript, 'base64'),
-                        satoshis: p.satoshis,
-                    }))
-                ) as Buffer;
-            }
+            // let eftx: Buffer
+            // if (!parents) {
+            //     const outputs: { lockingScript: Buffer, satoshis: number }[] = [];
+            //     for (let txin of tx.txIns) {
+            //         const txid = txin.txHashBuf.reverse().toString('hex');
+            //         const prevTx = await loadTx(txid);
+            //         outputs.push({
+            //             lockingScript: prevTx.txOuts[txin.txOutNum].script.toBuffer(),
+            //             satoshis: prevTx.txOuts[txin.txOutNum].valueBn.toNumber(),
+            //         })
+            //     }
+            //     eftx = StandardToExtended(txbuf, outputs) as Buffer;
+            // } else {
+            //     eftx = StandardToExtended(
+            //         txbuf,
+            //         parents.map(p => ({
+            //             lockingScript: Buffer.from(p.lockingScript, 'base64'),
+            //             satoshis: p.satoshis,
+            //         }))
+            //     ) as Buffer;
+            // }
             const resp = await fetch(`${ARC}/v1/tx`, {
                 method: 'POST',
                 headers: {
@@ -53,17 +58,16 @@ export class TxController extends Controller {
                     'Content-Type': 'application/octet-stream',
                     'X-WaitForStatus': '7'
                 },
-                body: eftx,
+                body: txbuf,
             })
-            console.log("EFTX:", eftx.toString('hex'))
+            // console.error("EFTX:", eftx.toString('hex'))
             const respText = await resp.text();
-            console.log("Broadcast:", respText);
+            console.error("Broadcast:", respText);
             const result = JSON.parse(respText);
 
             if (result.status != 200) {
                 throw createError(result.status || 500, `Broadcast failed: ${result.detail}`);
             }
-
             pubClient.publish('submit', txid);
             return result.txid;
         } catch (e) {
