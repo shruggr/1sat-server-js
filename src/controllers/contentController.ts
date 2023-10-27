@@ -1,4 +1,5 @@
 import { Request as ExpRequest } from "express";
+import { NotFound } from "http-errors";
 import { Controller, Get, Path, Request, Route } from "tsoa";
 import { Outpoint } from "../models/outpoint";
 import { Txo } from "../models/txo";
@@ -13,6 +14,20 @@ export class ContentController extends Controller {
     ): 
     Promise<void> {
         const file = await Txo.loadFileByOrigin(Outpoint.fromString(outpoint))
+        req.res!.header('Content-Type', file.type || '');
+        req.res!.header('Cache-Control', 'public,immutable,max-age=31536000')
+        req.res!.status(200).send(file.data);
+    }
+
+    @Get("{outpoint}/{filename}")
+    public async getOrdfsDirFile(
+        @Path() outpoint: string,
+        @Path() filename: string,
+        @Request() req: ExpRequest,
+    ): 
+    Promise<void> {
+        const file = await Txo.loadFileByOrigin(Outpoint.fromString(outpoint))
+        if(file.type !== 'ord-fs/json') throw new NotFound()
         req.res!.header('Content-Type', file.type || '');
         req.res!.header('Cache-Control', 'public,immutable,max-age=31536000')
         req.res!.status(200).send(file.data);

@@ -27,7 +27,7 @@ export class FungiblesController extends Controller {
     @Get("{address}/balance")
     public async getBalanceByAddress(
         @Path() address: string,
-    ): Promise<TokenBalance[]> {
+    ): Promise<TokenBalanceResponse[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         const hashBuf = Address.fromString(address).hashBuf
         const sql = `SELECT 
@@ -52,7 +52,7 @@ export class FungiblesController extends Controller {
                 results[row.tick] = tick
             }
 
-            const amt = parseInt(row.amt, 10)
+            const amt = BigInt(row.amt)
             if(row.status == '1') {
                 tick.all.confirmed += amt
                 if(row.listing) {
@@ -65,7 +65,17 @@ export class FungiblesController extends Controller {
                 }
             }
         }
-        return Object.values(results)
+        return Object.values(results).map(r => ({
+            tick: r.tick,
+            all: {
+                confirmed: r.all.confirmed.toString(),
+                pending: r.all.pending.toString()
+            },
+            listed: {
+                confirmed: r.listed.confirmed.toString(),
+                pending: r.listed.pending.toString()
+            }
+        }))
     }
 
     @Get("{address}/tick/{tick}")
@@ -145,6 +155,18 @@ class TokenBalance {
 }
 
 class BalanceItem {
-    confirmed = 0
-    pending = 0
+    confirmed = 0n
+    pending = 0n
+}
+
+type TokenBalanceResponse = {
+    tick: string;
+    all: {
+        confirmed: string;
+        pending: string;
+    };
+    listed: {
+        confirmed: string;
+        pending: string;
+    }
 }

@@ -6,37 +6,48 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
-			"BalanceItem": {
+			"TokenBalanceResponse": {
 				"properties": {
-					"confirmed": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"pending": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					}
-				},
-				"type": "object",
-				"additionalProperties": false
-			},
-			"TokenBalance": {
-				"properties": {
-					"all": {
-						"$ref": "#/components/schemas/BalanceItem"
-					},
 					"listed": {
-						"$ref": "#/components/schemas/BalanceItem"
+						"properties": {
+							"pending": {
+								"type": "string"
+							},
+							"confirmed": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"pending",
+							"confirmed"
+						],
+						"type": "object"
+					},
+					"all": {
+						"properties": {
+							"pending": {
+								"type": "string"
+							},
+							"confirmed": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"pending",
+							"confirmed"
+						],
+						"type": "object"
 					},
 					"tick": {
-						"type": "string",
-						"default": ""
+						"type": "string"
 					}
 				},
-				"type": "object",
-				"additionalProperties": false
+				"required": [
+					"listed",
+					"all",
+					"tick"
+				],
+				"type": "object"
 			},
 			"Outpoint": {
 				"type": "string"
@@ -370,23 +381,6 @@
 					"price"
 				],
 				"type": "string"
-			},
-			"PreviousOutput": {
-				"properties": {
-					"lockingScript": {
-						"type": "string"
-					},
-					"satoshis": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"required": [
-					"lockingScript",
-					"satoshis"
-				],
-				"type": "object",
-				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {}
@@ -460,6 +454,35 @@
 				]
 			}
 		},
+		"/content/{outpoint}/{filename}": {
+			"get": {
+				"operationId": "GetOrdfsDirFile",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "outpoint",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "filename",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/bsv20/{address}/balance": {
 			"get": {
 				"operationId": "GetBalanceByAddress",
@@ -470,7 +493,7 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/TokenBalance"
+										"$ref": "#/components/schemas/TokenBalanceResponse"
 									},
 									"type": "array"
 								}
@@ -1264,12 +1287,6 @@
 								"properties": {
 									"rawtx": {
 										"type": "string"
-									},
-									"parents": {
-										"items": {
-											"$ref": "#/components/schemas/PreviousOutput"
-										},
-										"type": "array"
 									}
 								},
 								"required": [

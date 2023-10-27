@@ -26,6 +26,7 @@ server.use(cors({
     origin: true,
 }));
 server.use(express.json({ limit: '50mb' }));
+// server.use(express.raw({type: 'application/octet-stream'}))
 server.use((req, res, next) => {
     console.log(new Date().toISOString(), req.path, req.method);
     next();
@@ -42,7 +43,8 @@ server.use("/api/subscribe", (req, res, next) => {
         }
         for (let a of addresses) {
             const address = Address.fromString(a);
-            channels.push(address.hashBuf.toString('base64'))
+            channels.push(`t:${address.hashBuf.toString('base64')}`)
+            channels.push(`s:${address.hashBuf.toString('base64')}`)
         }
         if (Array.isArray(req.query['channel'])) {
             channels.push(...req.query['channel'] as string[]);

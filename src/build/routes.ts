@@ -25,23 +25,9 @@ import type { RequestHandler, Router } from 'express';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
-    "BalanceItem": {
-        "dataType": "refObject",
-        "properties": {
-            "confirmed": {"dataType":"double","default":0},
-            "pending": {"dataType":"double","default":0},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "TokenBalance": {
-        "dataType": "refObject",
-        "properties": {
-            "all": {"ref":"BalanceItem"},
-            "listed": {"ref":"BalanceItem"},
-            "tick": {"dataType":"string","default":""},
-        },
-        "additionalProperties": false,
+    "TokenBalanceResponse": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"listed":{"dataType":"nestedObjectLiteral","nestedProperties":{"pending":{"dataType":"string","required":true},"confirmed":{"dataType":"string","required":true}},"required":true},"all":{"dataType":"nestedObjectLiteral","nestedProperties":{"pending":{"dataType":"string","required":true},"confirmed":{"dataType":"string","required":true}},"required":true},"tick":{"dataType":"string","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Outpoint": {
@@ -172,15 +158,6 @@ const models: TsoaRoute.Models = {
         "enums": ["recent","num","price"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "PreviousOutput": {
-        "dataType": "refObject",
-        "properties": {
-            "lockingScript": {"dataType":"string","required":true},
-            "satoshis": {"dataType":"double","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
 const validationService = new ValidationService(models);
 
@@ -236,6 +213,33 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getOrdfsFile.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/content/:outpoint/:filename',
+            ...(fetchMiddlewares<RequestHandler>(ContentController)),
+            ...(fetchMiddlewares<RequestHandler>(ContentController.prototype.getOrdfsDirFile)),
+
+            function ContentController_getOrdfsDirFile(request: any, response: any, next: any) {
+            const args = {
+                    outpoint: {"in":"path","name":"outpoint","required":true,"dataType":"string"},
+                    filename: {"in":"path","name":"filename","required":true,"dataType":"string"},
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new ContentController();
+
+
+              const promise = controller.getOrdfsDirFile.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
@@ -701,7 +705,6 @@ export function RegisterRoutes(app: Router) {
             function TxController_broadcast(request: any, response: any, next: any) {
             const args = {
                     rawtx: {"in":"body-prop","name":"rawtx","required":true,"dataType":"string"},
-                    parents: {"in":"body-prop","name":"parents","dataType":"array","array":{"dataType":"refObject","ref":"PreviousOutput"}},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
