@@ -3,7 +3,7 @@ import { Redis } from "ioredis";
 import { BodyProp, Controller, Path, Post, Route } from "tsoa";
 import { Tx } from "@ts-bitcoin/core";
 
-const { ARC } = process.env;
+const { ARC, ARC_TOKEN } = process.env;
 const pubClient = new Redis();
 export interface PreviousOutput {
     lockingScript: string,
@@ -33,13 +33,16 @@ export class TxController extends Controller {
         const txid = tx.id();
         console.log('Broadcasting TX:', txid, tx.toHex())
         try {
+            const headers: {[key:string]:string} = {
+                'Content-Type': 'application/octet-stream',
+                'X-WaitForStatus': '7'
+            }
+            if(ARC_TOKEN) {
+                headers['Authorization'] = `Bearer ${ARC_TOKEN}`
+            }
             const resp = await fetch(`${ARC}/v1/tx`, {
                 method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${process.env.ARC_TOKEN}`,
-                    'Content-Type': 'application/octet-stream',
-                    'X-WaitForStatus': '7'
-                },
+                headers,
                 body: txbuf,
             })
             const respText = await resp.text();

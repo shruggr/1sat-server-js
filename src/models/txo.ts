@@ -35,15 +35,15 @@ export class TxoData {
     b?: File;
     sigma?: Sigma[];
     list?: {
-        price: number;
-        payout: string;
+        price?: number;
+        payout?: string;
     };
     bsv20?: {
         id?:  Outpoint;
-        p: string;
-        op: string;
+        p?: string;
+        op?: string;
         tick?: string;
-        amt: string;
+        amt?: string;
         status?: Bsv20Status 
     };
 }
@@ -52,7 +52,7 @@ export interface Inscription {
     json?: any;
     text?: string;
     words?: string[];
-    file: File;
+    file?: File;
 }
 export class Txo {
     txid: string = '';
