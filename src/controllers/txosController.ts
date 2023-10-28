@@ -136,7 +136,7 @@ export class TxosController extends Controller {
         params.push(offset);
         sql.push(`OFFSET $${params.length}`)
         
-        console.log(sql, params)
+        // console.log(sql, params)
         const { rows } = await pool.query(sql.join(' '), params);
         return rows.map((row: any) => Txo.fromRow(row));
     }

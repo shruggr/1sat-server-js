@@ -22,7 +22,7 @@ export class InscriptionsController extends Controller {
         if (q) {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
-        console.log("Query:", query)
+        // console.log("Query:", query)
         return this.search(query, sort, limit, offset);
     }
 
@@ -85,7 +85,7 @@ export class InscriptionsController extends Controller {
         params.push(offset);
         sql += `OFFSET $${params.length} `
         
-        console.log(sql, params)
+        // console.log(sql, params)
         const { rows } = await pool.query(sql, params);
         return rows.map((row: any) => Txo.fromRow(row));
     }

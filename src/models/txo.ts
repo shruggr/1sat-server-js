@@ -44,7 +44,8 @@ export class TxoData {
         op?: string;
         tick?: string;
         amt?: string;
-        status?: Bsv20Status 
+        status?: Bsv20Status;
+        implied?: boolean; 
     };
 }
 

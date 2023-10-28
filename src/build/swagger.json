@@ -156,6 +156,9 @@
 					},
 					"bsv20": {
 						"properties": {
+							"implied": {
+								"type": "boolean"
+							},
 							"status": {
 								"$ref": "#/components/schemas/Bsv20Status"
 							},
