@@ -26,7 +26,7 @@ server.use(cors({
     origin: true,
 }));
 server.use(express.json({ limit: '50mb' }));
-// server.use(express.raw({type: 'application/octet-stream'}))
+server.use(express.raw({type: 'application/octet-stream'}))
 server.use((req, res, next) => {
     console.log(new Date().toISOString(), req.path, req.method);
     next();
