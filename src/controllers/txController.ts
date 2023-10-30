@@ -72,7 +72,9 @@ export class TxController extends Controller {
         if (!resp.ok) {
             try {
                 const { status, error } = JSON.parse(respText);
-                throw createError(status || resp.status || 500, `Broadcast failed: ${error}`);
+                if(!error.includes('txn-already-known')) {
+                    throw createError(status || resp.status || 500, `Broadcast failed: ${error}`);
+                }
             } catch(e: any) {
                 console.error(e);
                 throw e;
