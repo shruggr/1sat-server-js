@@ -1,6 +1,6 @@
 import * as createError from "http-errors";
 import { Redis } from "ioredis";
-import { BodyProp, Controller, Path, Post, Route } from "tsoa";
+import { Body, BodyProp, Controller, Path, Post, Route } from "tsoa";
 import { Tx } from "@ts-bitcoin/core";
 
 const { ARC, ARC_TOKEN, TAAL_TOKEN } = process.env;
@@ -12,12 +12,12 @@ export interface PreviousOutput {
 
 @Route("api/tx")
 export class TxController extends Controller {
-    // @Post("bin")
-    // public async broadcastBuf(
-    //     @Body() txbuf: Buffer
-    // ) {
-    //     return this.doBroadcast(txbuf);
-    // }
+    @Post("bin")
+    public async broadcastBuf(
+        @Body() txbuf: Buffer
+    ) {
+        return this.doBroadcast(txbuf);
+    }
 
     @Post()
     public async broadcast(
