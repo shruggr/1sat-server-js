@@ -40,7 +40,7 @@ export class FungiblesController extends Controller {
                 (data->'bsv20'->>'status' = '0' OR data->'bsv20'->>'status' = '1') AND
                 data->'bsv20'->>'op' != 'deploy'
             GROUP BY tick, listing, status`
-        console.log(sql, hashBuf.toString('hex'))
+        // console.log(sql, hashBuf.toString('hex'))
         const { rows } = await pool.query(sql, [hashBuf]);
 
         // console.log("BALANCE ROWS:", rows)

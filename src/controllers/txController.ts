@@ -34,16 +34,18 @@ export class TxController extends Controller {
         console.log('Broadcasting TX:', txid, tx.toHex());
 
         try {
-            const useTaal = TAAL_TOKEN
-            if(useTaal) {
+            if(TAAL_TOKEN) {
                 try {
                     await this.broadcastTaal(txbuf);
                     this.broadcastArc(txbuf).catch(console.error)
-                } catch {
-                    await this.broadcastArc(txbuf).catch(console.error)
+                } catch(e: any) {
+                    if(e.status && e.status >= 300 && e.status < 500) {
+                        throw e;
+                    }
+                    await this.broadcastArc(txbuf);
                 }
             } else {
-                await this.broadcastArc(txbuf)
+                await this.broadcastArc(txbuf);
             }
            
             pubClient.publish('submit', txid);
@@ -65,12 +67,12 @@ export class TxController extends Controller {
             body: txbuf
         });
 
+        const respText = await resp.text();
+        console.log("TAAL Response:", resp.status, respText);
         if (!resp.ok) {
-            const respText = await resp.text();
-            console.log("TAAL Response:", respText);
             try {
-                const { resultDescription } = JSON.parse(respText);
-                throw createError(resp.status || 500, `Broadcast failed: ${resultDescription}`);
+                const { status, error } = JSON.parse(respText);
+                throw createError(status || resp.status || 500, `Broadcast failed: ${error}`);
             } catch(e: any) {
                 console.error(e);
                 throw e;
@@ -92,11 +94,14 @@ export class TxController extends Controller {
             body: txbuf,
         })
         const respText = await resp.text();
-        console.log("ARC Response:", respText);
-        const result = JSON.parse(respText)
-
-        if (result.status != 200) {
-            throw createError(result.status || 500, `Broadcast failed: ${result.detail} ${result.extraInfo}`);
+        console.log("ARC Response:", resp.status, respText);
+        try {
+            const result = JSON.parse(respText)
+            if (result.status != 200) {
+                throw createError(result.status || 500, `Broadcast failed: ${result.detail} ${result.extraInfo}`);
+            }
+        } catch {
+            throw createError(500, `Broadcast failed: parsing error`);
         }
     }
 

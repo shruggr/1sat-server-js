@@ -13,21 +13,12 @@ export class ContentController extends Controller {
         @Request() req: ExpRequest,
     ): 
     Promise<void> {
-        const file = await Txo.loadFileByOrigin(Outpoint.fromString(outpoint))
-        req.res!.header('Content-Type', file.type || '');
-        req.res!.header('Cache-Control', 'public,immutable,max-age=31536000')
-        req.res!.status(200).send(file.data);
-    }
-
-    @Get("{outpoint}/{filename}")
-    public async getOrdfsDirFile(
-        @Path() outpoint: string,
-        @Path() filename: string,
-        @Request() req: ExpRequest,
-    ): 
-    Promise<void> {
-        const file = await Txo.loadFileByOrigin(Outpoint.fromString(outpoint))
-        if(file.type !== 'ord-fs/json') throw new NotFound()
+        const file = outpoint.length == 64 ?
+            await Txo.loadFileByTxid(outpoint) :
+            await Txo.loadFileByOutpoint(Outpoint.fromString(outpoint));
+        if(!file) {
+            throw new NotFound();
+        }
         req.res!.header('Content-Type', file.type || '');
         req.res!.header('Cache-Control', 'public,immutable,max-age=31536000')
         req.res!.status(200).send(file.data);
