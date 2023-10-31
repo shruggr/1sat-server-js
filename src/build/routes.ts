@@ -81,7 +81,7 @@ const models: TsoaRoute.Models = {
             "b": {"ref":"File"},
             "sigma": {"dataType":"array","array":{"dataType":"refObject","ref":"Sigma"}},
             "list": {"dataType":"nestedObjectLiteral","nestedProperties":{"payout":{"dataType":"string"},"price":{"dataType":"double"}}},
-            "bsv20": {"dataType":"nestedObjectLiteral","nestedProperties":{"implied":{"dataType":"boolean"},"status":{"ref":"Bsv20Status"},"amt":{"dataType":"string"},"tick":{"dataType":"string"},"op":{"dataType":"string"},"p":{"dataType":"string"},"id":{"ref":"Outpoint"}}},
+            "bsv20": {"dataType":"nestedObjectLiteral","nestedProperties":{"implied":{"dataType":"boolean"},"status":{"ref":"Bsv20Status"},"amt":{"dataType":"string"},"sym":{"dataType":"string"},"tick":{"dataType":"string"},"op":{"dataType":"string"},"p":{"dataType":"string"},"id":{"ref":"Outpoint"}}},
         },
         "additionalProperties": false,
     },

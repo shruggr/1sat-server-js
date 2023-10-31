@@ -51,7 +51,7 @@ export class TxController extends Controller {
             pubClient.publish('submit', txid);
             return txid;
         } catch(e: any) {
-            console.error("Broadcast ERROR:", e)
+            console.error("Broadcast Error:", e)
             throw e;
         }
 
@@ -76,7 +76,6 @@ export class TxController extends Controller {
                     throw createError(status || resp.status || 500, `Broadcast failed: ${error}`);
                 }
             } catch(e: any) {
-                console.error(e);
                 throw e;
             }
         }

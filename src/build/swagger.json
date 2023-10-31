@@ -165,6 +165,9 @@
 							"amt": {
 								"type": "string"
 							},
+							"sym": {
+								"type": "string"
+							},
 							"tick": {
 								"type": "string"
 							},
