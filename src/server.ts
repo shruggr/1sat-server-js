@@ -135,7 +135,7 @@ server.use((req, res, next) => {
 });
 
 server.use((err, req, res, next) => {
-    console.error(req.path, err.status || 500, err.message);
+    console.error(req.path, err.status || 500, err);
     res.status(err.status || 500).json({ message: err.message })
 }); 
 

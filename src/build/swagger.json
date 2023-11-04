@@ -882,6 +882,41 @@
 				]
 			}
 		},
+		"/api/inscriptions/latest": {
+			"post": {
+				"operationId": "GetLatestByOrigins",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						}
+					}
+				}
+			}
+		},
 		"/api/market": {
 			"get": {
 				"operationId": "GetOpenListings",

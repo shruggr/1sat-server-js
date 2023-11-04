@@ -58,7 +58,7 @@ export class InscriptionsController extends Controller {
             JOIN txos o ON o.outpoint = t.origin
             JOIN origins n ON n.origin = t.origin 
             WHERE t.txid=$1`;
-        
+
         const { rows } = await pool.query(sql, params);
         return rows.map((row: any) => Txo.fromRow(row));
     }
@@ -70,13 +70,13 @@ export class InscriptionsController extends Controller {
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
             JOIN origins n ON n.origin = t.origin `;
-        
-        if(query) {
+
+        if (query) {
             params.push(JSON.stringify(query));
             sql += `WHERE t.data @> $${params.length} `
         }
 
-        if(sort) {
+        if (sort) {
             sql += `ORDER BY t.height ${sort}, t.idx ${sort} `
         }
 
@@ -84,7 +84,7 @@ export class InscriptionsController extends Controller {
         sql += `LIMIT $${params.length} `
         params.push(offset);
         sql += `OFFSET $${params.length} `
-        
+
         // console.log(sql, params)
         const { rows } = await pool.query(sql, params);
         return rows.map((row: any) => Txo.fromRow(row));
@@ -96,7 +96,7 @@ export class InscriptionsController extends Controller {
     ): Promise<Txo[]> {
         const params: string[] = []
         const hashes: string[] = geohashes.split(',')
-        if(!hashes.length) {
+        if (!hashes.length) {
             throw new BadRequest();
         }
         const where: string[] = []
@@ -104,7 +104,7 @@ export class InscriptionsController extends Controller {
             params.push(`${h}%`)
             where.push(`t.geohash LIKE $${params.length}`)
         })
-        const {rows} = await pool.query(`SELECT t.*, o.data as odata, n.num
+        const { rows } = await pool.query(`SELECT t.*, o.data as odata, n.num
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
             JOIN origins n ON n.origin = t.origin 
@@ -121,7 +121,7 @@ export class InscriptionsController extends Controller {
     ): Promise<Txo> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         const txo = await Txo.loadByOutpoint(Outpoint.fromString(outpoint));
-        if(script) {
+        if (script) {
             const tx = await loadTx(txo.txid);
             txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
         }
@@ -134,21 +134,42 @@ export class InscriptionsController extends Controller {
         @Query() script = false
     ): Promise<Txo> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        const {rows: [lastest]} = await pool.query(`
+        const { rows: [lastest] } = await pool.query(`
             SELECT t.*, o.data as odata, n.num
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
             JOIN origins n ON n.origin = t.origin 
             WHERE t.origin = $1
-            ORDER BY t.height DESC, t.idx DESC`,
+            ORDER BY t.height DESC, t.idx DESC
+            LIMIT 1`,
             [Outpoint.fromString(origin).toBuffer()]
         );
 
         const txo = Txo.fromRow(lastest);
-        if(script) {
+        if (script) {
             const tx = await loadTx(txo.txid);
             txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
         }
         return txo;
+    }
+
+    @Post("latest")
+    public async getLatestByOrigins(
+        @Body() origins: string[]
+    ): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        if (origins.length > 100) {
+            throw new BadRequest('Too many origins');
+        }
+        const { rows } = await pool.query(`
+            SELECT t.*, o.data as odata, n.num
+            FROM txos t
+            JOIN txos o ON o.outpoint = t.origin
+            JOIN origins n ON n.origin = t.origin 
+            WHERE t.origin = ANY($1) and t.spend='\\x'`,
+            [origins.map(o => Outpoint.fromString(o).toBuffer())]
+        );
+
+        return rows.map(Txo.fromRow);
     }
 }

@@ -3,6 +3,7 @@ import { Outpoint } from "./outpoint";
 import { loadTx, pool } from "../db";
 import { File } from "./file";
 import { Sigma } from "./sigma";
+import { NotFound } from 'http-errors';
 
 const B = Buffer.from('19HxigV4QyBv3tHpQVcUEQyq1pzZVdoAut', 'utf8')
 const ORD = Buffer.from('ord', 'utf8')
@@ -77,16 +78,19 @@ export class Txo {
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
             JOIN origins n ON n.origin = t.origin
-            WHERE t.txid = $1 AND t.vout = $2`,
-            [outpoint.txid, outpoint.vout],
+            WHERE t.outpoint = $1`,
+            [outpoint.toBuffer()],
         );
 
+        if(!row) {
+            throw new NotFound();
+        }
         return Txo.fromRow(row);
     }
 
     static fromRow(row: any) {
         const txo = new Txo();
-        txo.txid = row.txid.toString('hex');
+        txo.txid = row.txid && row.txid.toString('hex');
         txo.vout = row.vout;
         txo.outpoint = new Outpoint(row.txid, row.vout);
         txo.satoshis = parseInt(row.satoshis, 10);
