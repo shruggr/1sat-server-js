@@ -4,10 +4,11 @@ import { Tx } from '@ts-bitcoin/core';
 import { JungleBusClient } from "@gorillapool/js-junglebus";
 import * as createError from 'http-errors';
 
-const { POSTGRES, BITCOIN_HOST, BITCOIN_PORT } = process.env;
+const { POSTGRES_FULL, BITCOIN_HOST, BITCOIN_PORT } = process.env;
 export const jb = new JungleBusClient('https://junglebus.gorillapool.io');
 export const redis = new Redis();
-export const pool = new Pool({ connectionString: POSTGRES});
+console.log("POSTGRES", POSTGRES_FULL)
+export const pool = new Pool({ connectionString: POSTGRES_FULL});
 
 export async function loadTx(txid: string): Promise<Tx> {
     let rawtx = await redis.getBuffer(txid);

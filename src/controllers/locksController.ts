@@ -6,6 +6,19 @@ import { pool } from "../db";
 
 @Route("api/locks")
 export class LocksController extends Controller {
+    @Get("txid/{txid}")
+    public async getLocksByTxid(
+        @Path() txid: string,
+    ): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        const { rows } = await pool.query(`SELECT *
+            FROM txos
+            WHERE txid = $1`, 
+            [txid]
+        );
+        return rows.map((row: any) => Txo.fromRow(row));
+    }
+
     @Get("address/{address}/unspent")
     public async getUnspentLocks(
         @Path() address: string,

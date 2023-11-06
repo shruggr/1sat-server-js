@@ -535,6 +535,31 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/locks/txid/:txid',
+            ...(fetchMiddlewares<RequestHandler>(LocksController)),
+            ...(fetchMiddlewares<RequestHandler>(LocksController.prototype.getLocksByTxid)),
+
+            function LocksController_getLocksByTxid(request: any, response: any, next: any) {
+            const args = {
+                    txid: {"in":"path","name":"txid","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new LocksController();
+
+
+              const promise = controller.getLocksByTxid.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/locks/address/:address/unspent',
             ...(fetchMiddlewares<RequestHandler>(LocksController)),
             ...(fetchMiddlewares<RequestHandler>(LocksController.prototype.getUnspentLocks)),

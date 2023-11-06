@@ -933,6 +933,37 @@
 				}
 			}
 		},
+		"/api/locks/txid/{txid}": {
+			"get": {
+				"operationId": "GetLocksByTxid",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "txid",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/locks/address/{address}/unspent": {
 			"get": {
 				"operationId": "GetUnspentLocks",
