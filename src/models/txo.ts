@@ -51,6 +51,10 @@ export class TxoData {
         status?: Bsv20Status;
         implied?: boolean; 
     };
+    lock?: {
+        address: string;
+        until: number;
+    }
 }
 
 export interface Inscription {
@@ -101,7 +105,7 @@ export class Txo {
         txo.height = row.height;
         txo.idx = row.idx;
         txo.data = row.data;
-        txo.origin = {
+        txo.origin = row.origin && {
             outpoint: Outpoint.fromBuffer(row.origin),
             data: row.odata ? row.odata : undefined,
             num: row.num && parseInt(row.num, 10),

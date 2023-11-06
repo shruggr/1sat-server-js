@@ -1,6 +1,7 @@
 import * as cors from 'cors';
 import * as dotenv from 'dotenv';
-dotenv.config();
+import * as path from 'path';
+dotenv.config({ path: path.join(__dirname, '../.env')});
 import { Address } from '@ts-bitcoin/core';
 import * as express from 'express';
 import { Request, Response } from 'express';
@@ -14,8 +15,8 @@ import { Redis } from 'ioredis';
 const server = express();
 
 async function main() {
-    // const PORT = process.env.PORT || 8081;
-    const PORT = 8081;
+    const PORT = process.env.PORT || 8081;
+    // const PORT = 8082;
     server.listen(PORT, () => {
         console.log(`Server listening on port ${PORT}`);
     });
