@@ -1202,7 +1202,7 @@
 		},
 		"/api/origins/num/{num}": {
 			"get": {
-				"operationId": "GetLatestByOrigin",
+				"operationId": "GetOriginByNum",
 				"responses": {
 					"200": {
 						"description": "Ok",

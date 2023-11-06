@@ -651,9 +651,9 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/origins/num/:num',
             ...(fetchMiddlewares<RequestHandler>(OriginsController)),
-            ...(fetchMiddlewares<RequestHandler>(OriginsController.prototype.getLatestByOrigin)),
+            ...(fetchMiddlewares<RequestHandler>(OriginsController.prototype.getOriginByNum)),
 
-            function OriginsController_getLatestByOrigin(request: any, response: any, next: any) {
+            function OriginsController_getOriginByNum(request: any, response: any, next: any) {
             const args = {
                     num: {"in":"path","name":"num","required":true,"dataType":"double"},
             };
@@ -667,7 +667,7 @@ export function RegisterRoutes(app: Router) {
                 const controller = new OriginsController();
 
 
-              const promise = controller.getLatestByOrigin.apply(controller, validatedArgs as any);
+              const promise = controller.getOriginByNum.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

@@ -28,7 +28,7 @@ export class OriginsController extends Controller {
     }
 
     @Get("num/{num}")
-    public async getLatestByOrigin(
+    public async getOriginByNum(
         @Path() num: number,
     ): Promise<Txo> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
