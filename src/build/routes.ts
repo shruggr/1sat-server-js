@@ -15,6 +15,8 @@ import { MarketController } from './../controllers/marketController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { OriginsController } from './../controllers/originsController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { SPendsController } from './../controllers/spendsController';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { StatsController } from './../controllers/statsController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { TxController } from './../controllers/txController';
@@ -666,6 +668,56 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getLatestByOrigin.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/spends/:outpoint',
+            ...(fetchMiddlewares<RequestHandler>(SPendsController)),
+            ...(fetchMiddlewares<RequestHandler>(SPendsController.prototype.getSpend)),
+
+            function SPendsController_getSpend(request: any, response: any, next: any) {
+            const args = {
+                    outpoint: {"in":"path","name":"outpoint","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new SPendsController();
+
+
+              const promise = controller.getSpend.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/spends',
+            ...(fetchMiddlewares<RequestHandler>(SPendsController)),
+            ...(fetchMiddlewares<RequestHandler>(SPendsController.prototype.getSpends)),
+
+            function SPendsController_getSpends(request: any, response: any, next: any) {
+            const args = {
+                    outpoints: {"in":"body","name":"outpoints","required":true,"dataType":"array","array":{"dataType":"string"}},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new SPendsController();
+
+
+              const promise = controller.getSpends.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

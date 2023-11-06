@@ -105,6 +105,7 @@ export class TxosController extends Controller {
     }
 
     public async searchByAddress(address: string, unspent = true, query?: TxoData, type = '', bsv20=false, limit: number = 100, offset: number = 0): Promise<Txo[]> {
+        // const start = Date.now();
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf];
         let sql = [`SELECT t.*, o.data as odata, n.num
@@ -114,6 +115,8 @@ export class TxosController extends Controller {
             WHERE t.pkhash = $1`]
         if(unspent) {
             sql.push(`AND t.spend = '\\x'`)
+        } else {
+            sql.push(`AND t.spend != '\\x'`)
         }
         if(bsv20) {
             sql.push(`AND t.data->'bsv20' IS NOT NULL`)
@@ -136,8 +139,9 @@ export class TxosController extends Controller {
         params.push(offset);
         sql.push(`OFFSET $${params.length}`)
         
-        // console.log(sql, params)
+        // console.log(sql.join(' '), params)
         const { rows } = await pool.query(sql.join(' '), params);
+        // console.log("Returning:", rows.length, address, Date.now() - start)
         return rows.map((row: any) => Txo.fromRow(row));
     }
 }
