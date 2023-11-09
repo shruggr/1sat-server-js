@@ -1,4 +1,5 @@
 import { Address, OpCode, Script} from '@ts-bitcoin/core';
+import { BadRequest } from 'http-errors';
 import { Outpoint } from "./outpoint";
 import { loadTx, pool } from "../db";
 import { File } from "./file";
@@ -54,7 +55,8 @@ export class TxoData {
     lock?: {
         address: string;
         until: number;
-    }
+    };
+    sigil?: {[key: string]: any};
 }
 
 export interface Inscription {
@@ -77,11 +79,11 @@ export class Txo {
     idx: number = 0;
     data?: TxoData;
 
-    static async loadByOutpoint(outpoint: Outpoint): Promise<Txo> {
+    static async getByOutpoint(outpoint: Outpoint): Promise<Txo> {
         const { rows: [row] } = await pool.query(`SELECT t.*, o.data as odata, n.num
             FROM txos t
-            JOIN txos o ON o.outpoint = t.origin
-            JOIN origins n ON n.origin = t.origin
+            LEFT JOIN txos o ON o.outpoint = t.origin
+            LEFT JOIN origins n ON n.origin = t.origin
             WHERE t.outpoint = $1`,
             [outpoint.toBuffer()],
         );
@@ -90,6 +92,17 @@ export class Txo {
             throw new NotFound();
         }
         return Txo.fromRow(row);
+    }
+
+    static async getByTxid(txid: string): Promise<Txo[]> {
+        let sql = `SELECT t.*, o.data as odata, n.num
+            FROM txos t
+            LEFT JOIN txos o ON o.outpoint = t.origin
+            LEFT JOIN origins n ON n.origin = t.origin 
+            WHERE t.txid=$1`;
+
+        const { rows } = await pool.query(sql, [Buffer.from(txid, 'hex')]);
+        return rows.map((row: any) => Txo.fromRow(row));
     }
 
     static fromRow(row: any) {
@@ -161,5 +174,32 @@ export class Txo {
             }
         }
         return;
+    }
+
+    static async search(unspent = false, query?: TxoData, limit = 100, offset = 0): Promise<Txo[]> {
+        if ((query as any)?.txid !== undefined) throw BadRequest('This is not a valid query. Reach out on 1sat discord for assistance.')
+        const params: any[] = [];
+        let sql = `SELECT t.*, o.data as odata, n.num
+            FROM txos t
+            LEFT JOIN txos o ON o.outpoint = t.origin
+            LEFT JOIN origins n ON n.origin = t.origin `;
+
+        if (query) {
+            params.push(JSON.stringify(query));
+            sql += `WHERE t.data @> $${params.length} `
+        }
+
+        if(unspent) { 
+            sql += `AND t.spend = '\\x' `
+        }
+
+        params.push(limit);
+        sql += `LIMIT $${params.length} `
+        params.push(offset);
+        sql += `OFFSET $${params.length} `
+
+        // console.log(sql, params)
+        const { rows } = await pool.query(sql, params);
+        return rows.map((row: any) => Txo.fromRow(row));
     }
 }

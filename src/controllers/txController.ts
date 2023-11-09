@@ -1,6 +1,6 @@
 import * as createError from "http-errors";
 import { Redis } from "ioredis";
-import { Body, BodyProp, Controller, Path, Post, Route } from "tsoa";
+import { Body, BodyProp, Controller, Get, Path, Post, Route } from "tsoa";
 import { Tx } from "@ts-bitcoin/core";
 
 const { ARC, ARC_TOKEN, TAAL_TOKEN } = process.env;
@@ -106,8 +106,15 @@ export class TxController extends Controller {
         }
     }
 
+    @Get("{txid}/submit")
+    public async getTxSubmit(
+        @Path() txid: string,
+    ): Promise<void> {
+        pubClient.publish('submit', txid);
+    }
+
     @Post("{txid}/submit")
-    public async getTx(
+    public async postTxSubmit(
         @Path() txid: string,
     ): Promise<void> {
         pubClient.publish('submit', txid);

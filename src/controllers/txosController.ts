@@ -73,7 +73,7 @@ export class TxosController extends Controller {
         @Query() script = false
     ): Promise<Txo> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        const txo = await Txo.loadByOutpoint(Outpoint.fromString(outpoint));
+        const txo = await Txo.getByOutpoint(Outpoint.fromString(outpoint));
         if(script) {
             const tx = await loadTx(txo.txid);
             txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
@@ -89,8 +89,8 @@ export class TxosController extends Controller {
         const op = outpoints.map((op) => Outpoint.fromString(op).toBuffer());
         const { rows } = await pool.query(`SELECT t.*, o.data as odata, n.num
             FROM txos t
-            JOIN txos o ON o.outpoint = t.origin
-            JOIN origins n ON n.origin = t.origin 
+            LEFT JOIN txos o ON o.outpoint = t.origin
+            LEFT JOIN origins n ON n.origin = t.origin 
             WHERE t.outpoint = ANY($1)`, 
             [op]
         );
@@ -110,8 +110,8 @@ export class TxosController extends Controller {
         const params: any[] = [add.hashBuf];
         let sql = [`SELECT t.*, o.data as odata, n.num
             FROM txos t
-            JOIN txos o ON o.outpoint = t.origin
-            JOIN origins n ON n.origin = t.origin 
+            LEFT JOIN txos o ON o.outpoint = t.origin
+            LEFT JOIN origins n ON n.origin = t.origin 
             WHERE t.pkhash = $1`]
         if(unspent) {
             sql.push(`AND t.spend = '\\x'`)
@@ -143,5 +143,55 @@ export class TxosController extends Controller {
         const { rows } = await pool.query(sql.join(' '), params);
         // console.log("Returning:", rows.length, address, Date.now() - start)
         return rows.map((row: any) => Txo.fromRow(row));
+    }
+
+    @Get("search")
+    public async getTxoSearchAll(
+        @Query() q?: string,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
+    ): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        let query: TxoData | undefined;
+        if (q) {
+            query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
+        }
+        // console.log("Query:", query)
+        return Txo.search(false, query, limit, offset);
+    }
+
+    @Post("search")
+    public async postTxoSearchAll(
+        @Body() query?: TxoData,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+    ): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        console.log("POST search")
+        return Txo.search(false, query, limit, offset);
+    }
+
+    @Get("search/unspent")
+    public async getTxoSearchUnspent(
+        @Query() q?: string,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
+    ): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        let query: TxoData | undefined;
+        if (q) {
+            query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
+        }
+        return Txo.search(true, query, limit, offset);
+    }
+
+    @Post("search/unspent")
+    public async postTxoSearchUnspent(
+        @Body() query?: TxoData,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+    ): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        return Txo.search(true, query, limit, offset);
     }
 }

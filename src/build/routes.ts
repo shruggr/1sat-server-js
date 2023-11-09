@@ -87,6 +87,7 @@ const models: TsoaRoute.Models = {
             "list": {"dataType":"nestedObjectLiteral","nestedProperties":{"payout":{"dataType":"string"},"price":{"dataType":"double"}}},
             "bsv20": {"dataType":"nestedObjectLiteral","nestedProperties":{"implied":{"dataType":"boolean"},"status":{"ref":"Bsv20Status"},"amt":{"dataType":"string"},"sym":{"dataType":"string"},"tick":{"dataType":"string"},"op":{"dataType":"string"},"p":{"dataType":"string"},"id":{"ref":"Outpoint"}}},
             "lock": {"dataType":"nestedObjectLiteral","nestedProperties":{"until":{"dataType":"double","required":true},"address":{"dataType":"string","required":true}}},
+            "sigil": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
         },
         "additionalProperties": false,
     },
@@ -153,14 +154,14 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "SortDirection": {
-        "dataType": "refEnum",
-        "enums": ["asc","desc","ASC","DESC"],
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ListingSort": {
         "dataType": "refEnum",
         "enums": ["recent","num","price"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SortDirection": {
+        "dataType": "refEnum",
+        "enums": ["asc","desc","ASC","DESC"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
@@ -333,7 +334,6 @@ export function RegisterRoutes(app: Router) {
             function InscriptionsController_getInscriptionSearch(request: any, response: any, next: any) {
             const args = {
                     q: {"in":"query","name":"q","dataType":"string"},
-                    sort: {"in":"query","name":"sort","ref":"SortDirection"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
             };
@@ -361,7 +361,6 @@ export function RegisterRoutes(app: Router) {
             function InscriptionsController_postInscriptionSearch(request: any, response: any, next: any) {
             const args = {
                     query: {"in":"body","name":"query","ref":"TxoData"},
-                    sort: {"in":"query","name":"sort","ref":"SortDirection"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
             };
@@ -934,11 +933,11 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/tx/:txid/submit',
+        app.get('/api/tx/:txid/submit',
             ...(fetchMiddlewares<RequestHandler>(TxController)),
-            ...(fetchMiddlewares<RequestHandler>(TxController.prototype.getTx)),
+            ...(fetchMiddlewares<RequestHandler>(TxController.prototype.getTxSubmit)),
 
-            function TxController_getTx(request: any, response: any, next: any) {
+            function TxController_getTxSubmit(request: any, response: any, next: any) {
             const args = {
                     txid: {"in":"path","name":"txid","required":true,"dataType":"string"},
             };
@@ -952,7 +951,32 @@ export function RegisterRoutes(app: Router) {
                 const controller = new TxController();
 
 
-              const promise = controller.getTx.apply(controller, validatedArgs as any);
+              const promise = controller.getTxSubmit.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/tx/:txid/submit',
+            ...(fetchMiddlewares<RequestHandler>(TxController)),
+            ...(fetchMiddlewares<RequestHandler>(TxController.prototype.postTxSubmit)),
+
+            function TxController_postTxSubmit(request: any, response: any, next: any) {
+            const args = {
+                    txid: {"in":"path","name":"txid","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new TxController();
+
+
+              const promise = controller.postTxSubmit.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
@@ -1125,6 +1149,114 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.postOutpoints.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/txos/search',
+            ...(fetchMiddlewares<RequestHandler>(TxosController)),
+            ...(fetchMiddlewares<RequestHandler>(TxosController.prototype.getTxoSearchAll)),
+
+            function TxosController_getTxoSearchAll(request: any, response: any, next: any) {
+            const args = {
+                    q: {"in":"query","name":"q","dataType":"string"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new TxosController();
+
+
+              const promise = controller.getTxoSearchAll.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/txos/search',
+            ...(fetchMiddlewares<RequestHandler>(TxosController)),
+            ...(fetchMiddlewares<RequestHandler>(TxosController.prototype.postTxoSearchAll)),
+
+            function TxosController_postTxoSearchAll(request: any, response: any, next: any) {
+            const args = {
+                    query: {"in":"body","name":"query","ref":"TxoData"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new TxosController();
+
+
+              const promise = controller.postTxoSearchAll.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/txos/search/unspent',
+            ...(fetchMiddlewares<RequestHandler>(TxosController)),
+            ...(fetchMiddlewares<RequestHandler>(TxosController.prototype.getTxoSearchUnspent)),
+
+            function TxosController_getTxoSearchUnspent(request: any, response: any, next: any) {
+            const args = {
+                    q: {"in":"query","name":"q","dataType":"string"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new TxosController();
+
+
+              const promise = controller.getTxoSearchUnspent.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/txos/search/unspent',
+            ...(fetchMiddlewares<RequestHandler>(TxosController)),
+            ...(fetchMiddlewares<RequestHandler>(TxosController.prototype.postTxoSearchUnspent)),
+
+            function TxosController_postTxoSearchUnspent(request: any, response: any, next: any) {
+            const args = {
+                    query: {"in":"body","name":"query","ref":"TxoData"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new TxosController();
+
+
+              const promise = controller.postTxoSearchUnspent.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

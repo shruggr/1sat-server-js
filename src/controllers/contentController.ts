@@ -3,7 +3,6 @@ import { NotFound } from "http-errors";
 import { Controller, Get, Path, Request, Route } from "tsoa";
 import { Outpoint } from "../models/outpoint";
 import { Txo } from "../models/txo";
-// import { NotFound } from 'http-errors';
 
 @Route("content")
 export class ContentController extends Controller {

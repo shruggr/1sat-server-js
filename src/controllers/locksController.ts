@@ -14,7 +14,7 @@ export class LocksController extends Controller {
         const { rows } = await pool.query(`SELECT *
             FROM txos
             WHERE txid = $1`, 
-            [txid]
+            [Buffer.from(txid, 'hex')]
         );
         return rows.map((row: any) => Txo.fromRow(row));
     }

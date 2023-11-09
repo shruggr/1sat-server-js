@@ -3,7 +3,6 @@ import { Body, Controller, Get, Path, Post, Query, Route } from "tsoa";
 import { loadTx, pool } from "../db";
 import { Txo } from "../models/txo";
 import { TxoData } from "../models/txo";
-import { SortDirection } from "../models/sort-direction";
 import { Outpoint } from "../models/outpoint";
 import { BadRequest } from "http-errors";
 
@@ -12,7 +11,6 @@ export class InscriptionsController extends Controller {
     @Get("search")
     public async getInscriptionSearch(
         @Query() q?: string,
-        @Query() sort?: SortDirection,
         @Query() limit: number = 100,
         @Query() offset: number = 0
 
@@ -23,19 +21,18 @@ export class InscriptionsController extends Controller {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
         // console.log("Query:", query)
-        return this.search(query, sort, limit, offset);
+        return Txo.search(false, query, limit, offset);
     }
 
     @Post("search")
     public async postInscriptionSearch(
         @Body() query?: TxoData,
-        @Query() sort?: SortDirection,
         @Query() limit: number = 100,
         @Query() offset: number = 0
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         console.log("POST search")
-        return this.search(query, sort, limit, offset);
+        return Txo.search(false, query, limit, offset);
     }
 
     @Get("recent")
@@ -44,7 +41,13 @@ export class InscriptionsController extends Controller {
         @Query() offset: number = 0
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        return this.search(undefined, SortDirection.DESC, limit, offset);
+        const {rows} = await pool.query(`SELECT t.*, o.data as odata, n.num
+            FROM txos t
+            JOIN txos o ON o.outpoint = t.origin
+            JOIN origins n ON n.origin = t.origin 
+            ORDER BY t.height DESC, t.idx DESC`
+        );
+        return rows.map((row: any) => Txo.fromRow(row));
     }
 
     @Get("txid/{txid}")
@@ -52,42 +55,7 @@ export class InscriptionsController extends Controller {
         @Path() txid: string,
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        const params: any[] = [Buffer.from(txid, 'hex')];
-        let sql = `SELECT t.*, o.data as odata, n.num
-            FROM txos t
-            JOIN txos o ON o.outpoint = t.origin
-            JOIN origins n ON n.origin = t.origin 
-            WHERE t.txid=$1`;
-
-        const { rows } = await pool.query(sql, params);
-        return rows.map((row: any) => Txo.fromRow(row));
-    }
-
-    public async search(query?: TxoData, sort?: SortDirection, limit = 100, offset = 0): Promise<Txo[]> {
-        if ((query as any)?.txid !== undefined) throw BadRequest('This is not a valid query. Reach out on 1sat discord for assistance.')
-        const params: any[] = [];
-        let sql = `SELECT t.*, o.data as odata, n.num
-            FROM txos t
-            JOIN txos o ON o.outpoint = t.origin
-            JOIN origins n ON n.origin = t.origin `;
-
-        if (query) {
-            params.push(JSON.stringify(query));
-            sql += `WHERE t.data @> $${params.length} `
-        }
-
-        if (sort) {
-            sql += `ORDER BY t.height ${sort}, t.idx ${sort} `
-        }
-
-        params.push(limit);
-        sql += `LIMIT $${params.length} `
-        params.push(offset);
-        sql += `OFFSET $${params.length} `
-
-        // console.log(sql, params)
-        const { rows } = await pool.query(sql, params);
-        return rows.map((row: any) => Txo.fromRow(row));
+        return Txo.getByTxid(txid);
     }
 
     @Get("geohash/{geohashes}")
@@ -120,7 +88,7 @@ export class InscriptionsController extends Controller {
         @Query() script = false
     ): Promise<Txo> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        const txo = await Txo.loadByOutpoint(Outpoint.fromString(outpoint));
+        const txo = await Txo.getByOutpoint(Outpoint.fromString(outpoint));
         if (script) {
             const tx = await loadTx(txo.txid);
             txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');

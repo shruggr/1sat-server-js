@@ -130,6 +130,7 @@ server.use("/api/docs",
 
 RegisterRoutes(server);
 
+server.use('/playground', express.static("playground"));
 server.use((req, res, next) => {
     console.log(req.path)
     next(new NotFound("Not Found"));
