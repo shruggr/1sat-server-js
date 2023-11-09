@@ -798,11 +798,11 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/tx/:txid/submit',
+        app.get('/api/tx/:txid/submit',
             ...(fetchMiddlewares<RequestHandler>(TxController)),
-            ...(fetchMiddlewares<RequestHandler>(TxController.prototype.getTx)),
+            ...(fetchMiddlewares<RequestHandler>(TxController.prototype.getTxSubmit)),
 
-            function TxController_getTx(request: any, response: any, next: any) {
+            function TxController_getTxSubmit(request: any, response: any, next: any) {
             const args = {
                     txid: {"in":"path","name":"txid","required":true,"dataType":"string"},
             };
@@ -816,7 +816,32 @@ export function RegisterRoutes(app: Router) {
                 const controller = new TxController();
 
 
-              const promise = controller.getTx.apply(controller, validatedArgs as any);
+              const promise = controller.getTxSubmit.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/tx/:txid/submit',
+            ...(fetchMiddlewares<RequestHandler>(TxController)),
+            ...(fetchMiddlewares<RequestHandler>(TxController.prototype.postTxSubmit)),
+
+            function TxController_postTxSubmit(request: any, response: any, next: any) {
+            const args = {
+                    txid: {"in":"path","name":"txid","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new TxController();
+
+
+              const promise = controller.postTxSubmit.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
