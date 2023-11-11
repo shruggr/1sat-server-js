@@ -203,6 +203,7 @@ export function RegisterRoutes(app: Router) {
             const args = {
                     outpoint: {"in":"path","name":"outpoint","required":true,"dataType":"string"},
                     req: {"in":"request","name":"req","required":true,"dataType":"object"},
+                    fuzzy: {"default":false,"in":"query","name":"fuzzy","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

@@ -1,8 +1,8 @@
 import { Request as ExpRequest } from "express";
 import { NotFound } from "http-errors";
-import { Controller, Get, Path, Request, Route } from "tsoa";
+import { Controller, Get, Path, Query, Request, Route } from "tsoa";
 import { Outpoint } from "../models/outpoint";
-import { Txo } from "../models/txo";
+import { InscriptionData, Txo } from "../models/txo";
 // import { NotFound } from 'http-errors';
 
 @Route("content")
@@ -11,11 +11,22 @@ export class ContentController extends Controller {
     public async getOrdfsFile(
         @Path() outpoint: string,
         @Request() req: ExpRequest,
+        @Query() fuzzy: boolean = false
     ): 
     Promise<void> {
-        const file = outpoint.length == 64 ?
-            await Txo.loadFileByTxid(outpoint) :
-            await Txo.loadFileByOutpoint(Outpoint.fromString(outpoint));
+        let file: InscriptionData | undefined;
+        if(outpoint.length == 64) {
+            file = await Txo.loadFileByTxid(outpoint);
+        } else {
+            const op = Outpoint.fromString(outpoint);
+            file = await Txo.loadFileByOutpoint(op);
+            if(!file && fuzzy) {
+                const txo = await Txo.loadByOutpoint(op);
+                if(txo.origin?.outpoint) {
+                    file = await Txo.loadFileByOutpoint(txo.origin?.outpoint);
+                }
+            }
+        }
         if(!file) {
             throw new NotFound();
         }
