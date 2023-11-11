@@ -1513,6 +1513,15 @@
 							"default": false,
 							"type": "boolean"
 						}
+					},
+					{
+						"in": "query",
+						"name": "origins",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
 					}
 				]
 			},
@@ -1574,6 +1583,15 @@
 					{
 						"in": "query",
 						"name": "bsv20",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "origins",
 						"required": false,
 						"schema": {
 							"default": false,
@@ -1665,6 +1683,15 @@
 							"default": false,
 							"type": "boolean"
 						}
+					},
+					{
+						"in": "query",
+						"name": "origins",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
 					}
 				]
 			},
@@ -1726,6 +1753,15 @@
 					{
 						"in": "query",
 						"name": "bsv20",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "origins",
 						"required": false,
 						"schema": {
 							"default": false,
