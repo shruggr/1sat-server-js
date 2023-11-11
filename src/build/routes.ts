@@ -861,7 +861,6 @@ export function RegisterRoutes(app: Router) {
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     bsv20: {"default":false,"in":"query","name":"bsv20","dataType":"boolean"},
-                    origins: {"default":false,"in":"query","name":"origins","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -892,7 +891,6 @@ export function RegisterRoutes(app: Router) {
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     bsv20: {"default":false,"in":"query","name":"bsv20","dataType":"boolean"},
-                    origins: {"default":false,"in":"query","name":"origins","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -923,7 +921,6 @@ export function RegisterRoutes(app: Router) {
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     bsv20: {"default":false,"in":"query","name":"bsv20","dataType":"boolean"},
-                    origins: {"default":false,"in":"query","name":"origins","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -954,7 +951,6 @@ export function RegisterRoutes(app: Router) {
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     bsv20: {"default":false,"in":"query","name":"bsv20","dataType":"boolean"},
-                    origins: {"default":false,"in":"query","name":"origins","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

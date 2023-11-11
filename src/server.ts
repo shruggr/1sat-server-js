@@ -1,6 +1,7 @@
 import * as cors from 'cors';
 import * as dotenv from 'dotenv';
 dotenv.config();
+import axios from 'axios';
 import { Address } from '@ts-bitcoin/core';
 import * as express from 'express';
 import { Request, Response } from 'express';
@@ -8,7 +9,7 @@ import { NotFound } from 'http-errors';
 import "isomorphic-fetch";
 import * as swaggerUi from 'swagger-ui-express'
 import { RegisterRoutes } from "./build/routes";
-import axios from 'axios';
+import * as path from 'path';
 import { Redis } from 'ioredis';
 
 const server = express();
@@ -31,6 +32,10 @@ server.use((req, res, next) => {
     console.log(new Date().toISOString(), req.path, req.method);
     next();
 })
+
+server.use('/api/swagger.json', async (_req, res) => {
+    res.sendFile(path.join(__dirname, '/build/swagger.json'));
+});
 
 server.use("/api/subscribe", (req, res, next) => {
     try {

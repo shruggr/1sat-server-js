@@ -22,10 +22,16 @@ export class InscriptionsController extends Controller {
         if (q) {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
-        // console.log("Query:", query)
         return this.search(query, sort, limit, offset);
     }
 
+    /**
+   * Inscription search. This is really powerful
+   *  here are some really cool things you can do:
+   * 
+   * Search first-is-first: Set the sort=ASC, limit=1, offet=0
+   * 
+   */
     @Post("search")
     public async postInscriptionSearch(
         @Body() query?: TxoData,

@@ -669,6 +669,7 @@
 						}
 					}
 				},
+				"description": "Inscription search. This is really powerful\n here are some really cool things you can do:\n\nSearch first-is-first: Set the sort=ASC, limit=1, offet=0\n\nTesting the limits of comments",
 				"security": [],
 				"parameters": [
 					{
@@ -1513,15 +1514,6 @@
 							"default": false,
 							"type": "boolean"
 						}
-					},
-					{
-						"in": "query",
-						"name": "origins",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
 					}
 				]
 			},
@@ -1583,15 +1575,6 @@
 					{
 						"in": "query",
 						"name": "bsv20",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					},
-					{
-						"in": "query",
-						"name": "origins",
 						"required": false,
 						"schema": {
 							"default": false,
@@ -1683,15 +1666,6 @@
 							"default": false,
 							"type": "boolean"
 						}
-					},
-					{
-						"in": "query",
-						"name": "origins",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
 					}
 				]
 			},
@@ -1753,15 +1727,6 @@
 					{
 						"in": "query",
 						"name": "bsv20",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					},
-					{
-						"in": "query",
-						"name": "origins",
 						"required": false,
 						"schema": {
 							"default": false,
