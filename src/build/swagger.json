@@ -55,17 +55,14 @@
 			"File": {
 				"properties": {
 					"hash": {
-						"type": "string",
-						"default": ""
+						"type": "string"
 					},
 					"size": {
 						"type": "number",
-						"format": "double",
-						"default": 0
+						"format": "double"
 					},
 					"type": {
-						"type": "string",
-						"default": ""
+						"type": "string"
 					}
 				},
 				"type": "object",
@@ -1744,6 +1741,15 @@
 							"default": false,
 							"type": "boolean"
 						}
+					},
+					{
+						"in": "query",
+						"name": "origins",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
 					}
 				]
 			},
@@ -1805,6 +1811,15 @@
 					{
 						"in": "query",
 						"name": "bsv20",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "origins",
 						"required": false,
 						"schema": {
 							"default": false,
@@ -1896,6 +1911,15 @@
 							"default": false,
 							"type": "boolean"
 						}
+					},
+					{
+						"in": "query",
+						"name": "origins",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
 					}
 				]
 			},
@@ -1957,6 +1981,15 @@
 					{
 						"in": "query",
 						"name": "bsv20",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "origins",
 						"required": false,
 						"schema": {
 							"default": false,

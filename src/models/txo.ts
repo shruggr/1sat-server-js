@@ -2,7 +2,6 @@ import { Address, OpCode, Script} from '@ts-bitcoin/core';
 import { BadRequest } from 'http-errors';
 import { Outpoint } from "./outpoint";
 import { loadTx, pool } from "../db";
-import { File } from "./file";
 import { Sigma } from "./sigma";
 import { NotFound } from 'http-errors';
 
@@ -57,6 +56,12 @@ export class TxoData {
         until: number;
     };
     sigil?: {[key: string]: any};
+}
+
+export class File {
+    hash?: string;
+    size?: number;
+    type?: string;
 }
 
 export interface Inscription {
