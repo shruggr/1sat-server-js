@@ -6,6 +6,85 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
+			"Bsv20Status": {
+				"enum": [
+					-1,
+					0,
+					1
+				],
+				"type": "number"
+			},
+			"Token": {
+				"properties": {
+					"txid": {
+						"type": "string"
+					},
+					"vout": {
+						"type": "number",
+						"format": "double"
+					},
+					"height": {
+						"type": "number",
+						"format": "double"
+					},
+					"idx": {
+						"type": "number",
+						"format": "double"
+					},
+					"tick": {
+						"type": "string"
+					},
+					"max": {
+						"type": "string"
+					},
+					"lim": {
+						"type": "string"
+					},
+					"dec": {
+						"type": "number",
+						"format": "double"
+					},
+					"supply": {
+						"type": "string"
+					},
+					"status": {
+						"$ref": "#/components/schemas/Bsv20Status"
+					},
+					"available": {
+						"type": "string"
+					},
+					"pctMinted": {
+						"type": "number",
+						"format": "double"
+					},
+					"accounts": {
+						"type": "number",
+						"format": "double"
+					},
+					"pending": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"txid",
+					"vout",
+					"height",
+					"idx",
+					"tick",
+					"max",
+					"lim",
+					"dec",
+					"supply",
+					"status",
+					"available",
+					"pctMinted",
+					"accounts",
+					"pending"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"TokenBalanceResponse": {
 				"properties": {
 					"listed": {
@@ -109,14 +188,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"Bsv20Status": {
-				"enum": [
-					-1,
-					0,
-					1
-				],
-				"type": "number"
-			},
 			"TxoData": {
 				"properties": {
 					"types": {
@@ -187,26 +258,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"Claim": {
-				"properties": {
-					"sub": {
-						"type": "string"
-					},
-					"type": {
-						"type": "string"
-					},
-					"value": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"sub",
-					"type",
-					"value"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"Origin": {
 				"properties": {
 					"outpoint": {
@@ -223,12 +274,6 @@
 						"properties": {},
 						"additionalProperties": {},
 						"type": "object"
-					},
-					"claims": {
-						"items": {
-							"$ref": "#/components/schemas/Claim"
-						},
-						"type": "array"
 					}
 				},
 				"type": "object",
@@ -287,78 +332,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"Token": {
-				"properties": {
-					"txid": {
-						"type": "string"
-					},
-					"vout": {
-						"type": "number",
-						"format": "double"
-					},
-					"height": {
-						"type": "number",
-						"format": "double"
-					},
-					"idx": {
-						"type": "number",
-						"format": "double"
-					},
-					"tick": {
-						"type": "string"
-					},
-					"max": {
-						"type": "string"
-					},
-					"lim": {
-						"type": "string"
-					},
-					"dec": {
-						"type": "number",
-						"format": "double"
-					},
-					"supply": {
-						"type": "string"
-					},
-					"status": {
-						"$ref": "#/components/schemas/Bsv20Status"
-					},
-					"available": {
-						"type": "number",
-						"format": "double"
-					},
-					"pctMinted": {
-						"type": "number",
-						"format": "double"
-					},
-					"accounts": {
-						"type": "number",
-						"format": "double"
-					},
-					"pending": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"required": [
-					"txid",
-					"vout",
-					"height",
-					"idx",
-					"tick",
-					"max",
-					"lim",
-					"dec",
-					"supply",
-					"status",
-					"available",
-					"pctMinted",
-					"accounts",
-					"pending"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"SortDirection": {
 				"enum": [
 					"asc",
@@ -375,6 +348,26 @@
 					"price"
 				],
 				"type": "string"
+			},
+			"Claim": {
+				"properties": {
+					"sub": {
+						"type": "string"
+					},
+					"type": {
+						"type": "string"
+					},
+					"value": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"sub",
+					"type",
+					"value"
+				],
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {}
@@ -452,6 +445,78 @@
 						"schema": {
 							"default": false,
 							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20": {
+			"get": {
+				"operationId": "GetBsv20Stats",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Token"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"default": "height",
+							"type": "string",
+							"enum": [
+								"pct_minted",
+								"available",
+								"tick",
+								"max",
+								"height"
+							]
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"default": "desc",
+							"type": "string",
+							"enum": [
+								"asc",
+								"desc"
+							]
 						}
 					}
 				]
@@ -669,7 +734,7 @@
 						}
 					}
 				},
-				"description": "Inscription search. This is really powerful\n here are some really cool things you can do:\n\nSearch first-is-first: Set the sort=ASC, limit=1, offet=0\n\nTesting the limits of comments",
+				"description": "Inscription search. This is really powerful\n here are some really cool things you can do:\n\nSearch first-is-first: Set the sort=ASC, limit=1, offet=0",
 				"security": [],
 				"parameters": [
 					{
