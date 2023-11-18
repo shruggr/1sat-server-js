@@ -130,11 +130,7 @@ export class TxosController extends Controller {
         }
         if(query) {
             params.push(query);
-            if(origins) {
-                sql.push(`AND (t.data @> $${params.length} OR o.data @> $${params.length})`)
-            } else {
-                sql.push(`AND t.data @> $${params.length}`)
-            }
+            sql.push(`AND (t.data @> $${params.length} OR o.data @> $${params.length})`)
         }
 
         if(type) {

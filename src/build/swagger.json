@@ -462,6 +462,15 @@
 						"schema": {
 							"type": "string"
 						}
+					},
+					{
+						"in": "query",
+						"name": "fuzzy",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
 					}
 				]
 			}
@@ -670,6 +679,7 @@
 						}
 					}
 				},
+				"description": "Inscription search. This is really powerful\n here are some really cool things you can do:\n\nSearch first-is-first: Set the sort=ASC, limit=1, offet=0\n\nTesting the limits of comments",
 				"security": [],
 				"parameters": [
 					{
@@ -1439,7 +1449,7 @@
 		},
 		"/api/origins/num/{num}": {
 			"get": {
-				"operationId": "GetLatestByOrigin",
+				"operationId": "GetOriginByNum",
 				"responses": {
 					"200": {
 						"description": "Ok",

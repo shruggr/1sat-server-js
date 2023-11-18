@@ -1,5 +1,5 @@
 import { Address } from '@ts-bitcoin/core';
-import { BadRequest } from 'http-errors';
+import { BadRequest, NotFound } from 'http-errors';
 import { Controller, Get, Path, Route } from "tsoa";
 import { pool } from "../db";
 import { Bsv20Status, Txo } from '../models/txo';
@@ -127,6 +127,7 @@ export class FungiblesController extends Controller {
         if(tick.length > 4 || tick.includes("'") || tick.includes('"')) {
             throw new BadRequest();
         }
+        tick = tick.toUpperCase();
         const { rows: [token] } = await pool.query(`SELECT b.*, a.accounts, p.pending
             FROM bsv20 b, (
                 SELECT COUNT(DISTINCT pkhash) as accounts 
@@ -140,6 +141,9 @@ export class FungiblesController extends Controller {
             WHERE b.status = 1 AND tick=$1`,
             [tick],
         );
+        if(!token) {
+            throw new NotFound();
+        }
         return {...token, 
             txid: token.txid.toString('hex'),
             idx: parseInt(token.idx, 10)
