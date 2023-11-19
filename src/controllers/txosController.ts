@@ -18,6 +18,7 @@ export class TxosController extends Controller {
         @Query() origins = false
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        await this.refreshAddress(address);
         let query: TxoData | undefined;
         if (q) {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
@@ -35,7 +36,8 @@ export class TxosController extends Controller {
         @Query() bsv20 = false,
         @Query() origins = false
     ): Promise<Txo[]> {
-        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        await this.refreshAddress(address);
         return this.searchByAddress(address, true, query, type, bsv20, origins, limit, offset);
     }
 
@@ -71,6 +73,16 @@ export class TxosController extends Controller {
         return this.searchByAddress(address, false, query, type, bsv20, origins, limit, offset);
     }
 
+    async refreshAddress(address: string) {
+        const { INDEXER } = process.env;
+        const  start = Date.now();
+        const resp  = await fetch(`${INDEXER}/ord/${address}`)
+        if(resp.ok) {
+            console.log("Refreshed address:", address, `${Date.now() - start}ms`)
+        } else {
+            console.log("Failed to refresh address:", address, resp.status, await resp.text())
+        }
+    }
 
     @Get("{outpoint}")
     public async getTxoByOutpoint(
@@ -79,7 +91,7 @@ export class TxosController extends Controller {
     ): Promise<Txo> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         const txo = await Txo.getByOutpoint(Outpoint.fromString(outpoint));
-        if(script) {
+        if (script) {
             const tx = await loadTx(txo.txid);
             txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
         }
@@ -96,12 +108,12 @@ export class TxosController extends Controller {
             FROM txos t
             LEFT JOIN txos o ON o.outpoint = t.origin
             LEFT JOIN origins n ON n.origin = t.origin 
-            WHERE t.outpoint = ANY($1)`, 
+            WHERE t.outpoint = ANY($1)`,
             [op]
         );
         return Promise.all(rows.map(async (row: any) => {
             const txo = Txo.fromRow(row)
-            if(script) {
+            if (script) {
                 const tx = await loadTx(txo.txid);
                 txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
             }
@@ -109,7 +121,7 @@ export class TxosController extends Controller {
         }));
     }
 
-    public async searchByAddress(address: string, unspent = true, query?: TxoData, type = '', bsv20=false, origins=false, limit: number = 100, offset: number = 0): Promise<Txo[]> {
+    public async searchByAddress(address: string, unspent = true, query?: TxoData, type = '', bsv20 = false, origins = false, limit: number = 100, offset: number = 0): Promise<Txo[]> {
         // const start = Date.now();
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf];
@@ -118,22 +130,22 @@ export class TxosController extends Controller {
             LEFT JOIN txos o ON o.outpoint = t.origin
             LEFT JOIN origins n ON n.origin = t.origin 
             WHERE t.pkhash = $1`]
-        if(unspent) {
+        if (unspent) {
             sql.push(`AND t.spend = '\\x'`)
         } else {
             sql.push(`AND t.spend != '\\x'`)
         }
-        if(bsv20) {
+        if (bsv20) {
             sql.push(`AND t.data->'bsv20' IS NOT NULL`)
         } else {
             sql.push(`AND t.data->'bsv20' IS NULL`)
         }
-        if(query) {
+        if (query) {
             params.push(query);
             sql.push(`AND (t.data @> $${params.length} OR o.data @> $${params.length})`)
         }
 
-        if(type) {
+        if (type) {
             params.push(`${type}%`);
             sql.push(`AND t.data->'insc'->'file'->>'type' like $${params.length}`)
         }
@@ -143,7 +155,7 @@ export class TxosController extends Controller {
         sql.push(`LIMIT $${params.length}`)
         params.push(offset);
         sql.push(`OFFSET $${params.length}`)
-        
+
         // console.log(sql.join(' '), params)
         const { rows } = await pool.query(sql.join(' '), params);
         // console.log("Returning:", rows.length, address, Date.now() - start)

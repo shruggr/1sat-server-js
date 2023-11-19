@@ -475,6 +475,27 @@
 				]
 			}
 		},
+		"/content/{outpoint}/latest": {
+			"get": {
+				"operationId": "GetLatestFile",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "outpoint",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/bsv20/{address}/balance": {
 			"get": {
 				"operationId": "GetBalanceByAddress",
@@ -679,7 +700,7 @@
 						}
 					}
 				},
-				"description": "Inscription search. This is really powerful\n here are some really cool things you can do:\n\nSearch first-is-first: Set the sort=ASC, limit=1, offet=0\n\nTesting the limits of comments",
+				"description": "Inscription search. This is really powerful\n here are some really cool things you can do:\n\nSearch first-is-first: Set the sort=ASC, limit=1, offet=0",
 				"security": [],
 				"parameters": [
 					{
