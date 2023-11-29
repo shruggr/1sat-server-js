@@ -134,17 +134,14 @@
 			"File": {
 				"properties": {
 					"hash": {
-						"type": "string",
-						"default": ""
+						"type": "string"
 					},
 					"size": {
 						"type": "number",
-						"format": "double",
-						"default": 0
+						"format": "double"
 					},
 					"type": {
-						"type": "string",
-						"default": ""
+						"type": "string"
 					}
 				},
 				"type": "object",

@@ -66,9 +66,9 @@ const models: TsoaRoute.Models = {
     "File": {
         "dataType": "refObject",
         "properties": {
-            "hash": {"dataType":"string","default":""},
-            "size": {"dataType":"double","default":0},
-            "type": {"dataType":"string","default":""},
+            "hash": {"dataType":"string"},
+            "size": {"dataType":"double"},
+            "type": {"dataType":"string"},
         },
         "additionalProperties": false,
     },

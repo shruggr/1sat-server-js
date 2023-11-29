@@ -1,5 +1,5 @@
-export class File {
-    hash: string = '';
-    size: number = 0;
-    type: string = '';
+export interface File {
+    hash?: string;
+    size?: number;
+    type?: string;
 }
