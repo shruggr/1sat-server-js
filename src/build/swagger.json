@@ -117,14 +117,19 @@
 						],
 						"type": "object"
 					},
+					"sym": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					},
 					"tick": {
 						"type": "string"
 					}
 				},
 				"required": [
 					"listed",
-					"all",
-					"tick"
+					"all"
 				],
 				"type": "object"
 			},
