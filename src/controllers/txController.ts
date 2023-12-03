@@ -131,7 +131,7 @@ export class TxController extends Controller {
         const respText = await resp.text();
         console.log("ARC Response:", resp.status, respText);
         const result = JSON.parse(respText)
-        if (result.status != 200 || result.txStatus == 'REJECTED') {
+        if (result.status != 200 || result.detail == 'REJECTED') {
             throw createError(result.status || 500, `Broadcast failed: ${result.detail} ${result.extraInfo}`);
         }
     }

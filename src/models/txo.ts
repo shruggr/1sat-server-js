@@ -22,7 +22,7 @@ export class Origin {
     data?: TxoData;
     num?: number;
     map?: { [key: string]: any };
-    claims?: Claim[]
+    // claims?: Claim[]
 }
 
 export enum Bsv20Status {
