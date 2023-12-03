@@ -67,12 +67,16 @@ export class FungiblesController extends Controller {
 
         const results: {[ticker: string]:TokenBalance} = {};
         let ids = new Set<string>()
+        let ticks = new Set<string>()
         for (let row of rows) {
             if(row.op == 'deploy+mint') {
                 row.id = Outpoint.fromBuffer(row.outpoint).toString()
             }
             let key = row.id || row.tick;
+
             if(row.id) ids.add(row.id)
+            else if(row.tick) ticks.add(row.tick);
+
             let tokenBal = results[key]
             if(!tokenBal) {
                 tokenBal = new TokenBalance(row.tick, row.id)
@@ -93,20 +97,38 @@ export class FungiblesController extends Controller {
             }
         }
 
-        const symbols = new Map<string, string>();
-        if(ids.size) {
-            const { rows: symRows } = await pool.query(`
-                SELECT outpoint, data->'bsv20'->>'sym' as sym
-                FROM txos 
-                WHERE outpoint = ANY($1)`, 
-                [Array.from(ids).map(id => Outpoint.fromString(id).toBuffer())]
-            )
-            symRows.forEach(row => {
-                const outpoint = Outpoint.fromBuffer(row.outpoint).toString()
-                symbols.set(outpoint, row.sym)
-                console.log('SYM', outpoint, row.sym)
-            });
-        }
+        const symbols = new Map<string, {sym: string, dec: number}>();
+        await Promise.all([
+            (async () => {
+                if(ticks.size) {
+                    const { rows: tickRows } = await pool.query(`
+                        SELECT tick, dec
+                        FROM bsv20 
+                        WHERE status=1 AND tick = ANY($1)`, 
+                        [Array.from(ticks)]
+                    )
+                    tickRows.forEach(row => {
+                        symbols.set(row.tick, row)
+                        // console.log('TICK', row.tick, row.dec)
+                    });
+                }
+            })(),
+            (async () => {
+                if(ids.size) {
+                    const { rows: symRows } = await pool.query(`
+                        SELECT outpoint, data->'bsv20'->>'sym' as sym, CAST(data->'insc'->'json'->>'dec' as INTEGER) as dec
+                        FROM txos 
+                        WHERE outpoint = ANY($1)`, 
+                        [Array.from(ids).map(id => Outpoint.fromString(id).toBuffer())]
+                    )
+                    symRows.forEach(row => {
+                        const outpoint = Outpoint.fromBuffer(row.outpoint).toString()
+                        symbols.set(outpoint, row)
+                        // console.log('SYM', outpoint, row.sym, row.dec)
+                    });
+                }
+            })()
+        ])
         return Object.values(results).map(r => {
             const o: TokenBalanceResponse = {
                 all: {
@@ -121,8 +143,12 @@ export class FungiblesController extends Controller {
             
             if(r.id) {
                 o.id = r.id;
-                o.sym = symbols.get(r.id);
-            } else if(r.tick) o.tick = r.tick;
+                o.sym = symbols.get(r.id)?.sym;
+                o.dec = symbols.get(r.id)?.dec;
+            } else if(r.tick) {
+                o.tick = r.tick;
+                o.dec = symbols.get(r.tick)?.dec;
+            }
 
             return o;
         })
@@ -220,6 +246,7 @@ type TokenBalanceResponse = {
     tick?: string;
     id?: string;
     sym?: string;
+    dec?: number;
     all: {
         confirmed: string;
         pending: string;

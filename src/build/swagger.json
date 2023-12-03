@@ -117,6 +117,10 @@
 						],
 						"type": "object"
 					},
+					"dec": {
+						"type": "number",
+						"format": "double"
+					},
 					"sym": {
 						"type": "string"
 					},
