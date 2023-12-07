@@ -97,7 +97,7 @@ export class FungiblesController extends Controller {
             }
         }
 
-        const symbols = new Map<string, {sym: string, dec: number}>();
+        const symbols = new Map<string, {sym: string, dec?: number, icon?: string}>();
         await Promise.all([
             (async () => {
                 if(ticks.size) {
@@ -116,7 +116,9 @@ export class FungiblesController extends Controller {
             (async () => {
                 if(ids.size) {
                     const { rows: symRows } = await pool.query(`
-                        SELECT outpoint, data->'bsv20'->>'sym' as sym, CAST(data->'insc'->'json'->>'dec' as INTEGER) as dec
+                        SELECT outpoint, data->'bsv20'->>'sym' as sym, 
+                            CAST(data->'insc'->'json'->>'dec' as INTEGER) as dec,
+                            data->'insc'->'json'->>'icon' as icon
                         FROM txos 
                         WHERE outpoint = ANY($1)`, 
                         [Array.from(ids).map(id => Outpoint.fromString(id).toBuffer())]
@@ -145,6 +147,7 @@ export class FungiblesController extends Controller {
                 o.id = r.id;
                 o.sym = symbols.get(r.id)?.sym;
                 o.dec = symbols.get(r.id)?.dec;
+                o.icon = symbols.get(r.id)?.icon;
             } else if(r.tick) {
                 o.tick = r.tick;
                 o.dec = symbols.get(r.tick)?.dec;
@@ -247,6 +250,7 @@ type TokenBalanceResponse = {
     id?: string;
     sym?: string;
     dec?: number;
+    icon?: string;
     all: {
         confirmed: string;
         pending: string;

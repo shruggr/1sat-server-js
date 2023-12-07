@@ -117,6 +117,9 @@
 						],
 						"type": "object"
 					},
+					"icon": {
+						"type": "string"
+					},
 					"dec": {
 						"type": "number",
 						"format": "double"
