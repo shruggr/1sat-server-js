@@ -29,9 +29,35 @@ import type { RequestHandler, Router } from 'express';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
+    "Bsv20Status": {
+        "dataType": "refEnum",
+        "enums": [-1,0,1],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Token": {
+        "dataType": "refObject",
+        "properties": {
+            "txid": {"dataType":"string","required":true},
+            "vout": {"dataType":"double","required":true},
+            "height": {"dataType":"double","required":true},
+            "idx": {"dataType":"double","required":true},
+            "tick": {"dataType":"string","required":true},
+            "max": {"dataType":"string","required":true},
+            "lim": {"dataType":"string","required":true},
+            "dec": {"dataType":"double","required":true},
+            "supply": {"dataType":"string","required":true},
+            "status": {"ref":"Bsv20Status","required":true},
+            "available": {"dataType":"string","required":true},
+            "pctMinted": {"dataType":"double","required":true},
+            "accounts": {"dataType":"double","required":true},
+            "pending": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "TokenBalanceResponse": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"listed":{"dataType":"nestedObjectLiteral","nestedProperties":{"pending":{"dataType":"string","required":true},"confirmed":{"dataType":"string","required":true}},"required":true},"all":{"dataType":"nestedObjectLiteral","nestedProperties":{"pending":{"dataType":"string","required":true},"confirmed":{"dataType":"string","required":true}},"required":true},"tick":{"dataType":"string","required":true}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"listed":{"dataType":"nestedObjectLiteral","nestedProperties":{"pending":{"dataType":"string","required":true},"confirmed":{"dataType":"string","required":true}},"required":true},"all":{"dataType":"nestedObjectLiteral","nestedProperties":{"pending":{"dataType":"string","required":true},"confirmed":{"dataType":"string","required":true}},"required":true},"icon":{"dataType":"string"},"dec":{"dataType":"double"},"sym":{"dataType":"string"},"id":{"dataType":"string"},"tick":{"dataType":"string"}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Outpoint": {
@@ -71,11 +97,6 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Bsv20Status": {
-        "dataType": "refEnum",
-        "enums": [-1,0,1],
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "TxoData": {
         "dataType": "refObject",
         "properties": {
@@ -92,16 +113,6 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Claim": {
-        "dataType": "refObject",
-        "properties": {
-            "sub": {"dataType":"string","required":true},
-            "type": {"dataType":"string","required":true},
-            "value": {"dataType":"string","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Origin": {
         "dataType": "refObject",
         "properties": {
@@ -109,7 +120,6 @@ const models: TsoaRoute.Models = {
             "data": {"ref":"TxoData"},
             "num": {"dataType":"double"},
             "map": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
-            "claims": {"dataType":"array","array":{"dataType":"refObject","ref":"Claim"}},
         },
         "additionalProperties": false,
     },

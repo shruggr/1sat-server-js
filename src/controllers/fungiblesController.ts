@@ -1,6 +1,6 @@
 import { Address } from '@ts-bitcoin/core';
 import { BadRequest, NotFound } from 'http-errors';
-import { Controller, Get, Path, Route } from "tsoa";
+import { Controller, Get, Path, Query, Route } from "tsoa";
 import { pool } from "../db";
 import { Bsv20Status, Txo } from '../models/txo';
 import { Outpoint } from '../models/outpoint';
@@ -16,7 +16,7 @@ export interface Token {
     dec: number,
     supply: string,
     status: Bsv20Status,
-    available: number,
+    available: string,
     pctMinted: number,
     accounts: number,
     pending: number,
@@ -24,58 +24,138 @@ export interface Token {
 
 @Route("api/bsv20")
 export class FungiblesController extends Controller {
+    @Get("")
+    public async getBsv20Stats(
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+        @Query() sort: 'pct_minted' | 'available' | 'tick' | 'max' | 'height' = 'height',
+        @Query() dir: 'asc' | 'desc' = 'desc',
+    ): Promise<Token[]> {
+
+        const {rows} = await pool.query(`SELECT * 
+            FROM bsv20 
+            WHERE status = 1
+            ORDER BY ${sort} ${dir}, idx ${dir}
+            LIMIT $1 OFFSET $2`,
+            [limit, offset],
+        );
+        return rows.map(t => ({
+            ...t,
+            txid: t.txid.toString('hex'),
+        }))
+    }
+
     @Get("{address}/balance")
     public async getBalanceByAddress(
         @Path() address: string,
     ): Promise<TokenBalanceResponse[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         const hashBuf = Address.fromString(address).hashBuf
-        const sql = `SELECT 
-                COALESCE(data->'bsv20'->>'tick', data->'bsv20'->>'id') as tick,
+    
+        const sql = `SELECT outpoint,
+                data->'bsv20'->>'op' as op,
+                data->'bsv20'->>'tick' as tick,
+                data->'bsv20'->>'id' as id,
                 CASE WHEN data->>'list' IS NOT NULL THEN true ELSE false END as listing,
                 data->'bsv20'->>'status' as status,
-                SUM(COALESCE(data->'bsv20'->>'amt', '0')::NUMERIC) as amt
+                COALESCE(data->'bsv20'->>'amt', '0')::NUMERIC as amt
             FROM txos
             WHERE pkhash=$1 AND spend='\\x' AND 
                 (data->'bsv20'->>'status' = '0' OR data->'bsv20'->>'status' = '1') AND
-                data->'bsv20'->>'op' != 'deploy'
-            GROUP BY tick, listing, status`
-        // console.log(sql, hashBuf.toString('hex'))
+                data->'bsv20'->>'op' != 'deploy'`
         const { rows } = await pool.query(sql, [hashBuf]);
 
-        // console.log("BALANCE ROWS:", rows)
         const results: {[ticker: string]:TokenBalance} = {};
+        let ids = new Set<string>()
+        let ticks = new Set<string>()
         for (let row of rows) {
-            let tick = results[row.tick]
-            if(!tick) {
-                tick = new TokenBalance(row.tick)
-                results[row.tick] = tick
+            if(row.op == 'deploy+mint') {
+                row.id = Outpoint.fromBuffer(row.outpoint).toString()
+            }
+            let key = row.id || row.tick;
+
+            if(row.id) ids.add(row.id)
+            else if(row.tick) ticks.add(row.tick);
+
+            let tokenBal = results[key]
+            if(!tokenBal) {
+                tokenBal = new TokenBalance(row.tick, row.id)
+                results[key] = tokenBal
             }
 
             const amt = BigInt(row.amt)
             if(row.status == '1') {
-                tick.all.confirmed += amt
+                tokenBal.all.confirmed += amt
                 if(row.listing) {
-                    tick.listed.confirmed += amt
+                    tokenBal.listed.confirmed += amt
                 }
             } else { 
-                tick.all.pending += amt
+                tokenBal.all.pending += amt
                 if(row.listing) {
-                    tick.listed.pending += amt
+                    tokenBal.listed.pending += amt
                 }
             }
         }
-        return Object.values(results).map(r => ({
-            tick: r.tick,
-            all: {
-                confirmed: r.all.confirmed.toString(),
-                pending: r.all.pending.toString()
-            },
-            listed: {
-                confirmed: r.listed.confirmed.toString(),
-                pending: r.listed.pending.toString()
+
+        const symbols = new Map<string, {sym: string, dec?: number, icon?: string}>();
+        await Promise.all([
+            (async () => {
+                if(ticks.size) {
+                    const { rows: tickRows } = await pool.query(`
+                        SELECT tick, dec
+                        FROM bsv20 
+                        WHERE status=1 AND tick = ANY($1)`, 
+                        [Array.from(ticks)]
+                    )
+                    tickRows.forEach(row => {
+                        symbols.set(row.tick, row)
+                        // console.log('TICK', row.tick, row.dec)
+                    });
+                }
+            })(),
+            (async () => {
+                if(ids.size) {
+                    const { rows: symRows } = await pool.query(`
+                        SELECT outpoint, data->'bsv20'->>'sym' as sym, 
+                            CAST(data->'insc'->'json'->>'dec' as INTEGER) as dec,
+                            data->'insc'->'json'->>'icon' as icon
+                        FROM txos 
+                        WHERE outpoint = ANY($1)`, 
+                        [Array.from(ids).map(id => Outpoint.fromString(id).toBuffer())]
+                    )
+                    symRows.forEach(row => {
+                        const outpoint = Outpoint.fromBuffer(row.outpoint).toString()
+                        symbols.set(outpoint, row)
+                        // console.log('SYM', outpoint, row.sym, row.dec)
+                    });
+                }
+            })()
+        ])
+        return Object.values(results).map(r => {
+            const o: TokenBalanceResponse = {
+                all: {
+                    confirmed: r.all.confirmed.toString(),
+                    pending: r.all.pending.toString()
+                },
+                listed: {
+                    confirmed: r.listed.confirmed.toString(),
+                    pending: r.listed.pending.toString()
+                }
             }
-        }))
+            
+            if(r.id) {
+                o.id = r.id;
+                o.sym = symbols.get(r.id)?.sym;
+                o.dec = symbols.get(r.id)?.dec;
+                o.icon = symbols.get(r.id)?.icon;
+            } else if(r.tick) {
+                o.tick = r.tick;
+                o.dec = symbols.get(r.tick)?.dec;
+            }
+
+            return o;
+        })
+
     }
 
     @Get("{address}/tick/{tick}")
@@ -124,6 +204,7 @@ export class FungiblesController extends Controller {
     public async getBsv20TickStats(
         @Path() tick: string
     ): Promise<Token> {
+        this.setHeader('Cache-Control', 'max-age=3600')
         if(tick.length > 4 || tick.includes("'") || tick.includes('"')) {
             throw new BadRequest();
         }
@@ -149,11 +230,12 @@ export class FungiblesController extends Controller {
             idx: parseInt(token.idx, 10)
         } as Token;
     }
+
 }
 
 
 class TokenBalance {
-    constructor(public tick = '') {}
+    constructor(public tick?:string, public id?: string) {}
     all = new BalanceItem()
     listed = new BalanceItem()
 }
@@ -164,7 +246,11 @@ class BalanceItem {
 }
 
 type TokenBalanceResponse = {
-    tick: string;
+    tick?: string;
+    id?: string;
+    sym?: string;
+    dec?: number;
+    icon?: string;
     all: {
         confirmed: string;
         pending: string;
