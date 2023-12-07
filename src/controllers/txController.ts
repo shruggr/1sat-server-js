@@ -3,7 +3,7 @@ import { Redis } from "ioredis";
 import { Body, BodyProp, Controller, Get, Path, Post, Route } from "tsoa";
 import { Tx } from "@ts-bitcoin/core";
 
-const { ARC, ARC_TOKEN, TAAL_TOKEN } = process.env;
+const { ARC, ARC_TOKEN, NETWORK, TAAL_TOKEN } = process.env;
 const pubClient = new Redis();
 export interface PreviousOutput {
     lockingScript: string,
@@ -34,7 +34,17 @@ export class TxController extends Controller {
         console.log('Broadcasting TX:', txid, tx.toHex());
 
         try {
-            if (TAAL_TOKEN) {
+            if (NETWORK == 'testnet') {
+                try {
+                    await this.broadcastWOC(txbuf);
+                    this.broadcastArc(txbuf).catch(console.error)
+                } catch (e: any) {
+                    if (e.status && e.status >= 300 && e.status < 500) {
+                        throw e;
+                    }
+                    await this.broadcastArc(txbuf);
+                }
+            } else if (TAAL_TOKEN) {
                 try {
                     await this.broadcastTaal(txbuf);
                     this.broadcastArc(txbuf).catch(console.error)
@@ -55,6 +65,30 @@ export class TxController extends Controller {
             throw e;
         }
 
+    }
+
+    async broadcastWOC(txbuf: Buffer) {
+        const net = NETWORK == 'testnet' ? 'test' : 'main'
+        const resp = await fetch(`https://api.whatsonchain.com/v1/bsv/${net}/tx/raw`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({txhex: txbuf.toString('hex')})
+        });
+
+        const respText = await resp.text();
+        console.log("WOC Response:", resp.status, respText);
+        if (!resp.ok) {
+            try {
+                // const { status, error } = JSON.parse(respText);
+                // if (!error.includes('txn-already-known')) {
+                    throw createError(resp.status || 500, `Broadcast failed: ${respText}}`);
+                // }
+            } catch (e: any) {
+                throw e;
+            }
+        }
     }
 
     async broadcastTaal(txbuf: Buffer) {
