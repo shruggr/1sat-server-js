@@ -114,7 +114,7 @@ export class InscriptionsController extends Controller {
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
             JOIN origins n ON n.origin = t.origin 
-            WHERE t.origin = $1
+            WHERE t.origin = $1 and t.spend='\\x'
             ORDER BY t.height DESC, t.idx DESC
             LIMIT 1`,
             [Outpoint.fromString(origin).toBuffer()]
@@ -126,6 +126,24 @@ export class InscriptionsController extends Controller {
             txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
         }
         return txo;
+    }
+
+    @Get("{origin}/history")
+    public async getHistoryByOrigin(
+        @Path() origin: string,
+    ): Promise<Txo[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        const { rows } = await pool.query(`
+            SELECT t.*, o.data as odata, n.num
+            FROM txos t
+            JOIN txos o ON o.outpoint = t.origin
+            JOIN origins n ON n.origin = t.origin 
+            WHERE t.origin = $1
+            ORDER BY t.height ASC, t.idx ASC, t.spend DESC`,
+            [Outpoint.fromString(origin).toBuffer()]
+        );
+
+        return rows.map(r => Txo.fromRow(r));
     }
 
     @Post("latest")
