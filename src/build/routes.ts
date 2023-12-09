@@ -29,6 +29,32 @@ import type { RequestHandler, Router } from 'express';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
+    "Bsv20Status": {
+        "dataType": "refEnum",
+        "enums": [-1,0,1],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Token": {
+        "dataType": "refObject",
+        "properties": {
+            "txid": {"dataType":"string","required":true},
+            "vout": {"dataType":"double","required":true},
+            "height": {"dataType":"double","required":true},
+            "idx": {"dataType":"double","required":true},
+            "tick": {"dataType":"string","required":true},
+            "max": {"dataType":"string","required":true},
+            "lim": {"dataType":"string","required":true},
+            "dec": {"dataType":"double","required":true},
+            "supply": {"dataType":"string","required":true},
+            "status": {"ref":"Bsv20Status","required":true},
+            "available": {"dataType":"string","required":true},
+            "pctMinted": {"dataType":"double","required":true},
+            "accounts": {"dataType":"double","required":true},
+            "pending": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "TokenBalanceResponse": {
         "dataType": "refAlias",
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"listed":{"dataType":"nestedObjectLiteral","nestedProperties":{"pending":{"dataType":"string","required":true},"confirmed":{"dataType":"string","required":true}},"required":true},"all":{"dataType":"nestedObjectLiteral","nestedProperties":{"pending":{"dataType":"string","required":true},"confirmed":{"dataType":"string","required":true}},"required":true},"tick":{"dataType":"string","required":true}},"validators":{}},
@@ -71,11 +97,6 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Bsv20Status": {
-        "dataType": "refEnum",
-        "enums": [-1,0,1],
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "TxoData": {
         "dataType": "refObject",
         "properties": {
@@ -88,6 +109,8 @@ const models: TsoaRoute.Models = {
             "bsv20": {"dataType":"nestedObjectLiteral","nestedProperties":{"implied":{"dataType":"boolean"},"status":{"ref":"Bsv20Status"},"amt":{"dataType":"string"},"sym":{"dataType":"string"},"tick":{"dataType":"string"},"op":{"dataType":"string"},"p":{"dataType":"string"},"id":{"ref":"Outpoint"}}},
             "lock": {"dataType":"nestedObjectLiteral","nestedProperties":{"until":{"dataType":"double","required":true},"address":{"dataType":"string","required":true}}},
             "sigil": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
+            "opns": {"dataType":"nestedObjectLiteral","nestedProperties":{"status":{"dataType":"double"},"domain":{"dataType":"string"},"genesis":{"dataType":"string"}}},
+            "opnsMine": {"dataType":"nestedObjectLiteral","nestedProperties":{"pow":{"dataType":"string"},"status":{"dataType":"double"},"domain":{"dataType":"string"},"genesis":{"dataType":"string"}}},
         },
         "additionalProperties": false,
     },
@@ -129,27 +152,6 @@ const models: TsoaRoute.Models = {
             "height": {"dataType":"double","default":0},
             "idx": {"dataType":"double","default":0},
             "data": {"ref":"TxoData"},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Token": {
-        "dataType": "refObject",
-        "properties": {
-            "txid": {"dataType":"string","required":true},
-            "vout": {"dataType":"double","required":true},
-            "height": {"dataType":"double","required":true},
-            "idx": {"dataType":"double","required":true},
-            "tick": {"dataType":"string","required":true},
-            "max": {"dataType":"string","required":true},
-            "lim": {"dataType":"string","required":true},
-            "dec": {"dataType":"double","required":true},
-            "supply": {"dataType":"string","required":true},
-            "status": {"ref":"Bsv20Status","required":true},
-            "available": {"dataType":"double","required":true},
-            "pctMinted": {"dataType":"double","required":true},
-            "accounts": {"dataType":"double","required":true},
-            "pending": {"dataType":"double","required":true},
         },
         "additionalProperties": false,
     },
@@ -246,6 +248,34 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getLatestFile.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/bsv20',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20Stats)),
+
+            function FungiblesController_getBsv20Stats(request: any, response: any, next: any) {
+            const args = {
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    sort: {"default":"height","in":"query","name":"sort","dataType":"union","subSchemas":[{"dataType":"enum","enums":["pct_minted"]},{"dataType":"enum","enums":["available"]},{"dataType":"enum","enums":["tick"]},{"dataType":"enum","enums":["max"]},{"dataType":"enum","enums":["height"]}]},
+                    dir: {"default":"desc","in":"query","name":"dir","dataType":"union","subSchemas":[{"dataType":"enum","enums":["asc"]},{"dataType":"enum","enums":["desc"]}]},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new FungiblesController();
+
+
+              const promise = controller.getBsv20Stats.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

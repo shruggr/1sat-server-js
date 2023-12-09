@@ -56,6 +56,17 @@ export class TxoData {
         until: number;
     };
     sigil?: {[key: string]: any};
+    opns?: {
+        genesis?: string;
+        domain?: string;
+        status?: number;
+    };
+    opnsMine?: {
+        genesis?: string;
+        domain?: string;
+        status?: number;
+        pow?: string;
+    };
 }
 
 export class File {

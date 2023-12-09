@@ -24,7 +24,7 @@ export class TxController extends Controller {
         @BodyProp() rawtx: string,
     ): Promise<string> {
         const txbuf = Buffer.from(rawtx, 'base64')
-        
+
         return this.doBroadcast(txbuf);
     }
 
@@ -34,12 +34,12 @@ export class TxController extends Controller {
         console.log('Broadcasting TX:', txid, tx.toHex());
 
         try {
-            if(TAAL_TOKEN) {
+            if (TAAL_TOKEN) {
                 try {
                     await this.broadcastTaal(txbuf);
                     this.broadcastArc(txbuf).catch(console.error)
-                } catch(e: any) {
-                    if(e.status && e.status >= 300 && e.status < 500) {
+                } catch (e: any) {
+                    if (e.status && e.status >= 300 && e.status < 500) {
                         throw e;
                     }
                     await this.broadcastArc(txbuf);
@@ -47,10 +47,10 @@ export class TxController extends Controller {
             } else {
                 await this.broadcastArc(txbuf);
             }
-           
+
             pubClient.publish('submit', txid);
             return txid;
-        } catch(e: any) {
+        } catch (e: any) {
             console.error("Broadcast Error:", e)
             throw e;
         }
@@ -72,21 +72,21 @@ export class TxController extends Controller {
         if (!resp.ok) {
             try {
                 const { status, error } = JSON.parse(respText);
-                if(!error.includes('txn-already-known')) {
+                if (!error.includes('txn-already-known')) {
                     throw createError(status || resp.status || 500, `Broadcast failed: ${error}`);
                 }
-            } catch(e: any) {
+            } catch (e: any) {
                 throw e;
             }
         }
     }
 
     async broadcastArc(txbuf: Buffer) {
-        const headers: {[key:string]:string} = {
+        const headers: { [key: string]: string } = {
             'Content-Type': 'application/octet-stream',
             'X-WaitForStatus': '7'
         }
-        if(ARC_TOKEN) {
+        if (ARC_TOKEN) {
             headers['Authorization'] = `Bearer ${ARC_TOKEN}`
         }
         const resp = await fetch(`${ARC}/v1/tx`, {
@@ -96,13 +96,9 @@ export class TxController extends Controller {
         })
         const respText = await resp.text();
         console.log("ARC Response:", resp.status, respText);
-        try {
-            const result = JSON.parse(respText)
-            if (result.status != 200) {
-                throw createError(result.status || 500, `Broadcast failed: ${result.detail} ${result.extraInfo}`);
-            }
-        } catch {
-            throw createError(500, `Broadcast failed: parsing error`);
+        const result = JSON.parse(respText)
+        if (result.status != 200 || result.detail == 'REJECTED') {
+            throw createError(result.status || 500, `Broadcast failed: ${result.detail} ${result.extraInfo}`);
         }
     }
 

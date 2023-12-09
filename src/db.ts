@@ -35,7 +35,7 @@ export async function loadTx(txid: string): Promise<Tx> {
             rawtx = Buffer.from(await resp.arrayBuffer());
             await redis.set(txid, rawtx)
         } catch {
-            console.log('Fetch from server error:', txid)
+            console.log('Fetch from node error:', txid)
         }
     }
 
