@@ -117,14 +117,26 @@
 						],
 						"type": "object"
 					},
+					"icon": {
+						"type": "string"
+					},
+					"dec": {
+						"type": "number",
+						"format": "double"
+					},
+					"sym": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					},
 					"tick": {
 						"type": "string"
 					}
 				},
 				"required": [
 					"listed",
-					"all",
-					"tick"
+					"all"
 				],
 				"type": "object"
 			},
@@ -353,6 +365,9 @@
 						"type": "array"
 					}
 				},
+				"required": [
+					"outpoint"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},

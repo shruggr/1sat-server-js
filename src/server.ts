@@ -48,8 +48,8 @@ server.use("/api/subscribe", (req, res, next) => {
         }
         for (let a of addresses) {
             const address = Address.fromString(a);
-            channels.push(`t:${address.hashBuf.toString('base64')}`)
-            channels.push(`s:${address.hashBuf.toString('base64')}`)
+            channels.push(`t:${address.hashBuf.toString('hex')}`)
+            channels.push(`s:${address.hashBuf.toString('hex')}`)
         }
         if (Array.isArray(req.query['channel'])) {
             channels.push(...req.query['channel'] as string[]);
@@ -74,6 +74,10 @@ server.use("/api/subscribe", (req, res, next) => {
 
         subClient.on("message", async (channel, message) => {
             let id = ''
+            if( channel.startsWith('t:') || channel.startsWith('s:') ) {
+                const address = Address.fromPubKeyHashBuf(Buffer.from(channel.slice(2), 'hex'))
+                channel = channel.slice(0, 2) + address.toString()
+            }
 
             res.write(`event: ${channel}\n`)
             res.write(`data: ${message}\n`)

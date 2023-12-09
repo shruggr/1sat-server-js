@@ -7,9 +7,9 @@ import { NotFound } from 'http-errors';
 
 const B = Buffer.from('19HxigV4QyBv3tHpQVcUEQyq1pzZVdoAut', 'utf8')
 const ORD = Buffer.from('ord', 'utf8')
-export class InscriptionData {
-    type?: string = '';
-    data?: Buffer = Buffer.alloc(0);
+export interface InscriptionData {
+    type?: string;
+    data?: Buffer;
 }
 
 export interface Claim {
@@ -17,8 +17,8 @@ export interface Claim {
     type: string;
     value: string;
 }
-export class Origin {
-    outpoint: Outpoint = new Outpoint();
+export interface Origin {
+    outpoint: Outpoint;
     data?: TxoData;
     num?: number;
     map?: { [key: string]: any };
@@ -31,7 +31,7 @@ export enum Bsv20Status {
     Valid = 1
 }
 
-export class TxoData {
+export interface TxoData {
     types?: string[];
     insc?: Inscription;
     map?: { [key: string]: any };
@@ -69,7 +69,7 @@ export class TxoData {
     };
 }
 
-export class File {
+export interface File {
     hash?: string;
     size?: number;
     type?: string;
@@ -167,7 +167,7 @@ export class Txo {
                 opIf = i;
             }
             if (chunk.buf?.equals(ORD) && opFalse === i - 2 && opIf === i - 1) {
-                let insData = new InscriptionData();
+                let insData = {} as InscriptionData;
                 for (let j = i + 1; j < script.chunks.length; j += 2) {
                     if (script.chunks[j].buf) break;
                     switch (script.chunks[j].opCodeNum) {
@@ -183,7 +183,7 @@ export class Txo {
                 }
             }
             if (chunk.buf?.equals(B)) {
-                let insData = new InscriptionData();
+                let insData = {} as InscriptionData;
                 insData.data = script.chunks[i+1]?.buf;
                 insData.type = script.chunks[i+2]?.buf?.toString()
                 return insData;
