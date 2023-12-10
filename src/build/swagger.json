@@ -57,10 +57,6 @@
 						"type": "number",
 						"format": "double"
 					},
-					"accounts": {
-						"type": "number",
-						"format": "double"
-					},
 					"pending": {
 						"type": "number",
 						"format": "double"
@@ -79,7 +75,6 @@
 					"status",
 					"available",
 					"pctMinted",
-					"accounts",
 					"pending"
 				],
 				"type": "object",

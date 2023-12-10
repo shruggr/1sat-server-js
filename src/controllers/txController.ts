@@ -31,7 +31,7 @@ export class TxController extends Controller {
     async doBroadcast(txbuf: Buffer): Promise<string> {
         const tx = Tx.fromBuffer(txbuf);
         let txid = tx.id();
-        console.log('Broadcasting TX:', txid, tx.toHex());
+        console.log('Broadcasting TX:', txid); //, tx.toHex());
 
         try {
             if (NETWORK == 'testnet') {

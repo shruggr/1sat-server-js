@@ -11,6 +11,8 @@ import * as swaggerUi from 'swagger-ui-express'
 import { RegisterRoutes } from "./build/routes";
 import * as path from 'path';
 import { Redis } from 'ioredis';
+import * as responseTime from 'response-time'
+import { pool } from './db';
 
 const server = express();
 
@@ -28,10 +30,26 @@ server.use(cors({
 }));
 server.use(express.json({ limit: '50mb' }));
 server.use(express.raw({type: 'application/octet-stream'}))
-server.use((req, res, next) => {
-    console.log(new Date().toISOString(), req.path, req.method);
-    next();
-})
+server.use(responseTime(async (req, res, time) => {
+    const reqTime = new Date();
+    console.log(reqTime.toISOString(), req.path, req.method, `${time}ms`);
+    await pool.query(`INSERT INTO request_log(method, path, apikey, status, duration)
+        VALUES($1, $2, $3, $4, $5)`, 
+        [req.method, req.path, req.headers['API_KEY'], res.statusCode, time])
+}))
+
+// server.use(async (req, res, next) => {
+//     const reqTime = new Date();
+//     console.log(reqTime.toISOString(), req.path, req.method);
+//     try {
+//         next();
+//         await pool.query(`INSERT INTO request_log(path, apikey, status, req_time, res_time)
+//             VALUES($1, $2, $3, $4, $5)`, 
+//             [req.path, req.headers['API_KEY'], res.statusCode, reqTime, new Date()])
+//     } catch (e) {
+//         console.error('[LOGGER] Error:', e);
+//     }
+// });
 
 server.use('/api/swagger.json', async (_req, res) => {
     res.sendFile(path.join(__dirname, '/build/swagger.json'));

@@ -18,7 +18,7 @@ export interface Token {
     status: Bsv20Status,
     available: string,
     pctMinted: number,
-    accounts: number,
+    // accounts: number,
     pending: number,
 }
 
@@ -204,17 +204,14 @@ export class FungiblesController extends Controller {
     public async getBsv20TickStats(
         @Path() tick: string
     ): Promise<Token> {
+        // throw new TooManyRequests();
         this.setHeader('Cache-Control', 'max-age=3600')
         if(tick.length > 4 || tick.includes("'") || tick.includes('"')) {
             throw new BadRequest();
         }
         tick = tick.toUpperCase();
-        const { rows: [token] } = await pool.query(`SELECT b.*, a.accounts, p.pending
+        const { rows: [token] } = await pool.query(`SELECT b.*, p.pending
             FROM bsv20 b, (
-                SELECT COUNT(DISTINCT pkhash) as accounts 
-                FROM txos 
-                WHERE spend = '\\x' AND data @> '{"bsv20": {"status": 1, "tick": "${tick}"}}'
-            ) a, (
                 SELECT COALESCE(SUM(amt), 0) as pending
                 FROM bsv20_mints m
                 WHERE tick=$1 AND status=0

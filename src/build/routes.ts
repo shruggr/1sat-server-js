@@ -47,7 +47,6 @@ const models: TsoaRoute.Models = {
             "status": {"ref":"Bsv20Status","required":true},
             "available": {"dataType":"string","required":true},
             "pctMinted": {"dataType":"double","required":true},
-            "accounts": {"dataType":"double","required":true},
             "pending": {"dataType":"double","required":true},
         },
         "additionalProperties": false,
