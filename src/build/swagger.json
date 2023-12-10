@@ -1720,18 +1720,17 @@
 							"application/json": {
 								"schema": {
 									"properties": {
-										"indexed": {
+										"height": {
 											"type": "number",
 											"format": "double"
 										},
-										"settled": {
-											"type": "number",
-											"format": "double"
+										"indexer": {
+											"type": "string"
 										}
 									},
 									"required": [
-										"indexed",
-										"settled"
+										"height",
+										"indexer"
 									],
 									"type": "object"
 								}
