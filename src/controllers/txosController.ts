@@ -107,7 +107,7 @@ export class TxosController extends Controller {
         const { rows } = await pool.query(`SELECT t.*, o.data as odata, n.num
             FROM txos t
             LEFT JOIN txos o ON o.outpoint = t.origin
-            LEFT JOIN origins n ON n.origin = t.origin 
+            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
             WHERE t.outpoint = ANY($1)`,
             [op]
         );
@@ -128,7 +128,7 @@ export class TxosController extends Controller {
         let sql = [`SELECT t.*, o.data as odata, n.num
             FROM txos t
             LEFT JOIN txos o ON o.outpoint = t.origin
-            LEFT JOIN origins n ON n.origin = t.origin 
+            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
             WHERE t.pkhash = $1`]
         if (unspent) {
             sql.push(`AND t.spend = '\\x'`)

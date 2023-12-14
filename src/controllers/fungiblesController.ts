@@ -168,7 +168,7 @@ export class FungiblesController extends Controller {
         let sql = `SELECT t.*, o.data as odata, n.num
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
-            JOIN origins n ON n.origin = t.origin 
+            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
             WHERE t.pkhash = $1 AND t.spend = '\\x' AND 
                 t.data->'bsv20'->>'status' = '1' AND
                 t.data->'bsv20'->>'tick' = $2 AND
@@ -189,7 +189,7 @@ export class FungiblesController extends Controller {
         let sql = `SELECT t.*, o.data as odata, n.num
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
-            JOIN origins n ON n.origin = t.origin 
+            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
             WHERE t.pkhash = $1 AND t.spend = '\\x' AND 
                 t.data->'bsv20'->>'status' = '1' AND
                 (t.data->'bsv20'->>'id' = $2 OR t.outpoint=$3)AND

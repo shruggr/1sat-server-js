@@ -99,7 +99,7 @@ export class Txo {
         const { rows: [row] } = await pool.query(`SELECT t.*, o.data as odata, n.num
             FROM txos t
             LEFT JOIN txos o ON o.outpoint = t.origin
-            LEFT JOIN origins n ON n.origin = t.origin
+            LEFT JOIN inscriptions n ON n.outpoint = t.origin
             WHERE t.outpoint = $1`,
             [outpoint.toBuffer()],
         );
@@ -114,7 +114,7 @@ export class Txo {
         let sql = `SELECT t.*, o.data as odata, n.num
             FROM txos t
             LEFT JOIN txos o ON o.outpoint = t.origin
-            LEFT JOIN origins n ON n.origin = t.origin 
+            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
             WHERE t.txid=$1`;
 
         const { rows } = await pool.query(sql, [Buffer.from(txid, 'hex')]);
@@ -198,7 +198,7 @@ export class Txo {
         let sql = `SELECT t.*, o.data as odata, n.num
             FROM txos t
             LEFT JOIN txos o ON o.outpoint = t.origin
-            LEFT JOIN origins n ON n.origin = t.origin `;
+            LEFT JOIN inscriptions n ON n.outpoint = t.origin `;
 
         if (query) {
             params.push(JSON.stringify(query));

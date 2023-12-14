@@ -23,7 +23,7 @@ export class OriginsController extends Controller {
 
     @Get("count")
     public async getCount(): Promise<{count: number}> {
-        const { rows: [{count}] } = await pool.query(`SELECT MAX(num) as count FROM origins`);
+        const { rows: [{count}] } = await pool.query(`SELECT MAX(num) as count FROM inscriptions`);
         return {count};
     }
 
@@ -36,7 +36,7 @@ export class OriginsController extends Controller {
             SELECT t.*, o.data as odata, n.num
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
-            JOIN origins n ON n.origin = t.origin 
+            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
             WHERE n.num = $1 AND t.spend = '\\x'
             ORDER BY t.height DESC, t.idx DESC`,
             [num]

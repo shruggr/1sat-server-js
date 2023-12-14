@@ -45,7 +45,7 @@ export class ContentController extends Controller {
             SELECT t.*, o.data as odata, n.num
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
-            JOIN origins n ON n.origin = t.origin 
+            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
             WHERE t.origin = $1 AND t.data ? 'insc'
             ORDER BY t.height DESC, t.idx DESC
             LIMIT 1`,

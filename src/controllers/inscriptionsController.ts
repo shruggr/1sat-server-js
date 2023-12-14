@@ -51,7 +51,7 @@ export class InscriptionsController extends Controller {
         const {rows} = await pool.query(`SELECT t.*, o.data as odata, n.num
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
-            JOIN origins n ON n.origin = t.origin 
+            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
             ORDER BY t.height DESC, t.idx DESC`
         );
         return rows.map((row: any) => Txo.fromRow(row));
@@ -82,7 +82,7 @@ export class InscriptionsController extends Controller {
         const { rows } = await pool.query(`SELECT t.*, o.data as odata, n.num
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
-            JOIN origins n ON n.origin = t.origin 
+            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
             WHERE ${where.join(' OR ')}`,
             params
         )
@@ -113,7 +113,7 @@ export class InscriptionsController extends Controller {
             SELECT t.*, o.data as odata, n.num
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
-            JOIN origins n ON n.origin = t.origin 
+            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
             WHERE t.origin = $1 and t.spend='\\x'
             ORDER BY t.height DESC, t.idx DESC
             LIMIT 1`,
@@ -137,7 +137,7 @@ export class InscriptionsController extends Controller {
             SELECT t.*, o.data as odata, n.num
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
-            JOIN origins n ON n.origin = t.origin 
+            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
             WHERE t.origin = $1
             ORDER BY t.height ASC, t.idx ASC, t.spend DESC`,
             [Outpoint.fromString(origin).toBuffer()]
@@ -158,7 +158,7 @@ export class InscriptionsController extends Controller {
             SELECT t.*, o.data as odata, n.num
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
-            JOIN origins n ON n.origin = t.origin 
+            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
             WHERE t.origin = ANY($1) and t.spend='\\x'`,
             [origins.map(o => Outpoint.fromString(o).toBuffer())]
         );
