@@ -29,6 +29,11 @@ import type { RequestHandler, Router } from 'express';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
+    "Outpoint": {
+        "dataType": "refAlias",
+        "type": {"dataType":"string","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Bsv20Status": {
         "dataType": "refEnum",
         "enums": [-1,0,1],
@@ -37,20 +42,23 @@ const models: TsoaRoute.Models = {
     "Token": {
         "dataType": "refObject",
         "properties": {
-            "txid": {"dataType":"string","required":true},
-            "vout": {"dataType":"double","required":true},
-            "height": {"dataType":"double","required":true},
-            "idx": {"dataType":"double","required":true},
-            "tick": {"dataType":"string","required":true},
-            "max": {"dataType":"string","required":true},
-            "lim": {"dataType":"string","required":true},
-            "dec": {"dataType":"double","required":true},
-            "supply": {"dataType":"string","required":true},
-            "status": {"ref":"Bsv20Status","required":true},
-            "available": {"dataType":"string","required":true},
-            "pctMinted": {"dataType":"double","required":true},
-            "accounts": {"dataType":"double","required":true},
-            "pending": {"dataType":"double","required":true},
+            "txid": {"dataType":"string","default":""},
+            "vout": {"dataType":"double","default":0},
+            "height": {"dataType":"double","default":0},
+            "idx": {"dataType":"double","default":0},
+            "tick": {"dataType":"string"},
+            "id": {"ref":"Outpoint"},
+            "max": {"dataType":"string"},
+            "lim": {"dataType":"string"},
+            "dec": {"dataType":"double"},
+            "amt": {"dataType":"string"},
+            "supply": {"dataType":"string"},
+            "status": {"ref":"Bsv20Status","default":0},
+            "available": {"dataType":"string"},
+            "pctMinted": {"dataType":"double"},
+            "accounts": {"dataType":"double"},
+            "pending": {"dataType":"double"},
+            "included": {"dataType":"boolean","default":false},
         },
         "additionalProperties": false,
     },
@@ -60,9 +68,29 @@ const models: TsoaRoute.Models = {
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"listed":{"dataType":"nestedObjectLiteral","nestedProperties":{"pending":{"dataType":"string","required":true},"confirmed":{"dataType":"string","required":true}},"required":true},"all":{"dataType":"nestedObjectLiteral","nestedProperties":{"pending":{"dataType":"string","required":true},"confirmed":{"dataType":"string","required":true}},"required":true},"icon":{"dataType":"string"},"dec":{"dataType":"double"},"sym":{"dataType":"string"},"id":{"dataType":"string"},"tick":{"dataType":"string"}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Outpoint": {
-        "dataType": "refAlias",
-        "type": {"dataType":"string","validators":{}},
+    "BSV20Txo": {
+        "dataType": "refObject",
+        "properties": {
+            "txid": {"dataType":"string","default":""},
+            "vout": {"dataType":"double","default":0},
+            "outpoint": {"ref":"Outpoint"},
+            "owner": {"dataType":"string"},
+            "script": {"dataType":"string"},
+            "spend": {"dataType":"string"},
+            "height": {"dataType":"double","default":0},
+            "idx": {"dataType":"double","default":0},
+            "op": {"dataType":"string","default":""},
+            "tick": {"dataType":"string"},
+            "id": {"dataType":"string"},
+            "amt": {"dataType":"string","default":""},
+            "status": {"ref":"Bsv20Status","default":0},
+            "reason": {"dataType":"string","default":""},
+            "listing": {"dataType":"boolean","default":false},
+            "price": {"dataType":"double"},
+            "payout": {"dataType":"string"},
+            "pricePerUnit": {"dataType":"double"},
+        },
+        "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "File": {
@@ -264,6 +292,7 @@ export function RegisterRoutes(app: Router) {
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     sort: {"default":"height","in":"query","name":"sort","dataType":"union","subSchemas":[{"dataType":"enum","enums":["pct_minted"]},{"dataType":"enum","enums":["available"]},{"dataType":"enum","enums":["tick"]},{"dataType":"enum","enums":["max"]},{"dataType":"enum","enums":["height"]}]},
                     dir: {"default":"desc","in":"query","name":"dir","dataType":"union","subSchemas":[{"dataType":"enum","enums":["asc"]},{"dataType":"enum","enums":["desc"]}]},
+                    included: {"default":true,"in":"query","name":"included","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -276,6 +305,33 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getBsv20Stats.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/bsv20/v2',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getAllBsv20V2Stats)),
+
+            function FungiblesController_getAllBsv20V2Stats(request: any, response: any, next: any) {
+            const args = {
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    included: {"default":true,"in":"query","name":"included","dataType":"boolean"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new FungiblesController();
+
+
+              const promise = controller.getAllBsv20V2Stats.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
@@ -378,6 +434,31 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getBsv20TickStats.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/bsv20/id/:id',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20V2Stats)),
+
+            function FungiblesController_getBsv20V2Stats(request: any, response: any, next: any) {
+            const args = {
+                    id: {"in":"path","name":"id","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new FungiblesController();
+
+
+              const promise = controller.getBsv20V2Stats.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
@@ -1078,6 +1159,7 @@ export function RegisterRoutes(app: Router) {
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     bsv20: {"default":false,"in":"query","name":"bsv20","dataType":"boolean"},
                     origins: {"default":false,"in":"query","name":"origins","dataType":"boolean"},
+                    refresh: {"default":false,"in":"query","name":"refresh","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1109,6 +1191,7 @@ export function RegisterRoutes(app: Router) {
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     bsv20: {"default":false,"in":"query","name":"bsv20","dataType":"boolean"},
                     origins: {"default":false,"in":"query","name":"origins","dataType":"boolean"},
+                    refresh: {"default":false,"in":"query","name":"refresh","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

@@ -15,10 +15,13 @@ export class TxosController extends Controller {
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() bsv20 = false,
-        @Query() origins = false
+        @Query() origins = false,
+        @Query() refresh = false
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        await this.refreshAddress(address);
+        if(refresh) {
+            await this.refreshAddress(address);
+        }
         let query: TxoData | undefined;
         if (q) {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
@@ -34,10 +37,13 @@ export class TxosController extends Controller {
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() bsv20 = false,
-        @Query() origins = false
+        @Query() origins = false,
+        @Query() refresh = false
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        await this.refreshAddress(address);
+        if(refresh) {
+            await this.refreshAddress(address);
+        }
         return this.searchByAddress(address, true, query, type, bsv20, origins, limit, offset);
     }
 

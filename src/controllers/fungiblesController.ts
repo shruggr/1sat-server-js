@@ -2,25 +2,12 @@ import { Address } from '@ts-bitcoin/core';
 import { BadRequest, NotFound } from 'http-errors';
 import { Controller, Get, Path, Query, Route } from "tsoa";
 import { pool } from "../db";
-import { Bsv20Status, Txo } from '../models/txo';
+// import { Bsv20Status, Txo } from '../models/txo';
 import { Outpoint } from '../models/outpoint';
+import { BSV20Txo } from '../models/bsv20Txo';
+import { Token } from '../models/token';
 
-export interface Token {
-    txid: string,
-    vout: number,
-    height: number,
-    idx: number,
-    tick: string,
-    max: string,
-    lim: string,
-    dec: number,
-    supply: string,
-    status: Bsv20Status,
-    available: string,
-    pctMinted: number,
-    accounts: number,
-    pending: number,
-}
+
 
 @Route("api/bsv20")
 export class FungiblesController extends Controller {
@@ -30,18 +17,44 @@ export class FungiblesController extends Controller {
         @Query() offset: number = 0,
         @Query() sort: 'pct_minted' | 'available' | 'tick' | 'max' | 'height' = 'height',
         @Query() dir: 'asc' | 'desc' = 'desc',
+        @Query() included = true,
     ): Promise<Token[]> {
 
-        const {rows} = await pool.query(`SELECT * 
-            FROM bsv20 
-            WHERE status = 1
-            ORDER BY ${sort} ${dir}, idx ${dir}
+        const {rows} = await pool.query(`SELECT b.*, CASE WHEN s.tick != '' THEN true ELSE false END as included
+            FROM bsv20  b
+            ${included ? '' : 'LEFT'} JOIN bsv20_subs s ON s.tick = b.tick
+            WHERE b.status = 1 and b.tick != ''
+            ORDER BY b.${sort} ${dir}, b.idx ${dir}
             LIMIT $1 OFFSET $2`,
             [limit, offset],
         );
         return rows.map(t => ({
             ...t,
             txid: t.txid.toString('hex'),
+        }))
+    }
+
+    @Get("v2")
+    public async getAllBsv20V2Stats(
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+        // @Query() sort: 'pct_minted' | 'available' | 'tick' | 'max' | 'height' = 'height',
+        // @Query() dir: 'asc' | 'desc' = 'desc',
+        @Query() included = true,
+    ): Promise<Token[]> {
+
+        const {rows} = await pool.query(`SELECT b.*, CASE WHEN s.id != '\\x' THEN true ELSE false END as included
+            FROM bsv20_v2  b
+            ${included ? '' : 'LEFT'} JOIN bsv20_subs s ON s.id = b.id
+            LIMIT $1 OFFSET $2`,
+            [limit, offset],
+        );
+                    // ORDER BY b.${sort} ${dir}, b.idx ${dir}
+        return rows.map(t => ({
+            ...t,
+            id: Outpoint.fromBuffer(t.id).toString(),
+            icon: t.icon && Outpoint.fromBuffer(t.icon).toString(),
+            txid: t.txid.toString('hex')
         }))
     }
 
@@ -52,34 +65,30 @@ export class FungiblesController extends Controller {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         const hashBuf = Address.fromString(address).hashBuf
     
-        const sql = `SELECT outpoint,
-                data->'bsv20'->>'op' as op,
-                data->'bsv20'->>'tick' as tick,
-                data->'bsv20'->>'id' as id,
-                CASE WHEN data->>'list' IS NOT NULL THEN true ELSE false END as listing,
-                data->'bsv20'->>'status' as status,
-                COALESCE(data->'bsv20'->>'amt', '0')::NUMERIC as amt
-            FROM txos
+        const sql = `SELECT txid, vout, op, tick, id, listing, status, amt
+            FROM bsv20_txos
             WHERE pkhash=$1 AND spend='\\x' AND 
-                (data->'bsv20'->>'status' = '0' OR data->'bsv20'->>'status' = '1') AND
-                data->'bsv20'->>'op' != 'deploy'`
+                status >= 0`
         const { rows } = await pool.query(sql, [hashBuf]);
+        console.log(sql, hashBuf.toString('hex'))
 
         const results: {[ticker: string]:TokenBalance} = {};
         let ids = new Set<string>()
         let ticks = new Set<string>()
         for (let row of rows) {
-            if(row.op == 'deploy+mint') {
-                row.id = Outpoint.fromBuffer(row.outpoint).toString()
-            }
-            let key = row.id || row.tick;
+            let key = row.tick;
 
-            if(row.id) ids.add(row.id)
+            let tokenId = ''
+            if(row.id.length) {
+                tokenId = Outpoint.fromBuffer(row.id).toString()
+                key = tokenId
+                ids.add(tokenId)
+            }
             else if(row.tick) ticks.add(row.tick);
 
             let tokenBal = results[key]
             if(!tokenBal) {
-                tokenBal = new TokenBalance(row.tick, row.id)
+                tokenBal = new TokenBalance(row.tick, tokenId)
                 results[key] = tokenBal
             }
 
@@ -116,16 +125,17 @@ export class FungiblesController extends Controller {
             (async () => {
                 if(ids.size) {
                     const { rows: symRows } = await pool.query(`
-                        SELECT outpoint, data->'bsv20'->>'sym' as sym, 
-                            CAST(data->'insc'->'json'->>'dec' as INTEGER) as dec,
-                            data->'insc'->'json'->>'icon' as icon
-                        FROM txos 
-                        WHERE outpoint = ANY($1)`, 
+                        SELECT id, sym, dec, icon
+                        FROM bsv20_v2
+                        WHERE id = ANY($1)`, 
                         [Array.from(ids).map(id => Outpoint.fromString(id).toBuffer())]
                     )
                     symRows.forEach(row => {
-                        const outpoint = Outpoint.fromBuffer(row.outpoint).toString()
-                        symbols.set(outpoint, row)
+                        const outpoint = Outpoint.fromBuffer(row.id).toString()
+                        symbols.set(outpoint, {
+                            ...row,
+                            icon: row.icon && Outpoint.fromBuffer(row.icon).toString()
+                        })
                         // console.log('SYM', outpoint, row.sym, row.dec)
                     });
                 }
@@ -147,7 +157,7 @@ export class FungiblesController extends Controller {
                 o.id = r.id;
                 o.sym = symbols.get(r.id)?.sym;
                 o.dec = symbols.get(r.id)?.dec;
-                o.icon = symbols.get(r.id)?.icon;
+                o.icon = symbols.get(r.id)?.icon
             } else if(r.tick) {
                 o.tick = r.tick;
                 o.dec = symbols.get(r.tick)?.dec;
@@ -162,42 +172,34 @@ export class FungiblesController extends Controller {
     public async getBsv20UtxosByTick(
         @Path() address: string,
         @Path() tick: string,
-    ): Promise<Txo[]> {
+    ): Promise<BSV20Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf, tick];
-        let sql = `SELECT t.*, o.data as odata, n.num
-            FROM txos t
-            JOIN txos o ON o.outpoint = t.origin
-            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
-            WHERE t.pkhash = $1 AND t.spend = '\\x' AND 
-                t.data->'bsv20'->>'status' = '1' AND
-                t.data->'bsv20'->>'tick' = $2 AND
-                t.data->'bsv20'->>'amt' IS NOT NULL`
+        let sql = `SELECT *
+            FROM bsb20_txos
+            WHERE pkhash = $1 AND spend = '\\x' AND 
+                status=1 AND tick=$2 AND amt IS NOT NULL`
         
         console.log(sql, params)
         const { rows } = await pool.query(sql, params);
-        return rows.map((row: any) => Txo.fromRow(row));
+        return rows.map((row: any) => BSV20Txo.fromRow(row));
     }
 
     @Get("{address}/id/{id}")
     public async getBsv20UtxosById(
         @Path() address: string,
         @Path() id: string,
-    ): Promise<Txo[]> {
+    ): Promise<BSV20Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf, id, Outpoint.fromString(id).toBuffer()];
-        let sql = `SELECT t.*, o.data as odata, n.num
-            FROM txos t
-            JOIN txos o ON o.outpoint = t.origin
-            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
-            WHERE t.pkhash = $1 AND t.spend = '\\x' AND 
-                t.data->'bsv20'->>'status' = '1' AND
-                (t.data->'bsv20'->>'id' = $2 OR t.outpoint=$3)AND
-                t.data->'bsv20'->>'amt' IS NOT NULL`
+        let sql = `SELECT *
+            FROM bsb20_txos
+            WHERE pkhash = $1 AND spend = '\\x' AND 
+                status=1 AND tick=$2 AND amt IS NOT NULL`
         
         console.log(sql, params)
         const { rows } = await pool.query(sql, params);
-        return rows.map((row: any) => Txo.fromRow(row));
+        return rows.map((row: any) => BSV20Txo.fromRow(row));
     }
 
     @Get("tick/{tick}")
@@ -209,16 +211,20 @@ export class FungiblesController extends Controller {
             throw new BadRequest();
         }
         tick = tick.toUpperCase();
-        const { rows: [token] } = await pool.query(`SELECT b.*, a.accounts, p.pending
+        const { rows: [token] } = await pool.query(`SELECT b.*,
+            a.accounts, p.pending, 
+            CASE WHEN s.included > 0 THEN true ELSE false END as included
             FROM bsv20 b, (
                 SELECT COUNT(DISTINCT pkhash) as accounts 
-                FROM txos 
-                WHERE spend = '\\x' AND data @> '{"bsv20": {"status": 1, "tick": "${tick}"}}'
+                FROM bsv20_txos 
+                WHERE spend = '\\x' AND tick=$1 AND status=1
             ) a, (
                 SELECT COALESCE(SUM(amt), 0) as pending
-                FROM bsv20_mints m
-                WHERE tick=$1 AND status=0
-            ) p
+                FROM bsv20_txos m
+                WHERE op='mint' AND tick=$1 AND status=0
+            ) p, (
+                SELECT COUNT(1) as included FROM bsv20_subs WHERE tick=$1
+            ) s
             WHERE b.status = 1 AND tick=$1`,
             [tick],
         );
@@ -231,6 +237,32 @@ export class FungiblesController extends Controller {
         } as Token;
     }
 
+    @Get("id/{id}")
+    public async getBsv20V2Stats(
+        @Path() id: string
+    ): Promise<Token> {
+        this.setHeader('Cache-Control', 'max-age=3600')
+        const { rows: [token] } = await pool.query(`SELECT b.*, a.accounts, p.pending,
+            CASE WHEN s.included > 0 THEN true ELSE false END as included
+            FROM bsv20_v2 b, (
+                SELECT COUNT(DISTINCT pkhash) as accounts 
+                FROM bsv20_txos 
+                WHERE spend = '\\x' AND id=$1 AND status=1
+            ) a, (
+                SELECT COALESCE(SUM(amt), 0) as pending
+                FROM bsv20_txos
+                WHERE id=$1 AND status=0
+            ) p, (
+                SELECT COUNT(1) as included FROM bsv20_subs WHERE id=$1
+            ) s
+            WHERE id=$1`,
+            [Outpoint.fromString(id).toBuffer()],
+        );
+        if(!token) {
+            throw new NotFound();
+        }
+        return Token.fromRow(token)
+    }
 }
 
 

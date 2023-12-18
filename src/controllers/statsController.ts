@@ -9,7 +9,7 @@ export class StatsController extends Controller {
         const { rows } = await pool.query(`SELECT * FROM progress`)
         const results: any = {}
         rows.forEach((row: any) => {
-            results[row.indexer] = row.height
+            results[row.indexer] = row.height + 6
         })
         
         return results
