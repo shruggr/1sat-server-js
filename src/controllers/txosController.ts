@@ -1,9 +1,10 @@
 import { Address } from '@ts-bitcoin/core';
 import { Body, Controller, Get, Path, Post, Query, Route } from "tsoa";
 import { Txo } from "../models/txo";
-import { loadTx, pool } from "../db";
+import { loadTx, pool, redis } from "../db";
 import { TxoData } from "../models/txo";
 import { Outpoint } from '../models/outpoint';
+import { SortDirection } from '../models/sort-direction';
 
 @Route("api/txos")
 export class TxosController extends Controller {
@@ -19,9 +20,7 @@ export class TxosController extends Controller {
         @Query() refresh = false
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        if(refresh) {
-            await this.refreshAddress(address);
-        }
+        await this.refreshAddress(address, refresh);
         let query: TxoData | undefined;
         if (q) {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
@@ -41,9 +40,7 @@ export class TxosController extends Controller {
         @Query() refresh = false
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        if(refresh) {
-            await this.refreshAddress(address);
-        }
+        await this.refreshAddress(address, refresh);
         return this.searchByAddress(address, true, query, type, bsv20, origins, limit, offset);
     }
 
@@ -79,14 +76,32 @@ export class TxosController extends Controller {
         return this.searchByAddress(address, false, query, type, bsv20, origins, limit, offset);
     }
 
-    async refreshAddress(address: string) {
+    async refreshAddress(address: string, force = false) {
         const { INDEXER } = process.env;
         const  start = Date.now();
-        const resp  = await fetch(`${INDEXER}/ord/${address}`)
-        if(resp.ok) {
-            console.log("Refreshed address:", address, `${Date.now() - start}ms`)
-        } else {
-            console.log("Failed to refresh address:", address, resp.status, await resp.text())
+        const cacheKey = `ad:${address}`
+        const updated = await redis.get(cacheKey)
+        if(!force && updated) {
+            console.log("Updated", updated, ". Skipping", address);
+            return
+        }
+
+        console.log("Updating", address);
+        try {
+            await redis.pipeline()
+                .set(cacheKey, Date.now())
+                .expire(cacheKey, 1800)
+                .exec();
+            const resp  = await fetch(`${INDEXER}/ord/${address}`)
+            if(resp.ok) {
+                console.log("Refreshed address:", address, `${Date.now() - start}ms`)
+            } else {
+                redis.del(cacheKey)
+                console.log("Failed to refresh address:", address, resp.status, await resp.text())
+            }
+        } catch(e) {
+            redis.del(cacheKey)
+            console.log("Refresh failed:", address)
         }
     }
 
@@ -110,10 +125,10 @@ export class TxosController extends Controller {
         @Query() script = false,
     ): Promise<Txo[]> {
         const op = outpoints.map((op) => Outpoint.fromString(op).toBuffer());
-        const { rows } = await pool.query(`SELECT t.*, o.data as odata, n.num
+        const { rows } = await pool.query(`
+            SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
             FROM txos t
             LEFT JOIN txos o ON o.outpoint = t.origin
-            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
             WHERE t.outpoint = ANY($1)`,
             [op]
         );
@@ -131,10 +146,9 @@ export class TxosController extends Controller {
         // const start = Date.now();
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf];
-        let sql = [`SELECT t.*, o.data as odata, n.num
+        let sql = [`SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
             FROM txos t
             LEFT JOIN txos o ON o.outpoint = t.origin
-            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
             WHERE t.pkhash = $1`]
         if (unspent) {
             sql.push(`AND t.spend = '\\x'`)
@@ -172,7 +186,8 @@ export class TxosController extends Controller {
     public async getTxoSearchAll(
         @Query() q?: string,
         @Query() limit: number = 100,
-        @Query() offset: number = 0
+        @Query() offset: number = 0,
+        @Query() dir?: SortDirection
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         let query: TxoData | undefined;
@@ -180,7 +195,7 @@ export class TxosController extends Controller {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
         // console.log("Query:", query)
-        return Txo.search(false, query, limit, offset);
+        return Txo.search(false, query, limit, offset, dir);
     }
 
     @Post("search")
@@ -188,24 +203,26 @@ export class TxosController extends Controller {
         @Body() query?: TxoData,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
+        @Query() dir?: SortDirection
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         console.log("POST search")
-        return Txo.search(false, query, limit, offset);
+        return Txo.search(false, query, limit, offset, dir);
     }
 
     @Get("search/unspent")
     public async getTxoSearchUnspent(
         @Query() q?: string,
         @Query() limit: number = 100,
-        @Query() offset: number = 0
+        @Query() offset: number = 0,
+        @Query() dir?: SortDirection
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         let query: TxoData | undefined;
         if (q) {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
-        return Txo.search(true, query, limit, offset);
+        return Txo.search(true, query, limit, offset, dir);
     }
 
     @Post("search/unspent")
@@ -213,8 +230,9 @@ export class TxosController extends Controller {
         @Body() query?: TxoData,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
+        @Query() dir?: SortDirection
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        return Txo.search(true, query, limit, offset);
+        return Txo.search(true, query, limit, offset, dir);
     }
 }

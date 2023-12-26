@@ -19,6 +19,7 @@ export class BSV20Txo {
     reason? = '';
     listing = false;
     price?: number;
+    pricePer?: number;
     payout?: string;
     pricePerUnit?: number;
 
@@ -39,7 +40,9 @@ export class BSV20Txo {
         txo.reason = row.reason;
         txo.listing = row.listing;
         txo.price = row.price;
+        txo.pricePer = row.price_per_token
         txo.payout = row.payout && row.payout.toString('base64')
+        txo.script = row.script && row.script.toString('base64')
         return txo;
     }
 }

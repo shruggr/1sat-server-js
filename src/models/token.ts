@@ -1,3 +1,4 @@
+import { Address } from "@ts-bitcoin/core";
 import { Outpoint } from "./outpoint";
 import { Bsv20Status } from "./txo";
 
@@ -8,6 +9,8 @@ export class Token {
     idx: number = 0;
     tick?: string;
     id?: Outpoint;
+    sym?: string;
+    icon?: string;
     max?: string;
     lim?: string;
     dec?: number;
@@ -19,6 +22,10 @@ export class Token {
     accounts?: number;
     pending?: number;
     included = false;
+    fundAddress?: string;
+    fundTotal?: number;
+    fundUsed?: number;
+    fundBalance?: number;
 
     static fromRow(row: any) {
         const txo = new Token();
@@ -28,6 +35,8 @@ export class Token {
         txo.idx = row.idx;
         txo.tick = row.tick;
         txo.id = row.id && Outpoint.fromBuffer(row.id).toString();
+        txo.sym = row.sym;
+        txo.icon = row.icon &&  Outpoint.fromBuffer(row.icon).toString();
         txo.amt = row.amt;
         txo.status = row.status;
         txo.max = row.max;
@@ -37,9 +46,13 @@ export class Token {
         txo.supply = row.supply;
         txo.available = row.available;
         txo.pctMinted = row.pct_minted;
-        txo.accounts = row.account;
+        txo.accounts = row.accounts;
         txo.pending = row.pending || 0
         txo.included = row.included;
+        txo.fundAddress = row.fund_pkhash && Address.fromPubKeyHashBuf(row.fund_pkhash).toString();
+        txo.fundTotal = row.fund_total;
+        txo.fundUsed = row.fund_used;
+        txo.fundBalance = row.fund_balance;
 
         return txo;
     }

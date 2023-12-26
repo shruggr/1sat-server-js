@@ -44,6 +44,12 @@
 					"id": {
 						"$ref": "#/components/schemas/Outpoint"
 					},
+					"sym": {
+						"type": "string"
+					},
+					"icon": {
+						"type": "string"
+					},
 					"max": {
 						"type": "string"
 					},
@@ -81,6 +87,21 @@
 					"included": {
 						"type": "boolean",
 						"default": false
+					},
+					"fundAddress": {
+						"type": "string"
+					},
+					"fundTotal": {
+						"type": "number",
+						"format": "double"
+					},
+					"fundUsed": {
+						"type": "number",
+						"format": "double"
+					},
+					"fundBalance": {
+						"type": "number",
+						"format": "double"
 					}
 				},
 				"type": "object",
@@ -203,6 +224,10 @@
 						"type": "number",
 						"format": "double"
 					},
+					"pricePer": {
+						"type": "number",
+						"format": "double"
+					},
 					"payout": {
 						"type": "string"
 					},
@@ -213,6 +238,15 @@
 				},
 				"type": "object",
 				"additionalProperties": false
+			},
+			"SortDirection": {
+				"enum": [
+					"asc",
+					"desc",
+					"ASC",
+					"DESC"
+				],
+				"type": "string"
 			},
 			"File": {
 				"properties": {
@@ -498,17 +532,8 @@
 			"ListingSort": {
 				"enum": [
 					"recent",
-					"num",
-					"price"
-				],
-				"type": "string"
-			},
-			"SortDirection": {
-				"enum": [
-					"asc",
-					"desc",
-					"ASC",
-					"DESC"
+					"price",
+					"num"
 				],
 				"type": "string"
 			}
@@ -737,6 +762,33 @@
 					},
 					{
 						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"default": "fund_total",
+							"type": "string",
+							"enum": [
+								"fund_total",
+								"fund_used",
+								"fund_balance"
+							]
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"default": "desc",
+							"type": "string",
+							"enum": [
+								"asc",
+								"desc"
+							]
+						}
+					},
+					{
+						"in": "query",
 						"name": "included",
 						"required": false,
 						"schema": {
@@ -813,6 +865,34 @@
 						"schema": {
 							"type": "string"
 						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
 					}
 				]
 			}
@@ -851,6 +931,101 @@
 						"required": true,
 						"schema": {
 							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/{address}/unspent": {
+			"get": {
+				"operationId": "GetBsv20UtxosByAddress",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "status",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/Bsv20Status"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
 						}
 					}
 				]
@@ -912,6 +1087,87 @@
 				]
 			}
 		},
+		"/api/bsv20/market": {
+			"get": {
+				"operationId": "GetBsv20Market",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"default": "height",
+							"type": "string",
+							"enum": [
+								"price",
+								"price_per_token",
+								"height"
+							]
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "id",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "tick",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/inscriptions/search": {
 			"get": {
 				"operationId": "GetInscriptionSearch",
@@ -959,6 +1215,14 @@
 							"format": "double",
 							"type": "number"
 						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
 					}
 				]
 			},
@@ -1000,6 +1264,14 @@
 							"default": 0,
 							"format": "double",
 							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
 						}
 					}
 				],
@@ -1569,15 +1841,6 @@
 					},
 					{
 						"in": "query",
-						"name": "bsv20",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					},
-					{
-						"in": "query",
 						"name": "text",
 						"required": false,
 						"schema": {
@@ -1606,7 +1869,7 @@
 				]
 			},
 			"post": {
-				"operationId": "SearchMap",
+				"operationId": "PostMarketSearch",
 				"responses": {
 					"200": {
 						"description": "Ok",
@@ -1666,15 +1929,6 @@
 						"required": false,
 						"schema": {
 							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "bsv20",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
 						}
 					},
 					{
@@ -1800,8 +2054,7 @@
 						"name": "num",
 						"required": true,
 						"schema": {
-							"format": "double",
-							"type": "number"
+							"type": "string"
 						}
 					}
 				]
@@ -2496,6 +2749,14 @@
 							"format": "double",
 							"type": "number"
 						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
 					}
 				]
 			},
@@ -2536,6 +2797,14 @@
 							"default": 0,
 							"format": "double",
 							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
 						}
 					}
 				],
@@ -2598,6 +2867,14 @@
 							"format": "double",
 							"type": "number"
 						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
 					}
 				]
 			},
@@ -2638,6 +2915,14 @@
 							"default": 0,
 							"format": "double",
 							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
 						}
 					}
 				],

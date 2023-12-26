@@ -58,13 +58,13 @@ export class TxController extends Controller {
                 await this.broadcastArc(txbuf);
             }
 
-            pubClient.publish('submit', txid);
+            await pubClient.set(txid, txbuf)
+            pubClient.publish('broadcast', txbuf.toString('base64'));
             return txid;
         } catch (e: any) {
             console.error("Broadcast Error:", e)
             throw e;
         }
-
     }
 
     async broadcastWOC(txbuf: Buffer) {

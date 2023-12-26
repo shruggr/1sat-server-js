@@ -1,13 +1,12 @@
 import { Address } from '@ts-bitcoin/core';
 import { BadRequest, NotFound } from 'http-errors';
 import { Controller, Get, Path, Query, Route } from "tsoa";
-import { pool } from "../db";
-// import { Bsv20Status, Txo } from '../models/txo';
+import { pool, redis } from "../db";
 import { Outpoint } from '../models/outpoint';
 import { BSV20Txo } from '../models/bsv20Txo';
 import { Token } from '../models/token';
-
-
+import { SortDirection } from '../models/sort-direction';
+import { Bsv20Status } from '../models/txo';
 
 @Route("api/bsv20")
 export class FungiblesController extends Controller {
@@ -28,34 +27,26 @@ export class FungiblesController extends Controller {
             LIMIT $1 OFFSET $2`,
             [limit, offset],
         );
-        return rows.map(t => ({
-            ...t,
-            txid: t.txid.toString('hex'),
-        }))
+        return rows.map(Token.fromRow)
     }
 
     @Get("v2")
     public async getAllBsv20V2Stats(
         @Query() limit: number = 100,
         @Query() offset: number = 0,
-        // @Query() sort: 'pct_minted' | 'available' | 'tick' | 'max' | 'height' = 'height',
-        // @Query() dir: 'asc' | 'desc' = 'desc',
+        @Query() sort: 'fund_total' | 'fund_used' | 'fund_balance' = 'fund_total',
+        @Query() dir: 'asc' | 'desc' = 'desc',
         @Query() included = true,
     ): Promise<Token[]> {
-
-        const {rows} = await pool.query(`SELECT b.*, CASE WHEN s.id != '\\x' THEN true ELSE false END as included
-            FROM bsv20_v2  b
-            ${included ? '' : 'LEFT'} JOIN bsv20_subs s ON s.id = b.id
+        const {rows} = await pool.query(`SELECT b.*
+            FROM bsv20_v2 b
+            ${included ? 'WHERE fund_total > 0' : ''}
+            ORDER BY ${sort} ${dir}
             LIMIT $1 OFFSET $2`,
             [limit, offset],
         );
                     // ORDER BY b.${sort} ${dir}, b.idx ${dir}
-        return rows.map(t => ({
-            ...t,
-            id: Outpoint.fromBuffer(t.id).toString(),
-            icon: t.icon && Outpoint.fromBuffer(t.icon).toString(),
-            txid: t.txid.toString('hex')
-        }))
+        return rows.map(Token.fromRow)
     }
 
     @Get("{address}/balance")
@@ -67,10 +58,9 @@ export class FungiblesController extends Controller {
     
         const sql = `SELECT txid, vout, op, tick, id, listing, status, amt
             FROM bsv20_txos
-            WHERE pkhash=$1 AND spend='\\x' AND 
-                status >= 0`
+            WHERE pkhash=$1 AND spend='\\x'`
         const { rows } = await pool.query(sql, [hashBuf]);
-        console.log(sql, hashBuf.toString('hex'))
+        // console.log(sql, hashBuf.toString('hex'))
 
         const results: {[ticker: string]:TokenBalance} = {};
         let ids = new Set<string>()
@@ -172,15 +162,21 @@ export class FungiblesController extends Controller {
     public async getBsv20UtxosByTick(
         @Path() address: string,
         @Path() tick: string,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+        @Query() dir: SortDirection = SortDirection.DESC
     ): Promise<BSV20Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf, tick];
         let sql = `SELECT *
-            FROM bsb20_txos
+            FROM bsv20_txos
             WHERE pkhash = $1 AND spend = '\\x' AND 
-                status=1 AND tick=$2 AND amt IS NOT NULL`
+                status=1 AND tick=$2
+            ORDER BY height ${dir}, idx ${dir}
+            LIMIT $${params.push(limit)}
+            OFFSET $${params.push(offset)}`
         
-        console.log(sql, params)
+        // console.log(sql, params)
         const { rows } = await pool.query(sql, params);
         return rows.map((row: any) => BSV20Txo.fromRow(row));
     }
@@ -189,15 +185,44 @@ export class FungiblesController extends Controller {
     public async getBsv20UtxosById(
         @Path() address: string,
         @Path() id: string,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+        @Query() dir: SortDirection = SortDirection.DESC
     ): Promise<BSV20Txo[]> {
         const add = Address.fromString(address);
-        const params: any[] = [add.hashBuf, id, Outpoint.fromString(id).toBuffer()];
+        const params: any[] = [add.hashBuf, Outpoint.fromString(id).toBuffer()];
         let sql = `SELECT *
-            FROM bsb20_txos
+            FROM bsv20_txos
             WHERE pkhash = $1 AND spend = '\\x' AND 
-                status=1 AND tick=$2 AND amt IS NOT NULL`
+                status=1 AND id=$2
+            ORDER BY height ${dir}, idx ${dir}
+            LIMIT $${params.push(limit)}
+            OFFSET $${params.push(offset)}`
         
-        console.log(sql, params)
+        // console.log(sql, params)
+        const { rows } = await pool.query(sql, params);
+        return rows.map((row: any) => BSV20Txo.fromRow(row));
+    }
+
+    @Get("{address}/unspent")
+    public async getBsv20UtxosByAddress(
+        @Path() address: string,
+        @Query() status?: Bsv20Status,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+        @Query() dir: SortDirection = SortDirection.DESC
+    ): Promise<BSV20Txo[]> {
+        const add = Address.fromString(address);
+        const params: any[] = [];
+        let sql = `SELECT *
+            FROM bsv20_txos
+            WHERE pkhash = $${params.push(add.hashBuf)} AND spend = '\\x'
+                ${status !== undefined ? `AND status=$${params.push(status)}` : ''}
+            ORDER BY height ${dir}, idx ${dir}
+            LIMIT $${params.push(limit)}
+            OFFSET $${params.push(offset)}`
+        
+        // console.log(sql, params)
         const { rows } = await pool.query(sql, params);
         return rows.map((row: any) => BSV20Txo.fromRow(row));
     }
@@ -211,6 +236,11 @@ export class FungiblesController extends Controller {
             throw new BadRequest();
         }
         tick = tick.toUpperCase();
+        const cacheKey = `tick:${tick}`
+        const status = await redis.get(cacheKey);
+        if(status) {
+            return JSON.parse(status);
+        }
         const { rows: [token] } = await pool.query(`SELECT b.*,
             a.accounts, p.pending, 
             CASE WHEN s.included > 0 THEN true ELSE false END as included
@@ -231,10 +261,12 @@ export class FungiblesController extends Controller {
         if(!token) {
             throw new NotFound();
         }
-        return {...token, 
-            txid: token.txid.toString('hex'),
-            idx: parseInt(token.idx, 10)
-        } as Token;
+        const result = Token.fromRow(token);
+        await redis.pipeline()
+            .set(cacheKey, JSON.stringify(result))
+            .expire(cacheKey, 1800)
+            .exec();
+        return result;
     }
 
     @Get("id/{id}")
@@ -242,29 +274,63 @@ export class FungiblesController extends Controller {
         @Path() id: string
     ): Promise<Token> {
         this.setHeader('Cache-Control', 'max-age=3600')
-        const { rows: [token] } = await pool.query(`SELECT b.*, a.accounts, p.pending,
-            CASE WHEN s.included > 0 THEN true ELSE false END as included
+        const cacheKey = `id:${id}`
+        const status = await redis.get(cacheKey);
+        if(status) {
+            return JSON.parse(status);
+        }
+        const { rows: [token] } = await pool.query(`SELECT b.*, a.accounts, p.pending
             FROM bsv20_v2 b, (
                 SELECT COUNT(DISTINCT pkhash) as accounts 
                 FROM bsv20_txos 
                 WHERE spend = '\\x' AND id=$1 AND status=1
             ) a, (
-                SELECT COALESCE(SUM(amt), 0) as pending
+                SELECT COUNT(1) as pending
                 FROM bsv20_txos
-                WHERE id=$1 AND status=0
-            ) p, (
-                SELECT COUNT(1) as included FROM bsv20_subs WHERE id=$1
-            ) s
+                WHERE id=$1 AND status=0 AND op='transfer'
+            ) p
             WHERE id=$1`,
             [Outpoint.fromString(id).toBuffer()],
         );
         if(!token) {
             throw new NotFound();
         }
-        return Token.fromRow(token)
+        const result = Token.fromRow(token);
+        await redis.pipeline()
+            .set(cacheKey, JSON.stringify(result))
+            .expire(cacheKey, 1800)
+            .exec();
+        return result;
+    }
+
+    @Get("market")
+    public async getBsv20Market(
+        @Query() sort: 'price' | 'price_per_token' | 'height' = 'height',
+        @Query() dir: SortDirection = SortDirection.desc,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+        @Query() id?: string,
+        @Query() tick?: string,
+    ): Promise<BSV20Txo[]> {
+        let params: any[] = [];
+        let where = `spend='\\x' AND listing=true `
+        if(id) {
+            where += `AND id = $${params.push(Outpoint.fromString(id).toBuffer())}`
+        }
+        if(tick) {
+            where += `AND tick = $${params.push(tick)}`
+        }
+        let sql = `SELECT *
+            FROM bsv20_txos
+            WHERE ${where}
+            ORDER BY ${sort} ${dir} 
+            LIMIT $${params.push(limit)}
+            OFFSET $${params.push(offset)}`
+
+        const { rows } = await pool.query(sql, params)
+        return rows.map(BSV20Txo.fromRow)
     }
 }
-
 
 class TokenBalance {
     constructor(public tick?:string, public id?: string) {}

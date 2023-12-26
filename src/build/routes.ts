@@ -48,6 +48,8 @@ const models: TsoaRoute.Models = {
             "idx": {"dataType":"double","default":0},
             "tick": {"dataType":"string"},
             "id": {"ref":"Outpoint"},
+            "sym": {"dataType":"string"},
+            "icon": {"dataType":"string"},
             "max": {"dataType":"string"},
             "lim": {"dataType":"string"},
             "dec": {"dataType":"double"},
@@ -59,6 +61,10 @@ const models: TsoaRoute.Models = {
             "accounts": {"dataType":"double"},
             "pending": {"dataType":"double"},
             "included": {"dataType":"boolean","default":false},
+            "fundAddress": {"dataType":"string"},
+            "fundTotal": {"dataType":"double"},
+            "fundUsed": {"dataType":"double"},
+            "fundBalance": {"dataType":"double"},
         },
         "additionalProperties": false,
     },
@@ -87,10 +93,16 @@ const models: TsoaRoute.Models = {
             "reason": {"dataType":"string","default":""},
             "listing": {"dataType":"boolean","default":false},
             "price": {"dataType":"double"},
+            "pricePer": {"dataType":"double"},
             "payout": {"dataType":"string"},
             "pricePerUnit": {"dataType":"double"},
         },
         "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SortDirection": {
+        "dataType": "refEnum",
+        "enums": ["asc","desc","ASC","DESC"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "File": {
@@ -186,12 +198,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ListingSort": {
         "dataType": "refEnum",
-        "enums": ["recent","num","price"],
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "SortDirection": {
-        "dataType": "refEnum",
-        "enums": ["asc","desc","ASC","DESC"],
+        "enums": ["recent","price","num"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
@@ -319,6 +326,8 @@ export function RegisterRoutes(app: Router) {
             const args = {
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    sort: {"default":"fund_total","in":"query","name":"sort","dataType":"union","subSchemas":[{"dataType":"enum","enums":["fund_total"]},{"dataType":"enum","enums":["fund_used"]},{"dataType":"enum","enums":["fund_balance"]}]},
+                    dir: {"default":"desc","in":"query","name":"dir","dataType":"union","subSchemas":[{"dataType":"enum","enums":["asc"]},{"dataType":"enum","enums":["desc"]}]},
                     included: {"default":true,"in":"query","name":"included","dataType":"boolean"},
             };
 
@@ -371,6 +380,9 @@ export function RegisterRoutes(app: Router) {
             const args = {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
                     tick: {"in":"path","name":"tick","required":true,"dataType":"string"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"default":"DESC","in":"query","name":"dir","ref":"SortDirection"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -397,6 +409,9 @@ export function RegisterRoutes(app: Router) {
             const args = {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
                     id: {"in":"path","name":"id","required":true,"dataType":"string"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"default":"DESC","in":"query","name":"dir","ref":"SortDirection"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -409,6 +424,35 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getBsv20UtxosById.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/bsv20/:address/unspent',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20UtxosByAddress)),
+
+            function FungiblesController_getBsv20UtxosByAddress(request: any, response: any, next: any) {
+            const args = {
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+                    status: {"in":"query","name":"status","ref":"Bsv20Status"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"default":"DESC","in":"query","name":"dir","ref":"SortDirection"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new FungiblesController();
+
+
+              const promise = controller.getBsv20UtxosByAddress.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
@@ -465,6 +509,36 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/bsv20/market',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20Market)),
+
+            function FungiblesController_getBsv20Market(request: any, response: any, next: any) {
+            const args = {
+                    sort: {"default":"height","in":"query","name":"sort","dataType":"union","subSchemas":[{"dataType":"enum","enums":["price"]},{"dataType":"enum","enums":["price_per_token"]},{"dataType":"enum","enums":["height"]}]},
+                    dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    id: {"in":"query","name":"id","dataType":"string"},
+                    tick: {"in":"query","name":"tick","dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new FungiblesController();
+
+
+              const promise = controller.getBsv20Market.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/inscriptions/search',
             ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
             ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getInscriptionSearch)),
@@ -474,6 +548,7 @@ export function RegisterRoutes(app: Router) {
                     q: {"in":"query","name":"q","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"in":"query","name":"dir","ref":"SortDirection"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -501,6 +576,7 @@ export function RegisterRoutes(app: Router) {
                     query: {"in":"body","name":"query","ref":"TxoData"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"in":"query","name":"dir","ref":"SortDirection"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -842,7 +918,6 @@ export function RegisterRoutes(app: Router) {
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     type: {"in":"query","name":"type","dataType":"string"},
-                    bsv20: {"default":false,"in":"query","name":"bsv20","dataType":"boolean"},
                     text: {"default":"","in":"query","name":"text","dataType":"string"},
                     minPrice: {"in":"query","name":"minPrice","dataType":"double"},
                     maxPrice: {"in":"query","name":"maxPrice","dataType":"double"},
@@ -866,9 +941,9 @@ export function RegisterRoutes(app: Router) {
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.post('/api/market',
             ...(fetchMiddlewares<RequestHandler>(MarketController)),
-            ...(fetchMiddlewares<RequestHandler>(MarketController.prototype.searchMap)),
+            ...(fetchMiddlewares<RequestHandler>(MarketController.prototype.postMarketSearch)),
 
-            function MarketController_searchMap(request: any, response: any, next: any) {
+            function MarketController_postMarketSearch(request: any, response: any, next: any) {
             const args = {
                     data: {"in":"body","name":"data","dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
                     sort: {"default":"recent","in":"query","name":"sort","ref":"ListingSort"},
@@ -876,7 +951,6 @@ export function RegisterRoutes(app: Router) {
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     type: {"in":"query","name":"type","dataType":"string"},
-                    bsv20: {"default":false,"in":"query","name":"bsv20","dataType":"boolean"},
                     text: {"default":"","in":"query","name":"text","dataType":"string"},
                     minPrice: {"in":"query","name":"minPrice","dataType":"double"},
                     maxPrice: {"in":"query","name":"maxPrice","dataType":"double"},
@@ -891,7 +965,7 @@ export function RegisterRoutes(app: Router) {
                 const controller = new MarketController();
 
 
-              const promise = controller.searchMap.apply(controller, validatedArgs as any);
+              const promise = controller.postMarketSearch.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);
@@ -953,7 +1027,7 @@ export function RegisterRoutes(app: Router) {
 
             function OriginsController_getOriginByNum(request: any, response: any, next: any) {
             const args = {
-                    num: {"in":"path","name":"num","required":true,"dataType":"double"},
+                    num: {"in":"path","name":"num","required":true,"dataType":"string"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1333,6 +1407,7 @@ export function RegisterRoutes(app: Router) {
                     q: {"in":"query","name":"q","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"in":"query","name":"dir","ref":"SortDirection"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1360,6 +1435,7 @@ export function RegisterRoutes(app: Router) {
                     query: {"in":"body","name":"query","ref":"TxoData"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"in":"query","name":"dir","ref":"SortDirection"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1387,6 +1463,7 @@ export function RegisterRoutes(app: Router) {
                     q: {"in":"query","name":"q","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"in":"query","name":"dir","ref":"SortDirection"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1414,6 +1491,7 @@ export function RegisterRoutes(app: Router) {
                     query: {"in":"body","name":"query","ref":"TxoData"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"in":"query","name":"dir","ref":"SortDirection"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

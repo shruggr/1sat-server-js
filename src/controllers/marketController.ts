@@ -5,12 +5,11 @@ import { SortDirection } from "../models/sort-direction";
 
 export enum ListingSort {
     recent = 'recent',
-    num = 'num',
     price = 'price',
+    num = 'num'
 }
 
 export class MarketSearch {
-    bsv20 = false
     sort: ListingSort = ListingSort.recent
     dir: SortDirection = SortDirection.desc
     type?: string
@@ -31,7 +30,6 @@ export class MarketController extends Controller {
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() type?: string,
-        @Query() bsv20 = false,
         @Query() text = '',
         @Query() minPrice?: number,
         @Query() maxPrice?: number,
@@ -41,35 +39,33 @@ export class MarketController extends Controller {
         if (q) {
             data = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
-        return this.searchListings({bsv20, sort, dir, type, data, text, minPrice, maxPrice, limit, offset});
+        return this.searchListings({sort, dir, type, data, text, minPrice, maxPrice, limit, offset});
     }
 
     @Post("")
-    public async searchMap(
+    public async postMarketSearch(
         @Body() data?: {[key: string]: any},
         @Query() sort: ListingSort = ListingSort.recent,
         @Query() dir: SortDirection = SortDirection.desc,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() type?: string,
-        @Query() bsv20 = false,
         @Query() text = '',
         @Query() minPrice?: number,
         @Query() maxPrice?: number,
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        return this.searchListings({bsv20, sort, dir, type, data, text, minPrice, maxPrice, limit, offset});
+        return this.searchListings({sort, dir, type, data, text, minPrice, maxPrice, limit, offset});
     }
 
     public async searchListings(search: MarketSearch): Promise<Txo[]> {
-        const { bsv20, sort, dir, type, data, text, minPrice, maxPrice, limit, offset } = search;
-        const params: any[] = [bsv20];
-        let sql = [`SELECT t.*, o.data as odata, n.num
+        const { sort, dir, type, data, text, minPrice, maxPrice, limit, offset } = search;
+        const params: any[] = [];
+        let sql = [`SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
             FROM listings l
             JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
             JOIN txos o ON o.outpoint = t.origin
-            LEFT JOIN inscriptions n ON n.outpoint = t.origin
-            WHERE l.spend = '\\x' AND l.bsv20 = $1`];
+            WHERE l.spend = '\\x'`];
 
         if(type) {
             params.push(`${type}%`);
@@ -97,12 +93,11 @@ export class MarketController extends Controller {
         }
 
         switch(sort) {
-            case ListingSort.num:
-                sql.push(`ORDER BY l.num ${dir}`);
-                break;
             case ListingSort.price:
                 sql.push(`ORDER BY l.price ${dir}`);
                 break;
+            case ListingSort.num:
+                sql.push(`ORDER BY l.oheight ${dir}, l.oidx ${dir}`);
             default:
                 sql.push(`ORDER BY l.height ${dir}, l.idx ${dir}`);
         }
@@ -112,7 +107,7 @@ export class MarketController extends Controller {
         params.push(offset);
         sql.push(`OFFSET $${params.length}`)
         
-        // console.log(sql, params)
+        console.log(sql.join(' '), params)
         const { rows } = await pool.query(sql.join(' '), params);
         return rows.map((row: any) => Txo.fromRow(row));
     }

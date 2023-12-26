@@ -4,6 +4,7 @@ import { Outpoint } from "./outpoint";
 import { loadTx, pool } from "../db";
 import { Sigma } from "./sigma";
 import { NotFound } from 'http-errors';
+import { SortDirection } from './sort-direction';
 
 const B = Buffer.from('19HxigV4QyBv3tHpQVcUEQyq1pzZVdoAut', 'utf8')
 const ORD = Buffer.from('ord', 'utf8')
@@ -28,7 +29,7 @@ export interface Origin {
 export enum Bsv20Status {
     Invalid = -1,
     Pending = 0,
-    Valid = 1
+    Valid = 1,
 }
 
 export interface TxoData {
@@ -96,10 +97,10 @@ export class Txo {
     data?: TxoData;
 
     static async getByOutpoint(outpoint: Outpoint): Promise<Txo> {
-        const { rows: [row] } = await pool.query(`SELECT t.*, o.data as odata, n.num
+        const { rows: [row] } = await pool.query(`
+            SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
             FROM txos t
             LEFT JOIN txos o ON o.outpoint = t.origin
-            LEFT JOIN inscriptions n ON n.outpoint = t.origin
             WHERE t.outpoint = $1`,
             [outpoint.toBuffer()],
         );
@@ -111,10 +112,9 @@ export class Txo {
     }
 
     static async getByTxid(txid: string): Promise<Txo[]> {
-        let sql = `SELECT t.*, o.data as odata, n.num
+        let sql = `SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
             FROM txos t
             LEFT JOIN txos o ON o.outpoint = t.origin
-            LEFT JOIN inscriptions n ON n.outpoint = t.origin 
             WHERE t.txid=$1`;
 
         const { rows } = await pool.query(sql, [Buffer.from(txid, 'hex')]);
@@ -137,7 +137,7 @@ export class Txo {
         txo.origin = row.origin && {
             outpoint: Outpoint.fromBuffer(row.origin),
             data: row.odata ? row.odata : undefined,
-            num: row.num && parseInt(row.num, 10),
+            num: row.oheight ? `${row.oheight.toString().padStart(7, '0')}:${row.oidx}:${row.vout}` : undefined,
         }
         return txo;
     }
@@ -192,13 +192,12 @@ export class Txo {
         return;
     }
 
-    static async search(unspent = false, query?: TxoData, limit = 100, offset = 0): Promise<Txo[]> {
+    static async search(unspent = false, query?: TxoData, limit = 100, offset = 0, dir: SortDirection = SortDirection.ASC): Promise<Txo[]> {
         if ((query as any)?.txid !== undefined) throw BadRequest('This is not a valid query. Reach out on 1sat discord for assistance.')
         const params: any[] = [];
-        let sql = `SELECT t.*, o.data as odata, n.num
+        let sql = `SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
             FROM txos t
-            LEFT JOIN txos o ON o.outpoint = t.origin
-            LEFT JOIN inscriptions n ON n.outpoint = t.origin `;
+            LEFT JOIN txos o ON o.outpoint = t.origin `;
 
         if (query) {
             params.push(JSON.stringify(query));
@@ -209,6 +208,9 @@ export class Txo {
             sql += `AND t.spend = '\\x' `
         }
 
+        if(dir) {
+            sql += `ORDER BY t.height ${dir}, t.idx ${dir}, t.vout ${dir} `
+        }
         params.push(limit);
         sql += `LIMIT $${params.length} `
         params.push(offset);
