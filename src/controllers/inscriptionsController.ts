@@ -16,7 +16,6 @@ export class InscriptionsController extends Controller {
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() dir?: SortDirection
-
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         let query: TxoData | undefined;

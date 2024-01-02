@@ -59,7 +59,8 @@ const models: TsoaRoute.Models = {
             "available": {"dataType":"string"},
             "pctMinted": {"dataType":"double"},
             "accounts": {"dataType":"double"},
-            "pending": {"dataType":"double"},
+            "pending": {"dataType":"string"},
+            "pendingOps": {"dataType":"string"},
             "included": {"dataType":"boolean","default":false},
             "fundAddress": {"dataType":"string"},
             "fundTotal": {"dataType":"double"},
@@ -1340,6 +1341,32 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.postHistoryByAddress.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/txos/address/:address/balance',
+            ...(fetchMiddlewares<RequestHandler>(TxosController)),
+            ...(fetchMiddlewares<RequestHandler>(TxosController.prototype.getBalanceByAddress)),
+
+            function TxosController_getBalanceByAddress(request: any, response: any, next: any) {
+            const args = {
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+                    refresh: {"default":false,"in":"query","name":"refresh","dataType":"boolean"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new TxosController();
+
+
+              const promise = controller.getBalanceByAddress.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

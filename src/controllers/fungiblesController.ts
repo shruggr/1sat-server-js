@@ -69,7 +69,7 @@ export class FungiblesController extends Controller {
             let key = row.tick;
 
             let tokenId = ''
-            if(row.id.length) {
+            if(row.id?.length) {
                 tokenId = Outpoint.fromBuffer(row.id).toString()
                 key = tokenId
                 ids.add(tokenId)
@@ -242,7 +242,7 @@ export class FungiblesController extends Controller {
             return JSON.parse(status);
         }
         const { rows: [token] } = await pool.query(`SELECT b.*,
-            a.accounts, p.pending, 
+            a.accounts, p.pending, po.pending_ops,
             CASE WHEN s.included > 0 THEN true ELSE false END as included
             FROM bsv20 b, (
                 SELECT COUNT(DISTINCT pkhash) as accounts 
@@ -254,7 +254,11 @@ export class FungiblesController extends Controller {
                 WHERE op='mint' AND tick=$1 AND status=0
             ) p, (
                 SELECT COUNT(1) as included FROM bsv20_subs WHERE tick=$1
-            ) s
+            ) s, (
+                SELECT COUNT(1) as pending_ops
+                FROM bsv20_txos
+                WHERE tick=$1 AND status=0
+            ) po
             WHERE b.status = 1 AND tick=$1`,
             [tick],
         );
@@ -273,7 +277,7 @@ export class FungiblesController extends Controller {
     public async getBsv20V2Stats(
         @Path() id: string
     ): Promise<Token> {
-        this.setHeader('Cache-Control', 'max-age=3600')
+        this.setHeader('Cache-Control', 'max-age=300')
         const cacheKey = `id:${id}`
         const status = await redis.get(cacheKey);
         if(status) {

@@ -20,7 +20,8 @@ export class Token {
     available?: string;
     pctMinted?: number;
     accounts?: number;
-    pending?: number;
+    pending?: string;
+    pendingOps?: string;
     included = false;
     fundAddress?: string;
     fundTotal?: number;
@@ -47,7 +48,8 @@ export class Token {
         txo.available = row.available;
         txo.pctMinted = row.pct_minted;
         txo.accounts = row.accounts;
-        txo.pending = row.pending || 0
+        txo.pending = row.pending;
+        txo.pendingOps = row.pending_ops;
         txo.included = row.included;
         txo.fundAddress = row.fund_pkhash && Address.fromPubKeyHashBuf(row.fund_pkhash).toString();
         txo.fundTotal = row.fund_total;

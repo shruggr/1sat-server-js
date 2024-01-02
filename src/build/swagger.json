@@ -81,8 +81,10 @@
 						"format": "double"
 					},
 					"pending": {
-						"type": "number",
-						"format": "double"
+						"type": "string"
+					},
+					"pendingOps": {
+						"type": "string"
 					},
 					"included": {
 						"type": "boolean",
@@ -2618,6 +2620,44 @@
 						}
 					}
 				}
+			}
+		},
+		"/api/txos/address/{address}/balance": {
+			"get": {
+				"operationId": "GetBalanceByAddress",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "number",
+									"format": "double"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "refresh",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				]
 			}
 		},
 		"/api/txos/{outpoint}": {

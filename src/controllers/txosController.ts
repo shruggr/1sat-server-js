@@ -82,7 +82,7 @@ export class TxosController extends Controller {
         const cacheKey = `ad:${address}`
         const updated = await redis.get(cacheKey)
         if(!force && updated) {
-            console.log("Updated", updated, ". Skipping", address);
+            // console.log("Updated", updated, ". Skipping", address);
             return
         }
 
@@ -103,6 +103,24 @@ export class TxosController extends Controller {
             redis.del(cacheKey)
             console.log("Refresh failed:", address)
         }
+    }
+
+    @Get("address/{address}/balance")
+    public async getBalanceByAddress(
+        @Path() address: string,
+        @Query() refresh = false
+    ): Promise<number> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        await this.refreshAddress(address, refresh);
+        const add = Address.fromString(address);
+        const params: any[] = [add.hashBuf];
+        const {rows: [{balance}]} = await pool.query(`
+            SELECT SUM(satoshis) as balance
+            FROM txos
+            WHERE pkhash=$1 AND spend='\\x'`,
+            params,
+        )
+        return balance;
     }
 
     @Get("{outpoint}")
