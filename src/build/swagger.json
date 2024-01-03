@@ -9,247 +9,6 @@
 			"Outpoint": {
 				"type": "string"
 			},
-			"Bsv20Status": {
-				"enum": [
-					-1,
-					0,
-					1
-				],
-				"type": "number"
-			},
-			"Token": {
-				"properties": {
-					"txid": {
-						"type": "string",
-						"default": ""
-					},
-					"vout": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"height": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"idx": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"tick": {
-						"type": "string"
-					},
-					"id": {
-						"$ref": "#/components/schemas/Outpoint"
-					},
-					"sym": {
-						"type": "string"
-					},
-					"icon": {
-						"type": "string"
-					},
-					"max": {
-						"type": "string"
-					},
-					"lim": {
-						"type": "string"
-					},
-					"dec": {
-						"type": "number",
-						"format": "double"
-					},
-					"amt": {
-						"type": "string"
-					},
-					"supply": {
-						"type": "string"
-					},
-					"status": {
-						"$ref": "#/components/schemas/Bsv20Status"
-					},
-					"available": {
-						"type": "string"
-					},
-					"pctMinted": {
-						"type": "number",
-						"format": "double"
-					},
-					"accounts": {
-						"type": "number",
-						"format": "double"
-					},
-					"pending": {
-						"type": "string"
-					},
-					"pendingOps": {
-						"type": "string"
-					},
-					"included": {
-						"type": "boolean",
-						"default": false
-					},
-					"fundAddress": {
-						"type": "string"
-					},
-					"fundTotal": {
-						"type": "number",
-						"format": "double"
-					},
-					"fundUsed": {
-						"type": "number",
-						"format": "double"
-					},
-					"fundBalance": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"type": "object",
-				"additionalProperties": false
-			},
-			"TokenBalanceResponse": {
-				"properties": {
-					"listed": {
-						"properties": {
-							"pending": {
-								"type": "string"
-							},
-							"confirmed": {
-								"type": "string"
-							}
-						},
-						"required": [
-							"pending",
-							"confirmed"
-						],
-						"type": "object"
-					},
-					"all": {
-						"properties": {
-							"pending": {
-								"type": "string"
-							},
-							"confirmed": {
-								"type": "string"
-							}
-						},
-						"required": [
-							"pending",
-							"confirmed"
-						],
-						"type": "object"
-					},
-					"icon": {
-						"type": "string"
-					},
-					"dec": {
-						"type": "number",
-						"format": "double"
-					},
-					"sym": {
-						"type": "string"
-					},
-					"id": {
-						"type": "string"
-					},
-					"tick": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"listed",
-					"all"
-				],
-				"type": "object"
-			},
-			"BSV20Txo": {
-				"properties": {
-					"txid": {
-						"type": "string",
-						"default": ""
-					},
-					"vout": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"outpoint": {
-						"$ref": "#/components/schemas/Outpoint"
-					},
-					"owner": {
-						"type": "string"
-					},
-					"script": {
-						"type": "string"
-					},
-					"spend": {
-						"type": "string"
-					},
-					"height": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"idx": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"op": {
-						"type": "string",
-						"default": ""
-					},
-					"tick": {
-						"type": "string"
-					},
-					"id": {
-						"type": "string"
-					},
-					"amt": {
-						"type": "string",
-						"default": ""
-					},
-					"status": {
-						"$ref": "#/components/schemas/Bsv20Status"
-					},
-					"reason": {
-						"type": "string",
-						"default": ""
-					},
-					"listing": {
-						"type": "boolean",
-						"default": false
-					},
-					"price": {
-						"type": "number",
-						"format": "double"
-					},
-					"pricePer": {
-						"type": "number",
-						"format": "double"
-					},
-					"payout": {
-						"type": "string"
-					},
-					"pricePerUnit": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"type": "object",
-				"additionalProperties": false
-			},
-			"SortDirection": {
-				"enum": [
-					"asc",
-					"desc",
-					"ASC",
-					"DESC"
-				],
-				"type": "string"
-			},
 			"File": {
 				"properties": {
 					"hash": {
@@ -303,6 +62,14 @@
 				},
 				"type": "object",
 				"additionalProperties": false
+			},
+			"Bsv20Status": {
+				"enum": [
+					-1,
+					0,
+					1
+				],
+				"type": "number"
 			},
 			"TxoData": {
 				"properties": {
@@ -531,6 +298,239 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"SortDirection": {
+				"enum": [
+					"asc",
+					"desc",
+					"ASC",
+					"DESC"
+				],
+				"type": "string"
+			},
+			"Token": {
+				"properties": {
+					"txid": {
+						"type": "string",
+						"default": ""
+					},
+					"vout": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"height": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"idx": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"tick": {
+						"type": "string"
+					},
+					"id": {
+						"$ref": "#/components/schemas/Outpoint"
+					},
+					"sym": {
+						"type": "string"
+					},
+					"icon": {
+						"type": "string"
+					},
+					"max": {
+						"type": "string"
+					},
+					"lim": {
+						"type": "string"
+					},
+					"dec": {
+						"type": "number",
+						"format": "double"
+					},
+					"amt": {
+						"type": "string"
+					},
+					"supply": {
+						"type": "string"
+					},
+					"status": {
+						"$ref": "#/components/schemas/Bsv20Status"
+					},
+					"available": {
+						"type": "string"
+					},
+					"pctMinted": {
+						"type": "number",
+						"format": "double"
+					},
+					"accounts": {
+						"type": "number",
+						"format": "double"
+					},
+					"pending": {
+						"type": "string"
+					},
+					"pendingOps": {
+						"type": "string"
+					},
+					"included": {
+						"type": "boolean",
+						"default": false
+					},
+					"fundAddress": {
+						"type": "string"
+					},
+					"fundTotal": {
+						"type": "number",
+						"format": "double"
+					},
+					"fundUsed": {
+						"type": "number",
+						"format": "double"
+					},
+					"fundBalance": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"TokenBalanceResponse": {
+				"properties": {
+					"listed": {
+						"properties": {
+							"pending": {
+								"type": "string"
+							},
+							"confirmed": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"pending",
+							"confirmed"
+						],
+						"type": "object"
+					},
+					"all": {
+						"properties": {
+							"pending": {
+								"type": "string"
+							},
+							"confirmed": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"pending",
+							"confirmed"
+						],
+						"type": "object"
+					},
+					"icon": {
+						"type": "string"
+					},
+					"dec": {
+						"type": "number",
+						"format": "double"
+					},
+					"sym": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					},
+					"tick": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"listed",
+					"all"
+				],
+				"type": "object"
+			},
+			"BSV20Txo": {
+				"properties": {
+					"txid": {
+						"type": "string",
+						"default": ""
+					},
+					"vout": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"outpoint": {
+						"$ref": "#/components/schemas/Outpoint"
+					},
+					"owner": {
+						"type": "string"
+					},
+					"script": {
+						"type": "string"
+					},
+					"spend": {
+						"type": "string"
+					},
+					"height": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"idx": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"op": {
+						"type": "string",
+						"default": ""
+					},
+					"tick": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					},
+					"amt": {
+						"type": "string",
+						"default": ""
+					},
+					"status": {
+						"$ref": "#/components/schemas/Bsv20Status"
+					},
+					"reason": {
+						"type": "string",
+						"default": ""
+					},
+					"listing": {
+						"type": "boolean",
+						"default": false
+					},
+					"price": {
+						"type": "number",
+						"format": "double"
+					},
+					"pricePer": {
+						"type": "number",
+						"format": "double"
+					},
+					"payout": {
+						"type": "string"
+					},
+					"pricePerUnit": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
 			"ListingSort": {
 				"enum": [
 					"recent",
@@ -639,6 +639,720 @@
 						}
 					}
 				]
+			}
+		},
+		"/api/txos/address/{address}/unspent": {
+			"get": {
+				"operationId": "GetUnspentByAddress",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "q",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "bsv20",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "origins",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "refresh",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "PostUnspentByAddress",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "bsv20",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "origins",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "refresh",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/TxoData"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/txos/address/{address}/history": {
+			"get": {
+				"operationId": "GetHistoryByAddress",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "q",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "bsv20",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "origins",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "PostHistoryByAddress",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "bsv20",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "origins",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/TxoData"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/txos/address/{address}/balance": {
+			"get": {
+				"operationId": "GetBalanceByAddress",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "number",
+									"format": "double"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "refresh",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/txos/{outpoint}": {
+			"get": {
+				"operationId": "GetTxoByOutpoint",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Txo"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "outpoint",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "script",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/txos/outpoints": {
+			"post": {
+				"operationId": "PostOutpoints",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "script",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/txos/search": {
+			"get": {
+				"operationId": "GetTxoSearchAll",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "q",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "PostTxoSearchAll",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/TxoData"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/txos/search/unspent": {
+			"get": {
+				"operationId": "GetTxoSearchUnspent",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "q",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "PostTxoSearchUnspent",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/TxoData"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/api/bsv20": {
@@ -1061,6 +1775,27 @@
 				]
 			}
 		},
+		"/api/bsv20/tick/{tick}/refresh": {
+			"get": {
+				"operationId": "GetBsv20TickRefresh",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "tick",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/bsv20/id/{id}": {
 			"get": {
 				"operationId": "GetBsv20V2Stats",
@@ -1074,6 +1809,27 @@
 								}
 							}
 						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/id/{id}/refresh": {
+			"get": {
+				"operationId": "GetBsv20V2Refresh",
+				"responses": {
+					"204": {
+						"description": "No content"
 					}
 				},
 				"security": [],
@@ -2262,720 +3018,6 @@
 						}
 					}
 				]
-			}
-		},
-		"/api/txos/address/{address}/unspent": {
-			"get": {
-				"operationId": "GetUnspentByAddress",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Txo"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "address",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "q",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "type",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "bsv20",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					},
-					{
-						"in": "query",
-						"name": "origins",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					},
-					{
-						"in": "query",
-						"name": "refresh",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					}
-				]
-			},
-			"post": {
-				"operationId": "PostUnspentByAddress",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Txo"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "address",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "type",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "bsv20",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					},
-					{
-						"in": "query",
-						"name": "origins",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					},
-					{
-						"in": "query",
-						"name": "refresh",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					}
-				],
-				"requestBody": {
-					"required": false,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/TxoData"
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/txos/address/{address}/history": {
-			"get": {
-				"operationId": "GetHistoryByAddress",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Txo"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "address",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "q",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "type",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "bsv20",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					},
-					{
-						"in": "query",
-						"name": "origins",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					}
-				]
-			},
-			"post": {
-				"operationId": "PostHistoryByAddress",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Txo"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "address",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "type",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "bsv20",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					},
-					{
-						"in": "query",
-						"name": "origins",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					}
-				],
-				"requestBody": {
-					"required": false,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/TxoData"
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/txos/address/{address}/balance": {
-			"get": {
-				"operationId": "GetBalanceByAddress",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"type": "number",
-									"format": "double"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "address",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "refresh",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					}
-				]
-			}
-		},
-		"/api/txos/{outpoint}": {
-			"get": {
-				"operationId": "GetTxoByOutpoint",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Txo"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "outpoint",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "script",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					}
-				]
-			}
-		},
-		"/api/txos/outpoints": {
-			"post": {
-				"operationId": "PostOutpoints",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Txo"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "script",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/txos/search": {
-			"get": {
-				"operationId": "GetTxoSearchAll",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Txo"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "q",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "dir",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/SortDirection"
-						}
-					}
-				]
-			},
-			"post": {
-				"operationId": "PostTxoSearchAll",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Txo"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "dir",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/SortDirection"
-						}
-					}
-				],
-				"requestBody": {
-					"required": false,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/TxoData"
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/txos/search/unspent": {
-			"get": {
-				"operationId": "GetTxoSearchUnspent",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Txo"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "q",
-						"required": false,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "dir",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/SortDirection"
-						}
-					}
-				]
-			},
-			"post": {
-				"operationId": "PostTxoSearchUnspent",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Txo"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "dir",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/SortDirection"
-						}
-					}
-				],
-				"requestBody": {
-					"required": false,
-					"content": {
-						"application/json": {
-							"schema": {
-								"$ref": "#/components/schemas/TxoData"
-							}
-						}
-					}
-				}
 			}
 		}
 	},

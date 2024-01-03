@@ -20,7 +20,7 @@ export class TxosController extends Controller {
         @Query() refresh = false
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        await this.refreshAddress(address, refresh);
+        await TxosController.refreshAddress(address, refresh);
         let query: TxoData | undefined;
         if (q) {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
@@ -40,7 +40,7 @@ export class TxosController extends Controller {
         @Query() refresh = false
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        await this.refreshAddress(address, refresh);
+        await TxosController.refreshAddress(address, refresh);
         return this.searchByAddress(address, true, query, type, bsv20, origins, limit, offset);
     }
 
@@ -76,7 +76,7 @@ export class TxosController extends Controller {
         return this.searchByAddress(address, false, query, type, bsv20, origins, limit, offset);
     }
 
-    async refreshAddress(address: string, force = false) {
+    static async refreshAddress(address: string, force = false) {
         const { INDEXER } = process.env;
         const  start = Date.now();
         const cacheKey = `ad:${address}`
@@ -111,7 +111,7 @@ export class TxosController extends Controller {
         @Query() refresh = false
     ): Promise<number> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        await this.refreshAddress(address, refresh);
+        await TxosController.refreshAddress(address, refresh);
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf];
         const {rows: [{balance}]} = await pool.query(`

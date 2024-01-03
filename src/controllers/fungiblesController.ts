@@ -7,6 +7,7 @@ import { BSV20Txo } from '../models/bsv20Txo';
 import { Token } from '../models/token';
 import { SortDirection } from '../models/sort-direction';
 import { Bsv20Status } from '../models/txo';
+import { TxosController } from './txosController';
 
 @Route("api/bsv20")
 export class FungiblesController extends Controller {
@@ -227,7 +228,7 @@ export class FungiblesController extends Controller {
         return rows.map((row: any) => BSV20Txo.fromRow(row));
     }
 
-    @Get("tick/{tick}")
+    @Get("tick/{tick}") 
     public async getBsv20TickStats(
         @Path() tick: string
     ): Promise<Token> {
@@ -273,6 +274,24 @@ export class FungiblesController extends Controller {
         return result;
     }
 
+    @Get("tick/{tick}/refresh") 
+    public async getBsv20TickRefresh(
+        @Path() tick: string
+    ): Promise<void> {
+        tick = tick.toUpperCase();
+        const { rows: [{pkhash}] } = await pool.query(`
+            SELECT pkhash FROM bsv20
+            WHERE status=1 AND tick=$1`,
+            [tick],
+        );
+        if(!pkhash) {
+            throw new NotFound();
+        }
+        const address = Address.fromPubKeyHashBuf(pkhash).toString();
+        await TxosController.refreshAddress(address, true);
+        redis.publish(pkhash.toString('hex'), "")
+    }
+
     @Get("id/{id}")
     public async getBsv20V2Stats(
         @Path() id: string
@@ -305,6 +324,23 @@ export class FungiblesController extends Controller {
             .expire(cacheKey, 1800)
             .exec();
         return result;
+    }
+
+    @Get("id/{id}/refresh")
+    public async getBsv20V2Refresh(
+        @Path() id: string
+    ): Promise<void> {
+        const { rows: [{pkhash}] } = await pool.query(`
+            SELECT pkhash FROM bsv20_v2
+            WHERE status=1 AND id=$1`,
+            [Outpoint.fromString(id).toBuffer()],
+        );
+        if(!pkhash) {
+            throw new NotFound();
+        }
+        const address = Address.fromPubKeyHashBuf(pkhash).toString();
+        await TxosController.refreshAddress(address, true);
+        redis.publish(pkhash.toString('hex'), "")
     }
 
     @Get("market")
