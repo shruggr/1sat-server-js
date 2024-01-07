@@ -19,7 +19,7 @@ export class FungiblesController extends Controller {
         @Query() included = true,
     ): Promise<Token[]> {
 
-        const {rows} = await pool.query(`SELECT b.*, CASE WHEN s.tick != '' THEN true ELSE false END as included
+        const { rows } = await pool.query(`SELECT b.*, CASE WHEN s.tick != '' THEN true ELSE false END as included
             FROM bsv20  b
             ${included ? '' : 'LEFT'} JOIN bsv20_subs s ON s.tick = b.tick
             WHERE b.status = 1 and b.tick != ''
@@ -38,14 +38,14 @@ export class FungiblesController extends Controller {
         @Query() dir: 'asc' | 'desc' = 'desc',
         @Query() included = true,
     ): Promise<Token[]> {
-        const {rows} = await pool.query(`SELECT b.*
+        const { rows } = await pool.query(`SELECT b.*
             FROM bsv20_v2 b
             ${included ? 'WHERE fund_total > 0' : ''}
             ORDER BY ${sort} ${dir}
             LIMIT $1 OFFSET $2`,
             [limit, offset],
         );
-                    // ORDER BY b.${sort} ${dir}, b.idx ${dir}
+        // ORDER BY b.${sort} ${dir}, b.idx ${dir}
         return rows.map(Token.fromRow)
     }
 
@@ -55,55 +55,55 @@ export class FungiblesController extends Controller {
     ): Promise<TokenBalanceResponse[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         const hashBuf = Address.fromString(address).hashBuf
-    
+
         const sql = `SELECT txid, vout, op, tick, id, listing, status, amt
             FROM bsv20_txos
-            WHERE pkhash=$1 AND spend='\\x'`
+            WHERE pkhash=$1 AND spend='\\x' AND status IN (0, 1)`
         const { rows } = await pool.query(sql, [hashBuf]);
         // console.log(sql, hashBuf.toString('hex'))
 
-        const results: {[ticker: string]:TokenBalance} = {};
+        const results: { [ticker: string]: TokenBalance } = {};
         let ids = new Set<string>()
         let ticks = new Set<string>()
         for (let row of rows) {
             let key = row.tick;
 
             let tokenId = ''
-            if(row.id?.length) {
+            if (row.id?.length) {
                 tokenId = Outpoint.fromBuffer(row.id).toString()
                 key = tokenId
                 ids.add(tokenId)
             }
-            else if(row.tick) ticks.add(row.tick);
+            else if (row.tick) ticks.add(row.tick);
 
             let tokenBal = results[key]
-            if(!tokenBal) {
+            if (!tokenBal) {
                 tokenBal = new TokenBalance(row.tick, tokenId)
                 results[key] = tokenBal
             }
 
             const amt = BigInt(row.amt)
-            if(row.status == '1') {
+            if (row.status == 1) {
                 tokenBal.all.confirmed += amt
-                if(row.listing) {
+                if (row.listing) {
                     tokenBal.listed.confirmed += amt
                 }
-            } else { 
+            } else {
                 tokenBal.all.pending += amt
-                if(row.listing) {
+                if (row.listing) {
                     tokenBal.listed.pending += amt
                 }
             }
         }
 
-        const symbols = new Map<string, {sym: string, dec?: number, icon?: string}>();
+        const symbols = new Map<string, { sym: string, dec?: number, icon?: string }>();
         await Promise.all([
             (async () => {
-                if(ticks.size) {
+                if (ticks.size) {
                     const { rows: tickRows } = await pool.query(`
                         SELECT tick, dec
                         FROM bsv20 
-                        WHERE status=1 AND tick = ANY($1)`, 
+                        WHERE status=1 AND tick = ANY($1)`,
                         [Array.from(ticks)]
                     )
                     tickRows.forEach(row => {
@@ -113,11 +113,11 @@ export class FungiblesController extends Controller {
                 }
             })(),
             (async () => {
-                if(ids.size) {
+                if (ids.size) {
                     const { rows: symRows } = await pool.query(`
                         SELECT id, sym, dec, icon
                         FROM bsv20_v2
-                        WHERE id = ANY($1)`, 
+                        WHERE id = ANY($1)`,
                         [Array.from(ids).map(id => Outpoint.fromString(id).toBuffer())]
                     )
                     symRows.forEach(row => {
@@ -142,13 +142,13 @@ export class FungiblesController extends Controller {
                     pending: r.listed.pending.toString()
                 }
             }
-            
-            if(r.id) {
+
+            if (r.id) {
                 o.id = r.id;
                 o.sym = symbols.get(r.id)?.sym;
                 o.dec = symbols.get(r.id)?.dec;
                 o.icon = symbols.get(r.id)?.icon
-            } else if(r.tick) {
+            } else if (r.tick) {
                 o.tick = r.tick;
                 o.dec = symbols.get(r.tick)?.dec;
             }
@@ -175,7 +175,7 @@ export class FungiblesController extends Controller {
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`
-        
+
         // console.log(sql, params)
         const { rows } = await pool.query(sql, params);
         return rows.map((row: any) => BSV20Txo.fromRow(row));
@@ -198,7 +198,7 @@ export class FungiblesController extends Controller {
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`
-        
+
         // console.log(sql, params)
         const { rows } = await pool.query(sql, params);
         return rows.map((row: any) => BSV20Txo.fromRow(row));
@@ -221,26 +221,26 @@ export class FungiblesController extends Controller {
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`
-        
+
         // console.log(sql, params)
         const { rows } = await pool.query(sql, params);
         return rows.map((row: any) => BSV20Txo.fromRow(row));
     }
 
-    @Get("tick/{tick}") 
+    @Get("tick/{tick}")
     public async getBsv20TickStats(
         @Path() tick: string,
         @Query() refresh = false,
     ): Promise<Token> {
-        this.setHeader('Cache-Control', 'max-age=3600')
-        if(tick.length > 4 || tick.includes("'") || tick.includes('"')) {
+        if (tick.length > 4 || tick.includes("'") || tick.includes('"')) {
             throw new BadRequest();
         }
         tick = tick.toUpperCase();
         const cacheKey = `tick:${tick}`
-        if(!refresh) {
+        if (!refresh) {
+            this.setHeader('Cache-Control', 'max-age=3600')
             const status = await redis.get(cacheKey);
-            if(status) {
+            if (status) {
                 return JSON.parse(status);
             }
         }
@@ -265,7 +265,7 @@ export class FungiblesController extends Controller {
             WHERE b.status = 1 AND tick=$1`,
             [tick],
         );
-        if(!token) {
+        if (!token) {
             throw new NotFound();
         }
         const result = Token.fromRow(token);
@@ -276,16 +276,53 @@ export class FungiblesController extends Controller {
         return result;
     }
 
+    @Get("tick/{tick}/holders")
+    public async getBsv20TickHolders(
+        @Path() tick: string,
+        @Query() limit = 10,
+    ): Promise<{ address: string, amt: string }[]> {
+        if (tick.length > 4 || tick.includes("'") || tick.includes('"')) {
+            throw new BadRequest();
+        }
+        tick = tick.toUpperCase();
+        const cacheKey = `tick:${tick}:holders`
+
+        this.setHeader('Cache-Control', 'max-age=3600')
+        const status = await redis.get(cacheKey);
+        if (status) {
+            return JSON.parse(status).slice(0, limit);
+        }
+
+        const { rows } = await pool.query(`
+            SELECT pkhash, SUM(amt) as amt
+            FROM bsv20_txos
+            WHERE tick=$1 AND status=1 AND spend='\\x'
+            GROUP BY pkhash
+            ORDER BY amt DESC
+            LIMIT 10`,
+            [tick],
+        );
+        const tokens = rows.map(r => ({
+            address: Address.fromPubKeyHashBuf(r.pkhash).toString(),
+            amt: r.amt,
+        }))
+        await redis.pipeline()
+            .set(cacheKey, JSON.stringify(tokens))
+            .expire(cacheKey, 1800)
+            .exec();
+        return tokens.slice(0, limit);
+    }
+
     @Get("id/{id}")
     public async getBsv20V2Stats(
         @Path() id: string,
         @Query() refresh = false,
     ): Promise<Token> {
-        this.setHeader('Cache-Control', 'max-age=300')
         const cacheKey = `id:${id}`
-        if(!refresh) {
+        if (!refresh) {
+            this.setHeader('Cache-Control', 'max-age=300')
             const status = await redis.get(cacheKey);
-            if(status) {
+            if (status) {
                 return JSON.parse(status);
             }
         }
@@ -302,7 +339,7 @@ export class FungiblesController extends Controller {
             WHERE id=$1`,
             [Outpoint.fromString(id).toBuffer()],
         );
-        if(!token) {
+        if (!token) {
             throw new NotFound();
         }
         const result = Token.fromRow(token);
@@ -313,6 +350,37 @@ export class FungiblesController extends Controller {
         return result;
     }
 
+    @Get("id/{id}/holders")
+    public async getBsv20V2Holders(
+        @Path() id: string,
+        @Query() limit = 10,
+    ): Promise<{ address: string, amt: string }[]> {
+        const cacheKey = `id:${id}:holders`
+        this.setHeader('Cache-Control', 'max-age=300')
+        const status = await redis.get(cacheKey);
+        if (status) {
+            return JSON.parse(status).slice(0, limit);
+        }
+
+        const { rows } = await pool.query(`
+            SELECT pkhash, SUM(amt) as amt
+            FROM bsv20_txos
+            WHERE id=$1 AND status=1 AND spend='\\x'
+            GROUP BY pkhash
+            ORDER BY amt DESC
+            LIMIT 10`,
+            [Outpoint.fromString(id).toBuffer()],
+        );
+        const tokens = rows.map(r => ({
+            address: Address.fromPubKeyHashBuf(r.pkhash).toString(),
+            amt: r.amt,
+        }))
+        await redis.pipeline()
+            .set(cacheKey, JSON.stringify(tokens))
+            .expire(cacheKey, 1800)
+            .exec();
+        return tokens.slice(0, limit);
+    }
 
     @Get("market")
     public async getBsv20Market(
@@ -325,10 +393,10 @@ export class FungiblesController extends Controller {
     ): Promise<BSV20Txo[]> {
         let params: any[] = [];
         let where = `spend='\\x' AND listing=true `
-        if(id) {
+        if (id) {
             where += `AND id = $${params.push(Outpoint.fromString(id).toBuffer())}`
         }
-        if(tick) {
+        if (tick) {
             where += `AND tick = $${params.push(tick)}`
         }
         let sql = `SELECT *
@@ -341,10 +409,12 @@ export class FungiblesController extends Controller {
         const { rows } = await pool.query(sql, params)
         return rows.map(BSV20Txo.fromRow)
     }
+
+
 }
 
 class TokenBalance {
-    constructor(public tick?:string, public id?: string) {}
+    constructor(public tick?: string, public id?: string) { }
     all = new BalanceItem()
     listed = new BalanceItem()
 }

@@ -1070,6 +1070,59 @@
 				]
 			}
 		},
+		"/api/bsv20/tick/{tick}/holders": {
+			"get": {
+				"operationId": "GetBsv20TickHolders",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"properties": {
+											"amt": {
+												"type": "string"
+											},
+											"address": {
+												"type": "string"
+											}
+										},
+										"required": [
+											"amt",
+											"address"
+										],
+										"type": "object"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "tick",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 10,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
 		"/api/bsv20/id/{id}": {
 			"get": {
 				"operationId": "GetBsv20V2Stats",
@@ -1102,6 +1155,59 @@
 						"schema": {
 							"default": false,
 							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/id/{id}/holders": {
+			"get": {
+				"operationId": "GetBsv20V2Holders",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"properties": {
+											"amt": {
+												"type": "string"
+											},
+											"address": {
+												"type": "string"
+											}
+										},
+										"required": [
+											"amt",
+											"address"
+										],
+										"type": "object"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 10,
+							"format": "double",
+							"type": "number"
 						}
 					}
 				]
