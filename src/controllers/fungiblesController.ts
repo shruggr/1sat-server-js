@@ -49,6 +49,38 @@ export class FungiblesController extends Controller {
         return rows.map(Token.fromRow)
     }
 
+    @Get("outpoint/{outpoint}")
+    public async getBsv20Outpoint(
+        @Path() outpoint: string,
+    ): Promise<BSV20Txo> {
+        const op = Outpoint.fromString(outpoint)
+        let sql = `SELECT *
+            FROM bsv20_txos
+            WHERE txid=$1 AND vout=$2`
+        const params = [op.txid, op.vout]
+
+        // console.log(sql, params)
+        const { rows: [row] } = await pool.query(sql, params);
+        if(!row) {
+            throw new NotFound();
+        }
+        return BSV20Txo.fromRow(row);
+    }
+
+    @Get("spends/{txid}")
+    public async getBsv20Spends(
+        @Path() txid: string,
+    ): Promise<BSV20Txo[]> {
+        let sql = `SELECT *
+            FROM bsv20_txos
+            WHERE spend=$1`
+        const params = [Buffer.from(txid, 'hex')]
+
+        // console.log(sql, params)
+        const { rows } = await pool.query(sql, params);
+        return rows.map(row => BSV20Txo.fromRow(row));
+    }
+
     @Get("{address}/balance")
     public async getBalanceByAddress(
         @Path() address: string,
@@ -181,6 +213,29 @@ export class FungiblesController extends Controller {
         return rows.map((row: any) => BSV20Txo.fromRow(row));
     }
 
+    @Get("{address}/tick/{tick}/history")
+    public async getBsv20UtxoHistoryByTick(
+        @Path() address: string,
+        @Path() tick: string,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+        @Query() dir: SortDirection = SortDirection.DESC
+    ): Promise<BSV20Txo[]> {
+        const add = Address.fromString(address);
+        const params: any[] = [add.hashBuf, tick];
+        let sql = `SELECT *
+            FROM bsv20_txos
+            WHERE pkhash = $1 AND spend != '\\x' AND 
+                status=1 AND tick=$2
+            ORDER BY height ${dir}, idx ${dir}
+            LIMIT $${params.push(limit)}
+            OFFSET $${params.push(offset)}`
+
+        // console.log(sql, params)
+        const { rows } = await pool.query(sql, params);
+        return rows.map((row: any) => BSV20Txo.fromRow(row));
+    }
+
     @Get("{address}/id/{id}")
     public async getBsv20UtxosById(
         @Path() address: string,
@@ -194,6 +249,29 @@ export class FungiblesController extends Controller {
         let sql = `SELECT *
             FROM bsv20_txos
             WHERE pkhash = $1 AND spend = '\\x' AND 
+                status=1 AND id=$2
+            ORDER BY height ${dir}, idx ${dir}
+            LIMIT $${params.push(limit)}
+            OFFSET $${params.push(offset)}`
+
+        // console.log(sql, params)
+        const { rows } = await pool.query(sql, params);
+        return rows.map((row: any) => BSV20Txo.fromRow(row));
+    }
+
+    @Get("{address}/id/{id}/history")
+    public async getBsv20UtxoHistoryById(
+        @Path() address: string,
+        @Path() id: string,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+        @Query() dir: SortDirection = SortDirection.DESC
+    ): Promise<BSV20Txo[]> {
+        const add = Address.fromString(address);
+        const params: any[] = [add.hashBuf, Outpoint.fromString(id).toBuffer()];
+        let sql = `SELECT *
+            FROM bsv20_txos
+            WHERE pkhash = $1 AND spend != '\\x' AND 
                 status=1 AND id=$2
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
@@ -388,29 +466,93 @@ export class FungiblesController extends Controller {
         @Query() dir: SortDirection = SortDirection.desc,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
+        @Query() type: 'v1' | 'v2' | 'all' = 'all',
         @Query() id?: string,
         @Query() tick?: string,
     ): Promise<BSV20Txo[]> {
         let params: any[] = [];
-        let where = `spend='\\x' AND listing=true `
+        let where = `t.spend='\\x' AND t.listing=true AND t.status=1 `
         if (id) {
-            where += `AND id = $${params.push(Outpoint.fromString(id).toBuffer())}`
+            where += `AND t.id = $${params.push(Outpoint.fromString(id).toBuffer())} `
         }
         if (tick) {
-            where += `AND tick = $${params.push(tick)}`
+            where += `AND t.tick = $${params.push(tick.toUpperCase())} `
         }
-        let sql = `SELECT *
-            FROM bsv20_txos
+
+        // const fields string[] = ['t.*']
+        // switch(type) {
+        //     case 'all':
+        //         fields.push('b2.sym', 'b2.icon', 'b2.dec as b2dec', 'b1.dec b1dec')
+        //         break;
+        //     case 'v1':
+        //         break;
+        //     case 'v2':
+        //         break;
+        // }
+        // if(type ==)
+        if(type == 'v1') {
+            where += `AND t.tick != '' `
+        } else if(type == 'v2') {
+            where += `AND t.id != '\\x' `
+        }
+
+        let sql = `SELECT t.*, b2.sym, b2.icon, b2.dec as b2dec, b1.dec b1dec
+            FROM bsv20_txos t
+            LEFT JOIN bsv20 b1 ON b1.tick=t.tick AND b1.status=1 AND b1.tick!=''
+            LEFT JOIN bsv20_v2 b2 ON b2.id=t.id
             WHERE ${where}
             ORDER BY ${sort} ${dir} 
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`
 
+        // console.log(sql, params);
         const { rows } = await pool.query(sql, params)
         return rows.map(BSV20Txo.fromRow)
     }
 
+    @Get("market/sales")
+    public async getBsv20Sales(
+        @Query() dir: SortDirection = SortDirection.desc,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+        @Query() type: 'v1' | 'v2' | 'all' = 'all',
+        @Query() id?: string,
+        @Query() tick?: string,
+        @Query() pending = false,
+    ): Promise<BSV20Txo[]> {
+        let params: any[] = [];
+        let where = 't.sale=true '
+        if (pending) {
+            where += 'AND t.status IN (0,1) '
+        } else {
+            where += 'AND t.status = 1 '
+        }
 
+        if(type == 'v1') {
+            where += "AND t.tick != '' "
+        } else if(type == 'v2') {
+            where += "AND t.id != '\\x' "
+        }
+        if (id) {
+            where += `AND t.id = $${params.push(Outpoint.fromString(id).toBuffer())} `
+        }
+        if (tick) {
+            where += `AND t.tick = $${params.push(tick.toUpperCase())} `
+        }
+
+        let sql = `SELECT t.*, b2.sym, b2.icon, b2.dec as b2dec, b1.dec b1dec
+            FROM bsv20_txos t
+            LEFT JOIN bsv20 b1 ON b1.tick=t.tick AND b1.status=1 AND b1.tick!=''
+            LEFT JOIN bsv20_v2 b2 ON b2.id=t.id
+            WHERE ${where}
+            ORDER BY t.spend_height ${dir}, t.spend_idx ${dir}
+            LIMIT $${params.push(limit)}
+            OFFSET $${params.push(offset)}`
+
+        console.log(sql, params);
+        const { rows } = await pool.query(sql, params)
+        return rows.map(BSV20Txo.fromRow)
+    }
 }
 
 class TokenBalance {

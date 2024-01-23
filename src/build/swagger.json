@@ -109,6 +109,104 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"BSV20Txo": {
+				"properties": {
+					"txid": {
+						"type": "string",
+						"default": ""
+					},
+					"vout": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"outpoint": {
+						"$ref": "#/components/schemas/Outpoint"
+					},
+					"owner": {
+						"type": "string"
+					},
+					"script": {
+						"type": "string"
+					},
+					"spend": {
+						"type": "string"
+					},
+					"spendHeight": {
+						"type": "number",
+						"format": "double"
+					},
+					"spendIdx": {
+						"type": "number",
+						"format": "double"
+					},
+					"height": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"idx": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"op": {
+						"type": "string",
+						"default": ""
+					},
+					"tick": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					},
+					"sym": {
+						"type": "string"
+					},
+					"dec": {
+						"type": "number",
+						"format": "double"
+					},
+					"icon": {
+						"type": "string"
+					},
+					"amt": {
+						"type": "string",
+						"default": ""
+					},
+					"status": {
+						"$ref": "#/components/schemas/Bsv20Status"
+					},
+					"reason": {
+						"type": "string",
+						"default": ""
+					},
+					"listing": {
+						"type": "boolean",
+						"default": false
+					},
+					"price": {
+						"type": "number",
+						"format": "double"
+					},
+					"pricePer": {
+						"type": "number",
+						"format": "double"
+					},
+					"payout": {
+						"type": "string"
+					},
+					"pricePerUnit": {
+						"type": "number",
+						"format": "double"
+					},
+					"sale": {
+						"type": "boolean"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
 			"TokenBalanceResponse": {
 				"properties": {
 					"listed": {
@@ -163,83 +261,6 @@
 					"all"
 				],
 				"type": "object"
-			},
-			"BSV20Txo": {
-				"properties": {
-					"txid": {
-						"type": "string",
-						"default": ""
-					},
-					"vout": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"outpoint": {
-						"$ref": "#/components/schemas/Outpoint"
-					},
-					"owner": {
-						"type": "string"
-					},
-					"script": {
-						"type": "string"
-					},
-					"spend": {
-						"type": "string"
-					},
-					"height": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"idx": {
-						"type": "number",
-						"format": "double",
-						"default": 0
-					},
-					"op": {
-						"type": "string",
-						"default": ""
-					},
-					"tick": {
-						"type": "string"
-					},
-					"id": {
-						"type": "string"
-					},
-					"amt": {
-						"type": "string",
-						"default": ""
-					},
-					"status": {
-						"$ref": "#/components/schemas/Bsv20Status"
-					},
-					"reason": {
-						"type": "string",
-						"default": ""
-					},
-					"listing": {
-						"type": "boolean",
-						"default": false
-					},
-					"price": {
-						"type": "number",
-						"format": "double"
-					},
-					"pricePer": {
-						"type": "number",
-						"format": "double"
-					},
-					"payout": {
-						"type": "string"
-					},
-					"pricePerUnit": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"type": "object",
-				"additionalProperties": false
 			},
 			"SortDirection": {
 				"enum": [
@@ -331,6 +352,9 @@
 					},
 					"list": {
 						"properties": {
+							"sale": {
+								"type": "boolean"
+							},
 							"payout": {
 								"type": "string"
 							},
@@ -801,6 +825,65 @@
 				]
 			}
 		},
+		"/api/bsv20/outpoint/{outpoint}": {
+			"get": {
+				"operationId": "GetBsv20Outpoint",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BSV20Txo"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "outpoint",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/spends/{txid}": {
+			"get": {
+				"operationId": "GetBsv20Spends",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "txid",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/bsv20/{address}/balance": {
 			"get": {
 				"operationId": "GetBalanceByAddress",
@@ -899,9 +982,143 @@
 				]
 			}
 		},
+		"/api/bsv20/{address}/tick/{tick}/history": {
+			"get": {
+				"operationId": "GetBsv20UtxoHistoryByTick",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "tick",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					}
+				]
+			}
+		},
 		"/api/bsv20/{address}/id/{id}": {
 			"get": {
 				"operationId": "GetBsv20UtxosById",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/{address}/id/{id}/history": {
+			"get": {
+				"operationId": "GetBsv20UtxoHistoryById",
 				"responses": {
 					"200": {
 						"description": "Ok",
@@ -1277,6 +1494,20 @@
 					},
 					{
 						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"default": "all",
+							"type": "string",
+							"enum": [
+								"v1",
+								"v2",
+								"all"
+							]
+						}
+					},
+					{
+						"in": "query",
 						"name": "id",
 						"required": false,
 						"schema": {
@@ -1289,6 +1520,96 @@
 						"required": false,
 						"schema": {
 							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/market/sales": {
+			"get": {
+				"operationId": "GetBsv20Sales",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"default": "all",
+							"type": "string",
+							"enum": [
+								"v1",
+								"v2",
+								"all"
+							]
+						}
+					},
+					{
+						"in": "query",
+						"name": "id",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "tick",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "pending",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
 						}
 					}
 				]

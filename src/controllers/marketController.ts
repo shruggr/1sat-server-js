@@ -61,7 +61,13 @@ export class MarketController extends Controller {
     public async searchListings(search: MarketSearch): Promise<Txo[]> {
         const { sort, dir, type, data, text, minPrice, maxPrice, limit, offset } = search;
         const params: any[] = [];
-        let sql = [`SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
+
+        // let sql = [`SELECT t.*, l.data as odata, l.oheight, l.oidx, l.sale
+        //     FROM listings l
+        //     JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
+        //     WHERE l.spend = '\\x'`];
+
+        let sql = [`SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout, l.sale
             FROM listings l
             JOIN txos t ON t.txid=l.txid AND t.vout=l.vout
             JOIN txos o ON o.outpoint = t.origin
@@ -107,7 +113,7 @@ export class MarketController extends Controller {
         params.push(offset);
         sql.push(`OFFSET $${params.length}`)
         
-        console.log(sql.join(' '), params)
+        // console.log(sql.join(' '), params)
         const { rows } = await pool.query(sql.join(' '), params);
         return rows.map((row: any) => Txo.fromRow(row));
     }

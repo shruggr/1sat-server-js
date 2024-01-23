@@ -1,8 +1,10 @@
 import { JungleBusClient } from "@gorillapool/js-junglebus";
-import { Tx } from '@ts-bitcoin/core';
+import { Tx, TxOut } from '@ts-bitcoin/core';
 import createError, { NotFound } from 'http-errors';
 import { Redis } from "ioredis";
 import { Pool } from 'pg';
+import { Outpoint } from "./models/outpoint";
+// import {PreviousOutput} from 'bitcoin-ef/dist/typescript-npm-package.esm'
 
 const { POSTGRES_READ, BITCOIN_HOST, BITCOIN_PORT } = process.env;
 export const jb = new JungleBusClient('https://junglebus.gorillapool.io');
@@ -43,4 +45,25 @@ export async function loadTx(txid: string): Promise<Tx> {
         throw new NotFound(`Transaction ${txid} not found`);
     }
     return Tx.fromBuffer(rawtx);
+}
+
+export async function loadTxo(op: Outpoint): Promise<any> {
+    let rawtx = await redis.getBuffer(op.txid.toString('hex'));
+    if (rawtx) {
+        const tx = Tx.fromBuffer(rawtx);
+        return {
+            lockingScript: tx.txOuts[op.vout].script.toBuffer(),
+            satoshis: tx.txOuts[op.vout].valueBn.toNumber()
+        }
+    }
+    const url = `http://junglebus.gorillapool.io/v1/txo/get/${op.toString()}`
+    const resp = await fetch(url);
+    if(!resp.ok) {
+        throw createError(resp.status, resp.statusText)
+    }
+    const txOut = TxOut.fromBuffer(Buffer.from(await resp.arrayBuffer()));
+    return {
+        lockingScript: txOut.script.toBuffer(),
+        satoshis: txOut.valueBn.toNumber()
+    }
 }

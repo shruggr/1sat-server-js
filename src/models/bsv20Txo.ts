@@ -9,11 +9,16 @@ export class BSV20Txo {
     owner?: string;
     script?: string;
     spend?: string;
+    spendHeight?: number;
+    spendIdx?: number;
     height: number = 0;
     idx: number = 0;
     op? = '';
     tick?: string;
     id?: string;
+    sym?: string;
+    dec?: number;
+    icon?: string;
     amt: string = ''
     status: Bsv20Status = 0;
     reason? = '';
@@ -22,6 +27,8 @@ export class BSV20Txo {
     pricePer?: number;
     payout?: string;
     pricePerUnit?: number;
+    sale?: boolean;
+
 
     static fromRow(row: any) {
         const txo = new BSV20Txo();
@@ -30,11 +37,16 @@ export class BSV20Txo {
         txo.outpoint = new Outpoint(row.txid, row.vout);
         txo.owner = row.pkhash && Address.fromPubKeyHashBuf(row.pkhash).toString();
         txo.spend = row.spend?.toString('hex');
+        txo.spendHeight = row.spend_height;
+        txo.spendIdx = row.spend_idx;
         txo.height = row.height;
         txo.idx = row.idx;
         txo.op = row.op;
         txo.tick = row.tick;
         txo.id = row.id && Outpoint.fromBuffer(row.id);
+        txo.sym = row.sym;
+        txo.icon = row.icon && Outpoint.fromBuffer(row.icon);
+        txo.dec = Number.isInteger(row.b1dec) ? row.b1dec : row.b2dec;
         txo.amt = row.amt;
         txo.status = row.status;
         txo.reason = row.reason;
@@ -43,6 +55,7 @@ export class BSV20Txo {
         txo.pricePer = row.price_per_token
         txo.payout = row.payout && row.payout.toString('base64')
         txo.script = row.script && row.script.toString('base64')
+        txo.sale = !!row.sale
         return txo;
     }
 }

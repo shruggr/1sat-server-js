@@ -41,6 +41,7 @@ export interface TxoData {
     list?: {
         price?: number;
         payout?: string;
+        sale?: boolean;
     };
     bsv20?: {
         id?: Outpoint;
@@ -138,6 +139,9 @@ export class Txo {
             outpoint: Outpoint.fromBuffer(row.origin),
             data: row.odata ? row.odata : undefined,
             num: row.oheight ? `${row.oheight.toString().padStart(7, '0')}:${row.oidx}:${row.vout}` : undefined,
+        }
+        if(row.sale !== undefined && txo.data?.list) {
+            txo.data.list.sale = row.sale;
         }
         return txo;
     }
