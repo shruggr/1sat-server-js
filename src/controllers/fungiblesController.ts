@@ -196,7 +196,8 @@ export class FungiblesController extends Controller {
         @Path() tick: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
-        @Query() dir: SortDirection = SortDirection.DESC
+        @Query() dir: SortDirection = SortDirection.DESC,
+        @Query() listing = false
     ): Promise<BSV20Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf, tick];
@@ -204,6 +205,7 @@ export class FungiblesController extends Controller {
             FROM bsv20_txos
             WHERE pkhash = $1 AND spend = '\\x' AND 
                 status=1 AND tick=$2
+                ${listing ? 'AND listing=true' : ''}
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`
@@ -219,7 +221,8 @@ export class FungiblesController extends Controller {
         @Path() tick: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
-        @Query() dir: SortDirection = SortDirection.DESC
+        @Query() dir: SortDirection = SortDirection.DESC,
+        @Query() listing = false
     ): Promise<BSV20Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf, tick];
@@ -227,6 +230,7 @@ export class FungiblesController extends Controller {
             FROM bsv20_txos
             WHERE pkhash = $1 AND spend != '\\x' AND 
                 status=1 AND tick=$2
+                ${listing ? 'AND listing=true' : ''}
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`
@@ -242,7 +246,8 @@ export class FungiblesController extends Controller {
         @Path() id: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
-        @Query() dir: SortDirection = SortDirection.DESC
+        @Query() dir: SortDirection = SortDirection.DESC,
+        @Query() listing = false
     ): Promise<BSV20Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf, Outpoint.fromString(id).toBuffer()];
@@ -250,6 +255,7 @@ export class FungiblesController extends Controller {
             FROM bsv20_txos
             WHERE pkhash = $1 AND spend = '\\x' AND 
                 status=1 AND id=$2
+                ${listing ? 'AND listing=true' : ''}
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`
@@ -265,7 +271,8 @@ export class FungiblesController extends Controller {
         @Path() id: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
-        @Query() dir: SortDirection = SortDirection.DESC
+        @Query() dir: SortDirection = SortDirection.DESC,
+        @Query() listing = false
     ): Promise<BSV20Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf, Outpoint.fromString(id).toBuffer()];
@@ -273,6 +280,7 @@ export class FungiblesController extends Controller {
             FROM bsv20_txos
             WHERE pkhash = $1 AND spend != '\\x' AND 
                 status=1 AND id=$2
+                ${listing ? 'AND listing=true' : ''}
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`
@@ -404,13 +412,13 @@ export class FungiblesController extends Controller {
                 return JSON.parse(status);
             }
         }
-        const { rows: [token] } = await pool.query(`SELECT b.*, a.accounts, p.pending
+        const { rows: [token] } = await pool.query(`SELECT b.*, a.accounts, p.pending_ops
             FROM bsv20_v2 b, (
                 SELECT COUNT(DISTINCT pkhash) as accounts 
                 FROM bsv20_txos 
                 WHERE spend = '\\x' AND id=$1 AND status=1
             ) a, (
-                SELECT COUNT(1) as pending
+                SELECT COUNT(1) as pending_ops
                 FROM bsv20_txos
                 WHERE id=$1 AND status=0 AND op='transfer'
             ) p

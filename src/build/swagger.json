@@ -978,6 +978,15 @@
 						"schema": {
 							"$ref": "#/components/schemas/SortDirection"
 						}
+					},
+					{
+						"in": "query",
+						"name": "listing",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
 					}
 				]
 			}
@@ -1044,6 +1053,15 @@
 						"required": false,
 						"schema": {
 							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "listing",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
 						}
 					}
 				]
@@ -1112,6 +1130,15 @@
 						"schema": {
 							"$ref": "#/components/schemas/SortDirection"
 						}
+					},
+					{
+						"in": "query",
+						"name": "listing",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
 					}
 				]
 			}
@@ -1178,6 +1205,15 @@
 						"required": false,
 						"schema": {
 							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "listing",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
 						}
 					}
 				]
