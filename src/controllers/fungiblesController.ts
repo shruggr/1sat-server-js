@@ -8,6 +8,7 @@ import { Token } from '../models/token';
 import { SortDirection } from '../models/sort-direction';
 import { Bsv20Status } from '../models/txo';
 
+const includeThreshold = 10000000
 @Route("api/bsv20")
 export class FungiblesController extends Controller {
     @Get("")
@@ -19,10 +20,10 @@ export class FungiblesController extends Controller {
         @Query() included = true,
     ): Promise<Token[]> {
 
-        const { rows } = await pool.query(`SELECT b.*, CASE WHEN s.tick != '' THEN true ELSE false END as included
+        const { rows } = await pool.query(`SELECT b.*, b.fund_balance>=${includeThreshold} as included
             FROM bsv20  b
-            ${included ? '' : 'LEFT'} JOIN bsv20_subs s ON s.tick = b.tick
             WHERE b.status = 1 and b.tick != ''
+            ${included ? `AND b.fund_balance>=${includeThreshold}` : ''}
             ORDER BY b.${sort} ${dir}, b.idx ${dir}
             LIMIT $1 OFFSET $2`,
             [limit, offset],
@@ -38,9 +39,9 @@ export class FungiblesController extends Controller {
         @Query() dir: 'asc' | 'desc' = 'desc',
         @Query() included = true,
     ): Promise<Token[]> {
-        const { rows } = await pool.query(`SELECT b.*
+        const { rows } = await pool.query(`SELECT b.*, b.fund_balance>=${includeThreshold} as included
             FROM bsv20_v2 b
-            ${included ? 'WHERE fund_total > 0' : ''}
+            ${included ? `WHERE fund_total>=${includeThreshold}` : ''}
             ORDER BY ${sort} ${dir}
             LIMIT $1 OFFSET $2`,
             [limit, offset],
@@ -61,7 +62,7 @@ export class FungiblesController extends Controller {
 
         // console.log(sql, params)
         const { rows: [row] } = await pool.query(sql, params);
-        if(!row) {
+        if (!row) {
             throw new NotFound();
         }
         return BSV20Txo.fromRow(row);
@@ -324,37 +325,74 @@ export class FungiblesController extends Controller {
         tick = tick.toUpperCase();
         const cacheKey = `tick:${tick}`
         if (!refresh) {
-            this.setHeader('Cache-Control', 'max-age=3600')
+            // this.setHeader('Cache-Control', 'max-age=3600')
             const status = await redis.get(cacheKey);
             if (status) {
                 return JSON.parse(status);
             }
         }
-        const { rows: [token] } = await pool.query(`SELECT b.*,
-            a.accounts, p.pending, po.pending_ops,
-            CASE WHEN s.included > 0 THEN true ELSE false END as included
-            FROM bsv20 b, (
-                SELECT COUNT(DISTINCT pkhash) as accounts 
-                FROM bsv20_txos 
-                WHERE spend = '\\x' AND tick=$1 AND status=1
-            ) a, (
-                SELECT COALESCE(SUM(amt), 0) as pending
-                FROM bsv20_txos m
-                WHERE op='mint' AND tick=$1 AND status=0
-            ) p, (
-                SELECT COUNT(1) as included FROM bsv20_subs WHERE tick=$1
-            ) s, (
-                SELECT COUNT(1) as pending_ops
-                FROM bsv20_txos
-                WHERE tick=$1 AND status=0
-            ) po
-            WHERE b.status = 1 AND tick=$1`,
+        // const { rows: [token] } = await pool.query(`SELECT b.*,
+        //     a.accounts, p.pending, po.pending_ops, b.fund_total>=${includeThreshold} as included
+        //     FROM bsv20 b, (
+        //         SELECT COUNT(DISTINCT pkhash) as accounts 
+        //         FROM bsv20_txos 
+        //         WHERE spend = '\\x' AND tick=$1 AND status=1
+        //     ) a, (
+        //         SELECT COALESCE(SUM(amt), 0) as pending
+        //         FROM bsv20_txos m
+        //         WHERE op='mint' AND tick=$1 AND status=0
+        //     ) p, (
+        //         SELECT COUNT(1) as pending_ops
+        //         FROM bsv20v1_txns
+        //         WHERE tick=$1 AND processed=false
+        //     ) po
+        //     WHERE b.status = 1 AND tick=$1`,
+        //     [tick],
+        // );
+
+        const { rows: [token] } = await pool.query(`
+            SELECT *, fund_total>=${includeThreshold} as included
+            FROM bsv20
+            WHERE status = 1 AND tick=$1`,
             [tick],
         );
         if (!token) {
             throw new NotFound();
         }
-        const result = Token.fromRow(token);
+        const [
+            { rows: [accounts] },
+            { rows: [pendingAmt] },
+            { rows: [pendingOps] },
+            { rows: [pendingTxouts] },
+        ] = await Promise.all([
+            pool.query(`SELECT COUNT(DISTINCT pkhash) as value 
+                FROM bsv20_txos 
+                WHERE spend = '\\x' AND tick=$1 AND status=1`,
+                [tick],
+            ),
+            pool.query(`SELECT COALESCE(SUM(amt), 0) as value
+                FROM bsv20_txos
+                WHERE op='mint' AND tick=$1 AND status=0`,
+                [tick],
+            ),
+            pool.query(`SELECT COUNT(1) as value
+                FROM bsv20_txos
+                WHERE tick=$1 AND status=0`,
+                [tick],
+            ),
+            pool.query(`SELECT COUNT(1) as value
+                FROM bsv20v1_txns
+                WHERE tick=$1 AND processed=false`,
+                [tick],
+            ),
+        ]);
+
+        const result = Token.fromRow({
+            ...token,
+            accounts: parseInt(accounts.value, 10),
+            pending: pendingAmt.value,
+            pending_ops: parseInt(pendingOps.value, 10) + parseInt(pendingTxouts.value, 10)
+        });
         await redis.pipeline()
             .set(cacheKey, JSON.stringify(result))
             .expire(cacheKey, 1800)
@@ -373,7 +411,7 @@ export class FungiblesController extends Controller {
         tick = tick.toUpperCase();
         const cacheKey = `tick:${tick}:holders`
 
-        this.setHeader('Cache-Control', 'max-age=3600')
+        // this.setHeader('Cache-Control', 'max-age=3600')
         const status = await redis.get(cacheKey);
         if (status) {
             return JSON.parse(status).slice(0, limit);
@@ -382,10 +420,9 @@ export class FungiblesController extends Controller {
         const { rows } = await pool.query(`
             SELECT pkhash, SUM(amt) as amt
             FROM bsv20_txos
-            WHERE tick=$1 AND status=1 AND spend='\\x'
+            WHERE tick=$1 AND status=1 AND spend='\\x' and pkhash != '\\x'
             GROUP BY pkhash
-            ORDER BY amt DESC
-            LIMIT 10`,
+            ORDER BY amt DESC`,
             [tick],
         );
         const tokens = rows.map(r => ({
@@ -412,23 +449,56 @@ export class FungiblesController extends Controller {
                 return JSON.parse(status);
             }
         }
-        const { rows: [token] } = await pool.query(`SELECT b.*, a.accounts, p.pending_ops
-            FROM bsv20_v2 b, (
-                SELECT COUNT(DISTINCT pkhash) as accounts 
-                FROM bsv20_txos 
-                WHERE spend = '\\x' AND id=$1 AND status=1
-            ) a, (
-                SELECT COUNT(1) as pending_ops
-                FROM bsv20_txos
-                WHERE id=$1 AND status=0 AND op='transfer'
-            ) p
+        // const { rows: [token] } = await pool.query(`
+        //     SELECT b.*, a.accounts, p.pending_ops, b.fund_total>=${includeThreshold} as included
+        //     FROM bsv20_v2 b, (
+        //         SELECT COUNT(DISTINCT pkhash) as accounts 
+        //         FROM bsv20_txos 
+        //         WHERE spend = '\\x' AND id=$1 AND status=1
+        //     ) a, (
+        //         SELECT COUNT(1) as pending_ops
+        //         FROM bsv20v2_txns
+        //         WHERE id=$1 AND processed=false
+        //     ) p
+        //     WHERE id=$1`,
+        //     [Outpoint.fromString(id).toBuffer()],
+        // );
+        const tokenId = Outpoint.fromString(id).toBuffer();
+        const { rows: [token] } = await pool.query(`
+            SELECT *, fund_total>=${includeThreshold} as included
+            FROM bsv20_v2
             WHERE id=$1`,
-            [Outpoint.fromString(id).toBuffer()],
+            [tokenId],
         );
         if (!token) {
             throw new NotFound();
         }
-        const result = Token.fromRow(token);
+        const [
+            { rows: [accounts] },
+            { rows: [pendingOps] },
+            { rows: [pendingTxouts] },
+        ] = await Promise.all([
+            pool.query(`SELECT COUNT(DISTINCT pkhash) as value 
+                FROM bsv20_txos 
+                WHERE spend = '\\x' AND id=$1 AND status=1`,
+                [tokenId],
+            ),
+            pool.query(`SELECT COUNT(1) as value
+                FROM bsv20_txos
+                WHERE id=$1 AND status=0`,
+                [tokenId],
+            ),
+            pool.query(`SELECT COUNT(1) as value
+                FROM bsv20v2_txns
+                WHERE id=$1 AND processed=false`,
+                [tokenId],
+            ),
+        ]);
+        const result = Token.fromRow({
+            ...token,
+            accounts: parseInt(accounts.value, 10),
+            pending_ops: parseInt(pendingOps.value, 10) + parseInt(pendingTxouts.value, 10)
+        });
         await redis.pipeline()
             .set(cacheKey, JSON.stringify(result))
             .expire(cacheKey, 1800)
@@ -498,9 +568,9 @@ export class FungiblesController extends Controller {
         //         break;
         // }
         // if(type ==)
-        if(type == 'v1') {
+        if (type == 'v1') {
             where += `AND t.tick != '' `
-        } else if(type == 'v2') {
+        } else if (type == 'v2') {
             where += `AND t.id != '\\x' `
         }
 
@@ -536,9 +606,9 @@ export class FungiblesController extends Controller {
             where += 'AND t.status = 1 '
         }
 
-        if(type == 'v1') {
+        if (type == 'v1') {
             where += "AND t.tick != '' "
-        } else if(type == 'v2') {
+        } else if (type == 'v2') {
             where += "AND t.id != '\\x' "
         }
         if (id) {
