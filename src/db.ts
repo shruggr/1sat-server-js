@@ -6,8 +6,8 @@ import { Pool } from 'pg';
 import { Outpoint } from "./models/outpoint";
 // import {PreviousOutput} from 'bitcoin-ef/dist/typescript-npm-package.esm'
 
-const { POSTGRES_READ, BITCOIN_HOST, BITCOIN_PORT } = process.env;
-export const jb = new JungleBusClient('https://junglebus.gorillapool.io');
+const { POSTGRES_READ, BITCOIN_HOST, BITCOIN_PORT, JUNGLEBUS } = process.env;
+export const jb = new JungleBusClient(JUNGLEBUS || 'http://junglebus.gorillapool.io');
 export const redis = new Redis();
 console.log("POSTGRES", POSTGRES_READ)
 export const pool = new Pool({ connectionString: POSTGRES_READ});
@@ -16,7 +16,7 @@ export async function loadTx(txid: string): Promise<Tx> {
     let rawtx = await redis.getBuffer(txid);
     if (!rawtx) {
         try {
-            const url = `http://junglebus.gorillapool.io/v1/transaction/get/${txid}.bin`
+            const url = `${JUNGLEBUS}/v1/transaction/get/${txid}/bin`
             const resp = await fetch(url);
             if(!resp.ok) {
                 throw createError(resp.status, resp.statusText)
@@ -56,7 +56,7 @@ export async function loadTxo(op: Outpoint): Promise<any> {
             satoshis: tx.txOuts[op.vout].valueBn.toNumber()
         }
     }
-    const url = `http://junglebus.gorillapool.io/v1/txo/get/${op.toString()}`
+    const url = `${JUNGLEBUS}/v1/txo/get/${op.toString()}`
     const resp = await fetch(url);
     if(!resp.ok) {
         throw createError(resp.status, resp.statusText)
