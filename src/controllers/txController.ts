@@ -2,13 +2,26 @@ import * as createError from "http-errors";
 import { Redis } from "ioredis";
 import { Body, BodyProp, Controller, Get, Path, Post, Route } from "tsoa";
 import { Tx } from "@ts-bitcoin/core";
+import { loadTxo } from "../db";
+import { Outpoint } from "../models/outpoint";
 
-const { ARC, ARC_TOKEN, NETWORK, TAAL_TOKEN } = process.env;
-const pubClient = new Redis();
+const {StandardToExtended} = require('bitcoin-ef')
+
+let { ARC, ARC_TOKEN, NETWORK, TAAL_TOKEN, REDIS } = process.env;
+
+const rparts = (REDIS || '').split(':')
+const pubClient = new Redis({
+    port: rparts[1] ? parseInt(rparts[1]) : 6379,
+    host: rparts[0],
+});
+
 export interface PreviousOutput {
     lockingScript: string,
     satoshis: number
 }
+
+// ARC_TOKEN='mainnet_3c4ab60e633fa8524272900e5603ca7c'
+// ARC='https://arc.taal.com'
 
 @Route("api/tx")
 export class TxController extends Controller {
@@ -31,50 +44,50 @@ export class TxController extends Controller {
     async doBroadcast(txbuf: Buffer): Promise<string> {
         const tx = Tx.fromBuffer(txbuf);
         let txid = tx.id();
-        console.log('Broadcasting TX:', txid); //, tx.toHex());
-
+        console.log('Broadcasting TX:', txid, tx.toHex());
+        await pubClient.set(txid, txbuf)
         try {
             if (NETWORK == 'testnet') {
                 try {
-                    await this.broadcastWOC(txbuf);
-                    this.broadcastArc(txbuf).catch(console.error)
+                    await this.broadcastWOC(tx);
+                    this.broadcastArc(tx).catch(console.error)
                 } catch (e: any) {
                     if (e.status && e.status >= 300 && e.status < 500) {
                         throw e;
                     }
-                    await this.broadcastArc(txbuf);
+                    await this.broadcastArc(tx);
                 }
             } else if (TAAL_TOKEN) {
                 try {
-                    await this.broadcastTaal(txbuf);
-                    this.broadcastArc(txbuf).catch(console.error)
+                    await this.broadcastTaal(tx);
+                    this.broadcastArc(tx).catch(console.error)
                 } catch (e: any) {
                     if (e.status && e.status >= 300 && e.status < 500) {
                         throw e;
                     }
-                    await this.broadcastArc(txbuf);
+                    await this.broadcastArc(tx);
                 }
             } else {
-                await this.broadcastArc(txbuf);
+                await this.broadcastArc(tx);
             }
 
-            pubClient.publish('submit', txid);
+            // await pubClient.set(txid, txbuf)
+            pubClient.publish('broadcast', tx.toBuffer().toString('base64'));
             return txid;
         } catch (e: any) {
             console.error("Broadcast Error:", e)
             throw e;
         }
-
     }
 
-    async broadcastWOC(txbuf: Buffer) {
+    async broadcastWOC(tx: Tx) {
         const net = NETWORK == 'testnet' ? 'test' : 'main'
         const resp = await fetch(`https://api.whatsonchain.com/v1/bsv/${net}/tx/raw`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({txhex: txbuf.toString('hex')})
+            body: JSON.stringify({ txhex: tx.toHex() })
         });
 
         const respText = await resp.text();
@@ -83,7 +96,7 @@ export class TxController extends Controller {
             try {
                 // const { status, error } = JSON.parse(respText);
                 // if (!error.includes('txn-already-known')) {
-                    throw createError(resp.status || 500, `Broadcast failed: ${respText}}`);
+                throw createError(resp.status || 500, `Broadcast failed: ${respText}}`);
                 // }
             } catch (e: any) {
                 throw e;
@@ -91,14 +104,14 @@ export class TxController extends Controller {
         }
     }
 
-    async broadcastTaal(txbuf: Buffer) {
+    async broadcastTaal(tx: Tx) {
         const resp = await fetch('https://api.taal.com/api/v1/broadcast', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/octet-stream',
                 'Authorization': TAAL_TOKEN!
             },
-            body: txbuf
+            body: tx.toBuffer()
         });
 
         const respText = await resp.text();
@@ -115,9 +128,24 @@ export class TxController extends Controller {
         }
     }
 
-    async broadcastArc(txbuf: Buffer) {
+    async broadcastArc(tx: Tx) {
+        let txbuf: Buffer
+        try {
+            const parents = await Promise.all(tx.txIns.map(async txIn => {
+                const inTxid = Buffer.from(txIn.txHashBuf).reverse()
+                const op = new Outpoint(inTxid, txIn.txOutNum)
+                return loadTxo(op)
+            }))
+            txbuf = StandardToExtended(tx.toBuffer(), parents) as Buffer
+            // console.error("ARC EXT:", txbuf.toString('hex'), parents)
+        } catch (e) {
+            console.error("Error loading txos", tx.id)
+            txbuf = tx.toBuffer();
+        }
+
         const headers: { [key: string]: string } = {
             'Content-Type': 'application/octet-stream',
+            // 'X-SkipTxValidation': '1',
             'X-WaitForStatus': '7'
         }
         if (ARC_TOKEN) {
@@ -129,7 +157,7 @@ export class TxController extends Controller {
             body: txbuf,
         })
         const respText = await resp.text();
-        console.log("ARC Response:", resp.status, respText);
+        console.log("ARC Response:", resp.status, tx.id(), respText);
         const result = JSON.parse(respText)
         if (result.status != 200 || result.detail == 'REJECTED') {
             throw createError(result.status || 500, `Broadcast failed: ${result.detail} ${result.extraInfo}`);

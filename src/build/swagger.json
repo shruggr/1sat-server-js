@@ -6,6 +6,9 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
+			"Outpoint": {
+				"type": "string"
+			},
 			"Bsv20Status": {
 				"enum": [
 					-1,
@@ -17,21 +20,34 @@
 			"Token": {
 				"properties": {
 					"txid": {
-						"type": "string"
+						"type": "string",
+						"default": ""
 					},
 					"vout": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"default": 0
 					},
 					"height": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"default": 0
 					},
 					"idx": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"default": 0
 					},
 					"tick": {
+						"type": "string"
+					},
+					"id": {
+						"$ref": "#/components/schemas/Outpoint"
+					},
+					"sym": {
+						"type": "string"
+					},
+					"icon": {
 						"type": "string"
 					},
 					"max": {
@@ -43,6 +59,9 @@
 					"dec": {
 						"type": "number",
 						"format": "double"
+					},
+					"amt": {
+						"type": "string"
 					},
 					"supply": {
 						"type": "string"
@@ -58,25 +77,130 @@
 						"format": "double"
 					},
 					"pending": {
+						"type": "string"
+					},
+					"pendingOps": {
+						"type": "number",
+						"format": "double"
+					},
+					"included": {
+						"type": "boolean",
+						"default": false
+					},
+					"fundAddress": {
+						"type": "string"
+					},
+					"fundTotal": {
+						"type": "number",
+						"format": "double"
+					},
+					"fundUsed": {
+						"type": "number",
+						"format": "double"
+					},
+					"fundBalance": {
 						"type": "number",
 						"format": "double"
 					}
 				},
-				"required": [
-					"txid",
-					"vout",
-					"height",
-					"idx",
-					"tick",
-					"max",
-					"lim",
-					"dec",
-					"supply",
-					"status",
-					"available",
-					"pctMinted",
-					"pending"
-				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BSV20Txo": {
+				"properties": {
+					"txid": {
+						"type": "string",
+						"default": ""
+					},
+					"vout": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"outpoint": {
+						"$ref": "#/components/schemas/Outpoint"
+					},
+					"owner": {
+						"type": "string"
+					},
+					"script": {
+						"type": "string"
+					},
+					"spend": {
+						"type": "string"
+					},
+					"spendHeight": {
+						"type": "number",
+						"format": "double"
+					},
+					"spendIdx": {
+						"type": "number",
+						"format": "double"
+					},
+					"height": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"idx": {
+						"type": "number",
+						"format": "double",
+						"default": 0
+					},
+					"op": {
+						"type": "string",
+						"default": ""
+					},
+					"tick": {
+						"type": "string"
+					},
+					"id": {
+						"type": "string"
+					},
+					"sym": {
+						"type": "string"
+					},
+					"dec": {
+						"type": "number",
+						"format": "double"
+					},
+					"icon": {
+						"type": "string"
+					},
+					"amt": {
+						"type": "string",
+						"default": ""
+					},
+					"status": {
+						"$ref": "#/components/schemas/Bsv20Status"
+					},
+					"reason": {
+						"type": "string",
+						"default": ""
+					},
+					"listing": {
+						"type": "boolean",
+						"default": false
+					},
+					"price": {
+						"type": "number",
+						"format": "double"
+					},
+					"pricePer": {
+						"type": "number",
+						"format": "double"
+					},
+					"payout": {
+						"type": "string"
+					},
+					"pricePerUnit": {
+						"type": "number",
+						"format": "double"
+					},
+					"sale": {
+						"type": "boolean"
+					}
+				},
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -135,7 +259,13 @@
 				],
 				"type": "object"
 			},
-			"Outpoint": {
+			"SortDirection": {
+				"enum": [
+					"asc",
+					"desc",
+					"ASC",
+					"DESC"
+				],
 				"type": "string"
 			},
 			"File": {
@@ -219,6 +349,9 @@
 					},
 					"list": {
 						"properties": {
+							"sale": {
+								"type": "boolean"
+							},
 							"payout": {
 								"type": "string"
 							},
@@ -257,8 +390,82 @@
 							}
 						},
 						"type": "object"
+					},
+					"lock": {
+						"properties": {
+							"until": {
+								"type": "number",
+								"format": "double"
+							},
+							"address": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"until",
+							"address"
+						],
+						"type": "object"
+					},
+					"sigil": {
+						"properties": {},
+						"additionalProperties": {},
+						"type": "object"
+					},
+					"opns": {
+						"properties": {
+							"status": {
+								"type": "number",
+								"format": "double"
+							},
+							"domain": {
+								"type": "string"
+							},
+							"genesis": {
+								"type": "string"
+							}
+						},
+						"type": "object"
+					},
+					"opnsMine": {
+						"properties": {
+							"pow": {
+								"type": "string"
+							},
+							"status": {
+								"type": "number",
+								"format": "double"
+							},
+							"domain": {
+								"type": "string"
+							},
+							"genesis": {
+								"type": "string"
+							}
+						},
+						"type": "object"
 					}
 				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Claim": {
+				"properties": {
+					"sub": {
+						"type": "string"
+					},
+					"type": {
+						"type": "string"
+					},
+					"value": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"sub",
+					"type",
+					"value"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -278,8 +485,17 @@
 						"properties": {},
 						"additionalProperties": {},
 						"type": "object"
+					},
+					"claims": {
+						"items": {
+							"$ref": "#/components/schemas/Claim"
+						},
+						"type": "array"
 					}
 				},
+				"required": [
+					"outpoint"
+				],
 				"type": "object",
 				"additionalProperties": false
 			},
@@ -336,42 +552,13 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"SortDirection": {
-				"enum": [
-					"asc",
-					"desc",
-					"ASC",
-					"DESC"
-				],
-				"type": "string"
-			},
 			"ListingSort": {
 				"enum": [
 					"recent",
-					"num",
-					"price"
+					"price",
+					"num"
 				],
 				"type": "string"
-			},
-			"Claim": {
-				"properties": {
-					"sub": {
-						"type": "string"
-					},
-					"type": {
-						"type": "string"
-					},
-					"value": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"sub",
-					"type",
-					"value"
-				],
-				"type": "object",
-				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {}
@@ -454,6 +641,27 @@
 				]
 			}
 		},
+		"/content/{outpoint}/latest": {
+			"get": {
+				"operationId": "GetLatestFile",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "outpoint",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/bsv20": {
 			"get": {
 				"operationId": "GetBsv20Stats",
@@ -522,6 +730,153 @@
 								"desc"
 							]
 						}
+					},
+					{
+						"in": "query",
+						"name": "included",
+						"required": false,
+						"schema": {
+							"default": true,
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/v2": {
+			"get": {
+				"operationId": "GetAllBsv20V2Stats",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Token"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"default": "fund_total",
+							"type": "string",
+							"enum": [
+								"fund_total",
+								"fund_used",
+								"fund_balance"
+							]
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"default": "desc",
+							"type": "string",
+							"enum": [
+								"asc",
+								"desc"
+							]
+						}
+					},
+					{
+						"in": "query",
+						"name": "included",
+						"required": false,
+						"schema": {
+							"default": true,
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/outpoint/{outpoint}": {
+			"get": {
+				"operationId": "GetBsv20Outpoint",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BSV20Txo"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "outpoint",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/spends/{txid}": {
+			"get": {
+				"operationId": "GetBsv20Spends",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "txid",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
 					}
 				]
 			}
@@ -567,7 +922,7 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/Txo"
+										"$ref": "#/components/schemas/BSV20Txo"
 									},
 									"type": "array"
 								}
@@ -592,6 +947,119 @@
 						"schema": {
 							"type": "string"
 						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "listing",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/{address}/tick/{tick}/history": {
+			"get": {
+				"operationId": "GetBsv20UtxoHistoryByTick",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "tick",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "listing",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
 					}
 				]
 			}
@@ -606,7 +1074,7 @@
 							"application/json": {
 								"schema": {
 									"items": {
-										"$ref": "#/components/schemas/Txo"
+										"$ref": "#/components/schemas/BSV20Txo"
 									},
 									"type": "array"
 								}
@@ -630,6 +1098,186 @@
 						"required": true,
 						"schema": {
 							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "listing",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/{address}/id/{id}/history": {
+			"get": {
+				"operationId": "GetBsv20UtxoHistoryById",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "listing",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/{address}/unspent": {
+			"get": {
+				"operationId": "GetBsv20UtxosByAddress",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "status",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/Bsv20Status"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
 						}
 					}
 				]
@@ -658,6 +1306,325 @@
 						"required": true,
 						"schema": {
 							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/tick/{tick}/holders": {
+			"get": {
+				"operationId": "GetBsv20TickHolders",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"properties": {
+											"amt": {
+												"type": "string"
+											},
+											"address": {
+												"type": "string"
+											}
+										},
+										"required": [
+											"amt",
+											"address"
+										],
+										"type": "object"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "tick",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 10,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/id/{id}": {
+			"get": {
+				"operationId": "GetBsv20V2Stats",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Token"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/id/{id}/holders": {
+			"get": {
+				"operationId": "GetBsv20V2Holders",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"properties": {
+											"amt": {
+												"type": "string"
+											},
+											"address": {
+												"type": "string"
+											}
+										},
+										"required": [
+											"amt",
+											"address"
+										],
+										"type": "object"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 10,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/market": {
+			"get": {
+				"operationId": "GetBsv20Market",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"default": "height",
+							"type": "string",
+							"enum": [
+								"price",
+								"price_per_token",
+								"height"
+							]
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"default": "all",
+							"type": "string",
+							"enum": [
+								"v1",
+								"v2",
+								"all"
+							]
+						}
+					},
+					{
+						"in": "query",
+						"name": "id",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "tick",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/market/sales": {
+			"get": {
+				"operationId": "GetBsv20Sales",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"default": "all",
+							"type": "string",
+							"enum": [
+								"v1",
+								"v2",
+								"all"
+							]
+						}
+					},
+					{
+						"in": "query",
+						"name": "id",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "tick",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "pending",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
 						}
 					}
 				]
@@ -693,14 +1660,6 @@
 					},
 					{
 						"in": "query",
-						"name": "sort",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/SortDirection"
-						}
-					},
-					{
-						"in": "query",
 						"name": "limit",
 						"required": false,
 						"schema": {
@@ -717,6 +1676,14 @@
 							"default": 0,
 							"format": "double",
 							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
 						}
 					}
 				]
@@ -743,14 +1710,6 @@
 				"parameters": [
 					{
 						"in": "query",
-						"name": "sort",
-						"required": false,
-						"schema": {
-							"$ref": "#/components/schemas/SortDirection"
-						}
-					},
-					{
-						"in": "query",
 						"name": "limit",
 						"required": false,
 						"schema": {
@@ -767,6 +1726,14 @@
 							"default": 0,
 							"format": "double",
 							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
 						}
 					}
 				],
@@ -1027,6 +1994,241 @@
 				}
 			}
 		},
+		"/api/locks/txid/{txid}": {
+			"get": {
+				"operationId": "GetLocksByTxid",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "txid",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/locks/address/{address}/unspent": {
+			"get": {
+				"operationId": "GetUnspentLocks",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/locks/address/{address}/history": {
+			"get": {
+				"operationId": "GetLocksHistory",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/locks/search": {
+			"get": {
+				"operationId": "GetLocksSearch",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "q",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "PostLocksSearch",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/TxoData"
+							}
+						}
+					}
+				}
+			}
+		},
 		"/api/market": {
 			"get": {
 				"operationId": "GetOpenListings",
@@ -1101,15 +2303,6 @@
 					},
 					{
 						"in": "query",
-						"name": "bsv20",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					},
-					{
-						"in": "query",
 						"name": "text",
 						"required": false,
 						"schema": {
@@ -1138,7 +2331,7 @@
 				]
 			},
 			"post": {
-				"operationId": "SearchMap",
+				"operationId": "PostMarketSearch",
 				"responses": {
 					"200": {
 						"description": "Ok",
@@ -1198,15 +2391,6 @@
 						"required": false,
 						"schema": {
 							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "bsv20",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
 						}
 					},
 					{
@@ -1332,8 +2516,7 @@
 						"name": "num",
 						"required": true,
 						"schema": {
-							"format": "double",
-							"type": "number"
+							"type": "string"
 						}
 					}
 				]
@@ -1412,18 +2595,17 @@
 							"application/json": {
 								"schema": {
 									"properties": {
-										"indexed": {
+										"height": {
 											"type": "number",
 											"format": "double"
 										},
-										"settled": {
-											"type": "number",
-											"format": "double"
+										"indexer": {
+											"type": "string"
 										}
 									},
 									"required": [
-										"indexed",
-										"settled"
+										"height",
+										"indexer"
 									],
 									"type": "object"
 								}
@@ -1614,6 +2796,24 @@
 							"default": false,
 							"type": "boolean"
 						}
+					},
+					{
+						"in": "query",
+						"name": "origins",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "refresh",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
 					}
 				]
 			},
@@ -1675,6 +2875,24 @@
 					{
 						"in": "query",
 						"name": "bsv20",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "origins",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "refresh",
 						"required": false,
 						"schema": {
 							"default": false,
@@ -1766,6 +2984,15 @@
 							"default": false,
 							"type": "boolean"
 						}
+					},
+					{
+						"in": "query",
+						"name": "origins",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
 					}
 				]
 			},
@@ -1832,6 +3059,15 @@
 							"default": false,
 							"type": "boolean"
 						}
+					},
+					{
+						"in": "query",
+						"name": "origins",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
 					}
 				],
 				"requestBody": {
@@ -1844,6 +3080,44 @@
 						}
 					}
 				}
+			}
+		},
+		"/api/txos/address/{address}/balance": {
+			"get": {
+				"operationId": "GetBalanceByAddress",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "number",
+									"format": "double"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "refresh",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				]
 			}
 		},
 		"/api/txos/{outpoint}": {
@@ -1922,6 +3196,242 @@
 									"type": "string"
 								},
 								"type": "array"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/txos/search": {
+			"get": {
+				"operationId": "GetTxoSearchAll",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "q",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "PostTxoSearchAll",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/TxoData"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/txos/search/unspent": {
+			"get": {
+				"operationId": "GetTxoSearchUnspent",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "q",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "PostTxoSearchUnspent",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/TxoData"
 							}
 						}
 					}

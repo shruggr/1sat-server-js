@@ -1,15 +1,16 @@
 import { Address, OpCode, Script} from '@ts-bitcoin/core';
+import { BadRequest } from 'http-errors';
 import { Outpoint } from "./outpoint";
 import { loadTx, pool } from "../db";
-import { File } from "./file";
 import { Sigma } from "./sigma";
 import { NotFound } from 'http-errors';
+import { SortDirection } from './sort-direction';
 
 const B = Buffer.from('19HxigV4QyBv3tHpQVcUEQyq1pzZVdoAut', 'utf8')
 const ORD = Buffer.from('ord', 'utf8')
-export class InscriptionData {
-    type?: string = '';
-    data?: Buffer = Buffer.alloc(0);
+export interface InscriptionData {
+    type?: string;
+    data?: Buffer;
 }
 
 export interface Claim {
@@ -17,21 +18,21 @@ export interface Claim {
     type: string;
     value: string;
 }
-export class Origin {
-    outpoint: Outpoint = new Outpoint();
+export interface Origin {
+    outpoint: Outpoint;
     data?: TxoData;
     num?: number;
     map?: { [key: string]: any };
-    // claims?: Claim[]
+    claims?: Claim[]
 }
 
 export enum Bsv20Status {
     Invalid = -1,
     Pending = 0,
-    Valid = 1
+    Valid = 1,
 }
 
-export class TxoData {
+export interface TxoData {
     types?: string[];
     insc?: Inscription;
     map?: { [key: string]: any };
@@ -40,6 +41,7 @@ export class TxoData {
     list?: {
         price?: number;
         payout?: string;
+        sale?: boolean;
     };
     bsv20?: {
         id?: Outpoint;
@@ -51,6 +53,28 @@ export class TxoData {
         status?: Bsv20Status;
         implied?: boolean; 
     };
+    lock?: {
+        address: string;
+        until: number;
+    };
+    sigil?: {[key: string]: any};
+    opns?: {
+        genesis?: string;
+        domain?: string;
+        status?: number;
+    };
+    opnsMine?: {
+        genesis?: string;
+        domain?: string;
+        status?: number;
+        pow?: string;
+    };
+}
+
+export interface File {
+    hash?: string;
+    size?: number;
+    type?: string;
 }
 
 export interface Inscription {
@@ -73,11 +97,11 @@ export class Txo {
     idx: number = 0;
     data?: TxoData;
 
-    static async loadByOutpoint(outpoint: Outpoint): Promise<Txo> {
-        const { rows: [row] } = await pool.query(`SELECT t.*, o.data as odata, n.num
+    static async getByOutpoint(outpoint: Outpoint): Promise<Txo> {
+        const { rows: [row] } = await pool.query(`
+            SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
             FROM txos t
-            JOIN txos o ON o.outpoint = t.origin
-            JOIN origins n ON n.origin = t.origin
+            LEFT JOIN txos o ON o.outpoint = t.origin
             WHERE t.outpoint = $1`,
             [outpoint.toBuffer()],
         );
@@ -86,6 +110,16 @@ export class Txo {
             throw new NotFound();
         }
         return Txo.fromRow(row);
+    }
+
+    static async getByTxid(txid: string): Promise<Txo[]> {
+        let sql = `SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
+            FROM txos t
+            LEFT JOIN txos o ON o.outpoint = t.origin
+            WHERE t.txid=$1`;
+
+        const { rows } = await pool.query(sql, [Buffer.from(txid, 'hex')]);
+        return rows.map((row: any) => Txo.fromRow(row));
     }
 
     static fromRow(row: any) {
@@ -101,10 +135,13 @@ export class Txo {
         txo.height = row.height;
         txo.idx = row.idx;
         txo.data = row.data;
-        txo.origin = {
+        txo.origin = row.origin && {
             outpoint: Outpoint.fromBuffer(row.origin),
             data: row.odata ? row.odata : undefined,
-            num: row.num && parseInt(row.num, 10),
+            num: row.oheight ? `${row.oheight.toString().padStart(7, '0')}:${row.oidx}:${row.vout}` : undefined,
+        }
+        if(row.sale !== undefined && txo.data?.list) {
+            txo.data.list.sale = row.sale;
         }
         return txo;
     }
@@ -134,7 +171,7 @@ export class Txo {
                 opIf = i;
             }
             if (chunk.buf?.equals(ORD) && opFalse === i - 2 && opIf === i - 1) {
-                let insData = new InscriptionData();
+                let insData = {} as InscriptionData;
                 for (let j = i + 1; j < script.chunks.length; j += 2) {
                     if (script.chunks[j].buf) break;
                     switch (script.chunks[j].opCodeNum) {
@@ -150,12 +187,41 @@ export class Txo {
                 }
             }
             if (chunk.buf?.equals(B)) {
-                let insData = new InscriptionData();
+                let insData = {} as InscriptionData;
                 insData.data = script.chunks[i+1]?.buf;
                 insData.type = script.chunks[i+2]?.buf?.toString()
                 return insData;
             }
         }
         return;
+    }
+
+    static async search(unspent = false, query?: TxoData, limit = 100, offset = 0, dir: SortDirection = SortDirection.ASC): Promise<Txo[]> {
+        if ((query as any)?.txid !== undefined) throw BadRequest('This is not a valid query. Reach out on 1sat discord for assistance.')
+        const params: any[] = [];
+        let sql = `SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
+            FROM txos t
+            LEFT JOIN txos o ON o.outpoint = t.origin `;
+
+        if (query) {
+            params.push(JSON.stringify(query));
+            sql += `WHERE t.data @> $${params.length} `
+        }
+
+        if(unspent) { 
+            sql += `AND t.spend = '\\x' `
+        }
+
+        if(dir) {
+            sql += `ORDER BY t.height ${dir}, t.idx ${dir}, t.vout ${dir} `
+        }
+        params.push(limit);
+        sql += `LIMIT $${params.length} `
+        params.push(offset);
+        sql += `OFFSET $${params.length} `
+
+        // console.log(sql, params)
+        const { rows } = await pool.query(sql, params);
+        return rows.map((row: any) => Txo.fromRow(row));
     }
 }
