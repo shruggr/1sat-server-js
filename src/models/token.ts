@@ -21,7 +21,7 @@ export class Token {
     pctMinted?: number;
     accounts?: number;
     pending?: string;
-    pendingOps?: string;
+    pendingOps?: number;
     included = false;
     fundAddress?: string;
     fundTotal?: number;

@@ -12,13 +12,13 @@ import { RegisterRoutes } from "./build/routes";
 import * as path from 'path';
 import { Redis } from 'ioredis';
 
+const { PORT, REDIS } = process.env;
 const server = express();
 
 async function main() {
-    const PORT = process.env.PORT || 8081;
-    // const PORT = 8080;
-    server.listen(PORT, () => {
-        console.log(`Server listening on port ${PORT}`);
+    const port = PORT || 8081
+    server.listen(port, () => {
+        console.log(`Server listening on port ${port}`);
     });
 }
 
@@ -63,7 +63,11 @@ server.use("/api/subscribe", (req, res, next) => {
             'Cache-Control': 'no-cache',
             'X-Accel-Buffering': 'no'
         });
-        const subClient = new Redis();
+        const rparts = (REDIS || '').split(':')
+        const subClient = new Redis({
+            port: rparts[1] ? parseInt(rparts[1]) : 6379,
+            host: rparts[0],
+        });
         subClient.subscribe(...channels);
         const interval = setInterval(() => res.write('event: ping\n'), 5000)
 
@@ -74,7 +78,7 @@ server.use("/api/subscribe", (req, res, next) => {
 
         subClient.on("message", async (channel, message) => {
             let id = ''
-            if( channel.startsWith('t:') || channel.startsWith('s:') ) {
+            if (channel.startsWith('t:') || channel.startsWith('s:')) {
                 const address = Address.fromPubKeyHashBuf(Buffer.from(channel.slice(2), 'hex'))
                 channel = channel.slice(0, 2) + address.toString()
             }
@@ -147,6 +151,6 @@ server.use((req, res, next) => {
 server.use((err, req, res, next) => {
     console.error(req.path, err.status || 500, err);
     res.status(err.status || 500).json({ message: err.message })
-}); 
+});
 
 main().catch(console.error);

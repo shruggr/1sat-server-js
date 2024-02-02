@@ -84,7 +84,8 @@
 						"type": "string"
 					},
 					"pendingOps": {
-						"type": "string"
+						"type": "number",
+						"format": "double"
 					},
 					"included": {
 						"type": "boolean",
@@ -1310,15 +1311,6 @@
 						"schema": {
 							"type": "string"
 						}
-					},
-					{
-						"in": "query",
-						"name": "refresh",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
 					}
 				]
 			}
@@ -1399,15 +1391,6 @@
 						"required": true,
 						"schema": {
 							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "refresh",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
 						}
 					}
 				]

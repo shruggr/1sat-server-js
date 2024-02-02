@@ -41,7 +41,8 @@ export class TxosController extends Controller {
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         await TxosController.refreshAddress(address, refresh);
-        return this.searchByAddress(address, true, query, type, bsv20, origins, limit, offset);
+        const txos = await this.searchByAddress(address, true, query, type, bsv20, origins, limit, offset);
+        return txos
     }
 
     @Get("address/{address}/history")

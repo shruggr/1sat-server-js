@@ -60,7 +60,7 @@ const models: TsoaRoute.Models = {
             "pctMinted": {"dataType":"double"},
             "accounts": {"dataType":"double"},
             "pending": {"dataType":"string"},
-            "pendingOps": {"dataType":"string"},
+            "pendingOps": {"dataType":"double"},
             "included": {"dataType":"boolean","default":false},
             "fundAddress": {"dataType":"string"},
             "fundTotal": {"dataType":"double"},
@@ -585,7 +585,6 @@ export function RegisterRoutes(app: Router) {
             function FungiblesController_getBsv20TickStats(request: any, response: any, next: any) {
             const args = {
                     tick: {"in":"path","name":"tick","required":true,"dataType":"string"},
-                    refresh: {"default":false,"in":"query","name":"refresh","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -637,7 +636,6 @@ export function RegisterRoutes(app: Router) {
             function FungiblesController_getBsv20V2Stats(request: any, response: any, next: any) {
             const args = {
                     id: {"in":"path","name":"id","required":true,"dataType":"string"},
-                    refresh: {"default":false,"in":"query","name":"refresh","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

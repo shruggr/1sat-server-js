@@ -7,6 +7,7 @@ import { BSV20Txo } from '../models/bsv20Txo';
 import { Token } from '../models/token';
 import { SortDirection } from '../models/sort-direction';
 import { Bsv20Status } from '../models/txo';
+import { BalanceUpdate } from '../models/balanceUpdate';
 
 const includeThreshold = 10000000
 @Route("api/bsv20")
@@ -20,10 +21,10 @@ export class FungiblesController extends Controller {
         @Query() included = true,
     ): Promise<Token[]> {
 
-        const { rows } = await pool.query(`SELECT b.*, b.fund_balance>=${includeThreshold} as included
+        const { rows } = await pool.query(`SELECT b.*, b.fund_total>=${includeThreshold} as included
             FROM bsv20  b
             WHERE b.status = 1 and b.tick != ''
-            ${included ? `AND b.fund_balance>=${includeThreshold}` : ''}
+            ${included ? `AND b.fund_total>=${includeThreshold}` : ''}
             ORDER BY b.${sort} ${dir}, b.idx ${dir}
             LIMIT $1 OFFSET $2`,
             [limit, offset],
@@ -39,7 +40,7 @@ export class FungiblesController extends Controller {
         @Query() dir: 'asc' | 'desc' = 'desc',
         @Query() included = true,
     ): Promise<Token[]> {
-        const { rows } = await pool.query(`SELECT b.*, b.fund_balance>=${includeThreshold} as included
+        const { rows } = await pool.query(`SELECT b.*, b.fund_total>=${includeThreshold} as included
             FROM bsv20_v2 b
             ${included ? `WHERE fund_total>=${includeThreshold}` : ''}
             ORDER BY ${sort} ${dir}
@@ -317,87 +318,36 @@ export class FungiblesController extends Controller {
     @Get("tick/{tick}")
     public async getBsv20TickStats(
         @Path() tick: string,
-        @Query() refresh = false,
     ): Promise<Token> {
         if (tick.length > 4 || tick.includes("'") || tick.includes('"')) {
             throw new BadRequest();
         }
         tick = tick.toUpperCase();
-        const cacheKey = `tick:${tick}`
-        if (!refresh) {
-            // this.setHeader('Cache-Control', 'max-age=3600')
-            const status = await redis.get(cacheKey);
-            if (status) {
-                return JSON.parse(status);
-            }
-        }
-        // const { rows: [token] } = await pool.query(`SELECT b.*,
-        //     a.accounts, p.pending, po.pending_ops, b.fund_total>=${includeThreshold} as included
-        //     FROM bsv20 b, (
-        //         SELECT COUNT(DISTINCT pkhash) as accounts 
-        //         FROM bsv20_txos 
-        //         WHERE spend = '\\x' AND tick=$1 AND status=1
-        //     ) a, (
-        //         SELECT COALESCE(SUM(amt), 0) as pending
-        //         FROM bsv20_txos m
-        //         WHERE op='mint' AND tick=$1 AND status=0
-        //     ) p, (
-        //         SELECT COUNT(1) as pending_ops
-        //         FROM bsv20v1_txns
-        //         WHERE tick=$1 AND processed=false
-        //     ) po
-        //     WHERE b.status = 1 AND tick=$1`,
-        //     [tick],
-        // );
 
-        const { rows: [token] } = await pool.query(`
-            SELECT *, fund_total>=${includeThreshold} as included
+        const { rows: [row] } = await pool.query(`
+            SELECT *
             FROM bsv20
             WHERE status = 1 AND tick=$1`,
             [tick],
         );
-        if (!token) {
+        if (!row) {
             throw new NotFound();
         }
-        const [
-            { rows: [accounts] },
-            { rows: [pendingAmt] },
-            { rows: [pendingOps] },
-            { rows: [pendingTxouts] },
-        ] = await Promise.all([
-            pool.query(`SELECT COUNT(DISTINCT pkhash) as value 
-                FROM bsv20_txos 
-                WHERE spend = '\\x' AND tick=$1 AND status=1`,
-                [tick],
-            ),
-            pool.query(`SELECT COALESCE(SUM(amt), 0) as value
-                FROM bsv20_txos
-                WHERE op='mint' AND tick=$1 AND status=0`,
-                [tick],
-            ),
-            pool.query(`SELECT COUNT(1) as value
-                FROM bsv20_txos
-                WHERE tick=$1 AND status=0`,
-                [tick],
-            ),
-            pool.query(`SELECT COUNT(1) as value
-                FROM bsv20v1_txns
-                WHERE tick=$1 AND processed=false`,
-                [tick],
-            ),
-        ]);
 
-        const result = Token.fromRow({
-            ...token,
-            accounts: parseInt(accounts.value, 10),
-            pending: pendingAmt.value,
-            pending_ops: parseInt(pendingOps.value, 10) + parseInt(pendingTxouts.value, 10)
-        });
-        await redis.pipeline()
-            .set(cacheKey, JSON.stringify(result))
-            .expire(cacheKey, 1800)
-            .exec();
-        return result;
+        const token = Token.fromRow(row);
+
+        const fundsJson = await redis.hget("v1funds", tick)
+        if(fundsJson) {
+            const funds = JSON.parse(fundsJson) as BalanceUpdate
+            token.included = funds.fundTotal > includeThreshold
+            token.pending = funds.pending
+            token.fundTotal = funds.fundTotal
+            token.fundUsed = funds.fundUsed
+            token.fundBalance = funds.fundTotal - funds.fundUsed
+            token.pendingOps = funds.pendingOps
+        }
+
+        return token;
     }
 
     @Get("tick/{tick}/holders")
@@ -439,71 +389,29 @@ export class FungiblesController extends Controller {
     @Get("id/{id}")
     public async getBsv20V2Stats(
         @Path() id: string,
-        @Query() refresh = false,
     ): Promise<Token> {
-        const cacheKey = `id:${id}`
-        if (!refresh) {
-            this.setHeader('Cache-Control', 'max-age=300')
-            const status = await redis.get(cacheKey);
-            if (status) {
-                return JSON.parse(status);
-            }
-        }
-        // const { rows: [token] } = await pool.query(`
-        //     SELECT b.*, a.accounts, p.pending_ops, b.fund_total>=${includeThreshold} as included
-        //     FROM bsv20_v2 b, (
-        //         SELECT COUNT(DISTINCT pkhash) as accounts 
-        //         FROM bsv20_txos 
-        //         WHERE spend = '\\x' AND id=$1 AND status=1
-        //     ) a, (
-        //         SELECT COUNT(1) as pending_ops
-        //         FROM bsv20v2_txns
-        //         WHERE id=$1 AND processed=false
-        //     ) p
-        //     WHERE id=$1`,
-        //     [Outpoint.fromString(id).toBuffer()],
-        // );
         const tokenId = Outpoint.fromString(id).toBuffer();
-        const { rows: [token] } = await pool.query(`
+        const { rows: [row] } = await pool.query(`
             SELECT *, fund_total>=${includeThreshold} as included
             FROM bsv20_v2
             WHERE id=$1`,
             [tokenId],
         );
-        if (!token) {
+        if (!row) {
             throw new NotFound();
         }
-        const [
-            { rows: [accounts] },
-            { rows: [pendingOps] },
-            { rows: [pendingTxouts] },
-        ] = await Promise.all([
-            pool.query(`SELECT COUNT(DISTINCT pkhash) as value 
-                FROM bsv20_txos 
-                WHERE spend = '\\x' AND id=$1 AND status=1`,
-                [tokenId],
-            ),
-            pool.query(`SELECT COUNT(1) as value
-                FROM bsv20_txos
-                WHERE id=$1 AND status=0`,
-                [tokenId],
-            ),
-            pool.query(`SELECT COUNT(1) as value
-                FROM bsv20v2_txns
-                WHERE id=$1 AND processed=false`,
-                [tokenId],
-            ),
-        ]);
-        const result = Token.fromRow({
-            ...token,
-            accounts: parseInt(accounts.value, 10),
-            pending_ops: parseInt(pendingOps.value, 10) + parseInt(pendingTxouts.value, 10)
-        });
-        await redis.pipeline()
-            .set(cacheKey, JSON.stringify(result))
-            .expire(cacheKey, 1800)
-            .exec();
-        return result;
+        const token = Token.fromRow(row);
+
+        const fundsJson = await redis.hget("v2funds", id)
+        if(fundsJson) {
+            const funds = JSON.parse(fundsJson) as BalanceUpdate
+            token.included = funds.fundTotal > includeThreshold
+            token.fundTotal = funds.fundTotal
+            token.fundUsed = funds.fundUsed
+            token.fundBalance = funds.fundTotal - funds.fundUsed
+            token.pendingOps = funds.pendingOps
+        }
+        return token;
     }
 
     @Get("id/{id}/holders")
@@ -627,7 +535,7 @@ export class FungiblesController extends Controller {
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`
 
-        console.log(sql, params);
+        // console.log(sql, params);
         const { rows } = await pool.query(sql, params)
         return rows.map(BSV20Txo.fromRow)
     }
