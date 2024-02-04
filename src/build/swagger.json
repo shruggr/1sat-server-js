@@ -76,6 +76,10 @@
 						"type": "number",
 						"format": "double"
 					},
+					"accounts": {
+						"type": "number",
+						"format": "double"
+					},
 					"pending": {
 						"type": "string"
 					},

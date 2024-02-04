@@ -336,10 +336,23 @@ export class FungiblesController extends Controller {
 
         const token = Token.fromRow(row);
 
+        let accounts = await redis.get(`accts:${tick}`)
+        if (!accounts) {
+            const { rows: [row]} = await pool.query(`
+                SELECT COUNT(DISTINCT pkhash) as count
+                FROM bsv20_txos
+                WHERE spend='\\x' AND tick=$1`,
+                [tick],
+            )
+            accounts = row.count
+            await redis.set(`accts:${tick}`, row.count , 'EX', 600)
+        }
+        token.accounts = parseInt(accounts || '0', 10)
+
         const fundsJson = await redis.hget("v1funds", tick)
         if(fundsJson) {
             const funds = JSON.parse(fundsJson) as BalanceUpdate
-            token.included = funds.fundTotal > includeThreshold
+            token.included = funds.fundTotal >= includeThreshold
             token.pending = funds.pending
             token.fundTotal = funds.fundTotal
             token.fundUsed = funds.fundUsed
@@ -379,10 +392,7 @@ export class FungiblesController extends Controller {
             address: Address.fromPubKeyHashBuf(r.pkhash).toString(),
             amt: r.amt,
         }))
-        await redis.pipeline()
-            .set(cacheKey, JSON.stringify(tokens))
-            .expire(cacheKey, 1800)
-            .exec();
+        await redis.set(cacheKey, JSON.stringify(tokens), 'EX', 60);
         return tokens.slice(0, limit);
     }
 
@@ -402,10 +412,26 @@ export class FungiblesController extends Controller {
         }
         const token = Token.fromRow(row);
 
+
+        let accounts = await redis.get(`accts:${id}`)
+        if (!accounts) {
+            const { rows: [row]} = await pool.query(`
+                SELECT COUNT(DISTINCT pkhash) as count
+                FROM bsv20_txos
+                WHERE spend='\\x' AND id=$1`,
+                [tokenId],
+            )
+            if (row) {
+                accounts = row.count.toString() 
+                await redis.set(`accts:${id}`, accounts || '0', 'EX', 60)
+            }
+        }
+        token.accounts = parseInt(accounts || '0', 10)
+
         const fundsJson = await redis.hget("v2funds", id)
         if(fundsJson) {
             const funds = JSON.parse(fundsJson) as BalanceUpdate
-            token.included = funds.fundTotal > includeThreshold
+            token.included = funds.fundTotal >= includeThreshold
             token.fundTotal = funds.fundTotal
             token.fundUsed = funds.fundUsed
             token.fundBalance = funds.fundTotal - funds.fundUsed
@@ -439,10 +465,7 @@ export class FungiblesController extends Controller {
             address: Address.fromPubKeyHashBuf(r.pkhash).toString(),
             amt: r.amt,
         }))
-        await redis.pipeline()
-            .set(cacheKey, JSON.stringify(tokens))
-            .expire(cacheKey, 1800)
-            .exec();
+        await redis.set(cacheKey, JSON.stringify(tokens), 'EX', 60);
         return tokens.slice(0, limit);
     }
 
