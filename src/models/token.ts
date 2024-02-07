@@ -21,12 +21,12 @@ export class Token {
     pctMinted?: number;
     accounts?: number;
     pending?: string;
-    pendingOps?: number;
+    pendingOps = 0;
     included = false;
     fundAddress?: string;
-    fundTotal?: number;
-    fundUsed?: number;
-    fundBalance?: number;
+    fundTotal = 0;
+    fundUsed = 0;
+    fundBalance = 0;
 
     static fromRow(row: any) {
         const txo = new Token();
@@ -49,12 +49,12 @@ export class Token {
         txo.pctMinted = row.pct_minted;
         txo.accounts = row.accounts;
         txo.pending = row.pending;
-        txo.pendingOps = row.pending_ops;
+        txo.pendingOps = row.pending_ops || 0;
         txo.included = row.included;
         txo.fundAddress = row.fund_pkhash && Address.fromPubKeyHashBuf(row.fund_pkhash).toString();
-        txo.fundTotal = row.fund_total;
-        txo.fundUsed = row.fund_used;
-        txo.fundBalance = row.fund_balance;
+        txo.fundTotal = row.fund_total || 0;
+        txo.fundUsed = row.fund_used || 0;
+        txo.fundBalance = row.fund_balance || 0;
 
         return txo;
     }

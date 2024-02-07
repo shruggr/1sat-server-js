@@ -25,7 +25,7 @@ export class FungiblesController extends Controller {
             FROM bsv20  b
             WHERE b.status = 1 and b.tick != ''
             ${included ? `AND b.fund_total>=${includeThreshold}` : ''}
-            ORDER BY b.${sort} ${dir}, b.idx ${dir}
+            ORDER BY b.${sort} ${dir}, b.idx ${dir}, b.vout ${dir}
             LIMIT $1 OFFSET $2`,
             [limit, offset],
         );
@@ -43,7 +43,7 @@ export class FungiblesController extends Controller {
         const { rows } = await pool.query(`SELECT b.*, b.fund_total>=${includeThreshold} as included
             FROM bsv20_v2 b
             ${included ? `WHERE fund_total>=${includeThreshold}` : ''}
-            ORDER BY ${sort} ${dir}
+            ORDER BY ${sort} ${dir}, b.idx ${dir}, b.vout ${dir}
             LIMIT $1 OFFSET $2`,
             [limit, offset],
         );

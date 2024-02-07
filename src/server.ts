@@ -12,7 +12,7 @@ import { RegisterRoutes } from "./build/routes";
 import * as path from 'path';
 import { Redis } from 'ioredis';
 import * as responseTime from 'response-time'
-import { pool } from './db';
+// import { pool } from './db';
 
 const { PORT, REDIS } = process.env;
 const server = express();
@@ -33,9 +33,9 @@ server.use(express.raw({type: 'application/octet-stream'}))
 server.use(responseTime(async (req, res, time) => {
     const reqTime = new Date();
     console.log(reqTime.toISOString(), req.path, req.method, `${time}ms`);
-    await pool.query(`INSERT INTO request_log(method, path, apikey, status, duration)
-        VALUES($1, $2, $3, $4, $5)`, 
-        [req.method, req.path, req.headers['API_KEY'], res.statusCode, time])
+    // await pool.query(`INSERT INTO request_log(method, path, apikey, status, duration)
+    //     VALUES($1, $2, $3, $4, $5)`, 
+    //     [req.method, req.path, req.headers['API_KEY'], res.statusCode, time])
 }))
 
 // server.use(async (req, res, next) => {

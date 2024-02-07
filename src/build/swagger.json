@@ -85,7 +85,8 @@
 					},
 					"pendingOps": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"default": 0
 					},
 					"included": {
 						"type": "boolean",
@@ -96,15 +97,18 @@
 					},
 					"fundTotal": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"default": 0
 					},
 					"fundUsed": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"default": 0
 					},
 					"fundBalance": {
 						"type": "number",
-						"format": "double"
+						"format": "double",
+						"default": 0
 					}
 				},
 				"type": "object",
