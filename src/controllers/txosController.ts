@@ -129,7 +129,7 @@ export class TxosController extends Controller {
         @Path() outpoint: string,
         @Query() script = false
     ): Promise<Txo> {
-        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        this.setHeader('Cache-Control', 'public,max-age=86400')
         const txo = await Txo.getByOutpoint(Outpoint.fromString(outpoint));
         if (script) {
             const tx = await loadTx(txo.txid);

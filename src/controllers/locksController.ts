@@ -10,12 +10,14 @@ export class LocksController extends Controller {
     public async getLocksByTxid(
         @Path() txid: string,
     ): Promise<Txo[]> {
-        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         const { rows } = await pool.query(`SELECT *
             FROM txos
             WHERE txid = $1`, 
             [Buffer.from(txid, 'hex')]
         );
+        if(rows.length) {
+            this.setHeader('Cache-Control', 'public,max-age=86400')
+        }
         return rows.map((row: any) => Txo.fromRow(row));
     }
 

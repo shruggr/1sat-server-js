@@ -66,7 +66,7 @@ export class InscriptionsController extends Controller {
     public async getInscriptionsByTxid(
         @Path() txid: string,
     ): Promise<Txo[]> {
-        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        this.setHeader('Cache-Control', 'public,max-age=86400')
         return Txo.getByTxid(txid);
     }
 
@@ -99,7 +99,7 @@ export class InscriptionsController extends Controller {
         @Path() outpoint: string,
         @Query() script = false
     ): Promise<Txo> {
-        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        this.setHeader('Cache-Control', 'public,max-age=86400')
         const txo = await Txo.getByOutpoint(Outpoint.fromString(outpoint));
         if (script) {
             const tx = await loadTx(txo.txid);
@@ -107,35 +107,6 @@ export class InscriptionsController extends Controller {
         }
         return txo
     }
-
-    // @Get("{origin}/latest/legacy")
-    // public async getLatestByOrigin(
-    //     @Path() origin: string,
-    //     @Query() script = false
-    // ): Promise<Txo> {
-    //     this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-
-    //     const sql = `SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
-    //         FROM txos t
-    //         JOIN txos o ON o.outpoint = t.origin
-    //         WHERE t.origin = $1
-    //         ORDER BY t.height DESC, t.idx DESC
-    //         LIMIT 1`;
-    //     const { rows: [latest] } = await pool.query(sql,
-    //         [Outpoint.fromString(origin).toBuffer()]
-    //     );
-
-    //     if(!latest) {
-    //         throw new NotFound();
-    //     }
-    //     // console.log(sql, origin)
-    //     const txo = Txo.fromRow(latest);
-    //     if (script) {
-    //         const tx = await loadTx(txo.txid);
-    //         txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
-    //     }
-    //     return txo;
-    // }
 
     @Get("{origin}/latest")
     public async getLatestByOrigin(
