@@ -327,7 +327,7 @@ export class FungiblesController extends Controller {
         const { rows: [row] } = await pool.query(`
             SELECT *
             FROM bsv20
-            WHERE status = 1 AND tick=$1`,
+            WHERE status IN (0,1) AND tick=$1`,
             [tick],
         );
         if (!row) {
@@ -341,7 +341,7 @@ export class FungiblesController extends Controller {
             const { rows: [row]} = await pool.query(`
                 SELECT COUNT(DISTINCT pkhash) as count
                 FROM bsv20_txos
-                WHERE spend='\\x' AND tick=$1`,
+                WHERE spend='\\x' AND tick=$1 AND status=1`,
                 [tick],
             )
             accounts = row.count
@@ -418,7 +418,7 @@ export class FungiblesController extends Controller {
             const { rows: [row]} = await pool.query(`
                 SELECT COUNT(DISTINCT pkhash) as count
                 FROM bsv20_txos
-                WHERE spend='\\x' AND id=$1`,
+                WHERE spend='\\x' AND id=$1 AND status=1`,
                 [tokenId],
             )
             if (row) {
