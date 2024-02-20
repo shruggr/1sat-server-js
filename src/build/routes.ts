@@ -1637,6 +1637,7 @@ export function RegisterRoutes(app: Router) {
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     dir: {"in":"query","name":"dir","ref":"SortDirection"},
+                    type: {"in":"query","name":"type","dataType":"string"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1665,6 +1666,7 @@ export function RegisterRoutes(app: Router) {
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     dir: {"in":"query","name":"dir","ref":"SortDirection"},
+                    type: {"in":"query","name":"type","dataType":"string"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1693,6 +1695,7 @@ export function RegisterRoutes(app: Router) {
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     dir: {"in":"query","name":"dir","ref":"SortDirection"},
+                    type: {"in":"query","name":"type","dataType":"string"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1721,6 +1724,7 @@ export function RegisterRoutes(app: Router) {
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     dir: {"in":"query","name":"dir","ref":"SortDirection"},
+                    type: {"in":"query","name":"type","dataType":"string"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

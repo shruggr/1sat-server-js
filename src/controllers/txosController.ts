@@ -186,7 +186,8 @@ export class TxosController extends Controller {
 
         if (type) {
             params.push(`${type}%`);
-            sql.push(`AND t.data->'insc'->'file'->>'type' like $${params.length}`)
+            sql.push(`AND o.filetype like $${params.length}`)
+            // sql.push(`AND t.data->'insc'->'file'->>'type' like $${params.length}`)
         }
 
         sql.push(`ORDER BY height DESC, idx DESC`)
@@ -206,7 +207,8 @@ export class TxosController extends Controller {
         @Query() q?: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
-        @Query() dir?: SortDirection
+        @Query() dir?: SortDirection,
+        @Query() type?: string,
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         let query: TxoData | undefined;
@@ -214,7 +216,7 @@ export class TxosController extends Controller {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
         // console.log("Query:", query)
-        return Txo.search(false, query, limit, offset, dir);
+        return Txo.search(false, query, limit, offset, dir, type);
     }
 
     @Post("search")
@@ -222,11 +224,12 @@ export class TxosController extends Controller {
         @Body() query?: TxoData,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
-        @Query() dir?: SortDirection
+        @Query() dir?: SortDirection,
+        @Query() type?: string,
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         console.log("POST search")
-        return Txo.search(false, query, limit, offset, dir);
+        return Txo.search(false, query, limit, offset, dir, type);
     }
 
     @Get("search/unspent")
@@ -234,14 +237,15 @@ export class TxosController extends Controller {
         @Query() q?: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
-        @Query() dir?: SortDirection
+        @Query() dir?: SortDirection,
+        @Query() type?: string,
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         let query: TxoData | undefined;
         if (q) {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
-        return Txo.search(true, query, limit, offset, dir);
+        return Txo.search(true, query, limit, offset, dir, type);
     }
 
     @Post("search/unspent")
@@ -249,9 +253,10 @@ export class TxosController extends Controller {
         @Body() query?: TxoData,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
-        @Query() dir?: SortDirection
+        @Query() dir?: SortDirection,
+        @Query() type?: string,
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        return Txo.search(true, query, limit, offset, dir);
+        return Txo.search(true, query, limit, offset, dir, type);
     }
 }

@@ -9,7 +9,7 @@ export class CollectionsController extends Controller {
         @Path() collectionId: string,
     ): Promise<{count: number, max: number}> {
         const { rows: [row]} = await pool.query(`
-            SELECT MAX((data->'map'->'subTypeData'->>'mintNumber')::INTEGER) as maxnum, 
+            SELECT MAX((data->'map'->'subTypeData'->>'mintNumber')::BIGINT) as maxnum, 
             COUNT(1)::INTEGER as count
             FROM txos
             WHERE data @> $1`, 

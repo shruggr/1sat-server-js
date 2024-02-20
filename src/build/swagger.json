@@ -3265,6 +3265,14 @@
 						"schema": {
 							"$ref": "#/components/schemas/SortDirection"
 						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
 					}
 				]
 			},
@@ -3313,6 +3321,14 @@
 						"required": false,
 						"schema": {
 							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"type": "string"
 						}
 					}
 				],
@@ -3383,6 +3399,14 @@
 						"schema": {
 							"$ref": "#/components/schemas/SortDirection"
 						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
 					}
 				]
 			},
@@ -3431,6 +3455,14 @@
 						"required": false,
 						"schema": {
 							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"type": "string"
 						}
 					}
 				],

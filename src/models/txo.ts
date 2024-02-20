@@ -196,20 +196,27 @@ export class Txo {
         return;
     }
 
-    static async search(unspent = false, query?: TxoData, limit = 100, offset = 0, dir: SortDirection = SortDirection.ASC): Promise<Txo[]> {
+    static async search(unspent = false, query?: TxoData, limit = 100, offset = 0, dir: SortDirection = SortDirection.ASC, type?: string): Promise<Txo[]> {
         if ((query as any)?.txid !== undefined) throw BadRequest('This is not a valid query. Reach out on 1sat discord for assistance.')
         const params: any[] = [];
         let sql = `SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
             FROM txos t
             LEFT JOIN txos o ON o.outpoint = t.origin `;
 
-        if (query) {
-            params.push(JSON.stringify(query));
-            sql += `WHERE t.data @> $${params.length} `
-        }
-
-        if(unspent) { 
-            sql += `AND t.spend = '\\x' `
+        if (query || unspent || type) {
+            let wheres = [] as string[]
+            if (query) {
+                params.push(JSON.stringify(query));
+                wheres.push(`t.data @> $${params.length}`)
+            }
+            if(unspent) { 
+                wheres.push(`t.spend = '\\x'`)
+            }
+            if (type) {
+                params.push(`${type}%`);
+                wheres.push(`o.filetype like $${params.length}`)
+            }
+            sql += `WHERE ${wheres.join(' AND ')} `
         }
 
         if(dir) {
