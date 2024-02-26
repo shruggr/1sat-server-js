@@ -116,7 +116,7 @@ export class Txo {
         let sql = `SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
             FROM txos t
             LEFT JOIN txos o ON o.outpoint = t.origin
-            WHERE t.txid=$1`;
+            WHERE t.txid=$1 AND t.satoshis = 1`;
 
         const { rows } = await pool.query(sql, [Buffer.from(txid, 'hex')]);
         return rows.map((row: any) => Txo.fromRow(row));
