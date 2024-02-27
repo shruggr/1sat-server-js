@@ -7,13 +7,9 @@ import { Outpoint } from "../models/outpoint";
 
 const {StandardToExtended} = require('bitcoin-ef')
 
-let { ARC, ARC_TOKEN, NETWORK, TAAL_TOKEN, REDIS } = process.env;
+let { ARC, ARC_TOKEN, NETWORK, TAAL_TOKEN, REDIS_URL } = process.env;
 
-const rparts = (REDIS || '').split(':')
-const pubClient = new Redis({
-    port: rparts[1] ? parseInt(rparts[1]) : 6379,
-    host: rparts[0],
-});
+const pubClient = new Redis(REDIS_URL as string);
 
 export interface PreviousOutput {
     lockingScript: string,

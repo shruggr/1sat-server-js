@@ -6,13 +6,9 @@ import { Pool } from 'pg';
 import { Outpoint } from "./models/outpoint";
 // import {PreviousOutput} from 'bitcoin-ef/dist/typescript-npm-package.esm'
 
-const { POSTGRES_READ, BITCOIN_HOST, BITCOIN_PORT, JUNGLEBUS, REDIS } = process.env;
+const { POSTGRES_READ, BITCOIN_HOST, BITCOIN_PORT, JUNGLEBUS, REDIS_URL} = process.env;
 export const jb = new JungleBusClient(JUNGLEBUS || 'http://junglebus.gorillapool.io');
-const rparts = (REDIS || '').split(':')
-export const redis = new Redis({
-    port: rparts[1] ? parseInt(rparts[1]) : 6379,
-    host: rparts[0],
-});
+export const redis = new Redis(REDIS_URL as string);
 console.log("POSTGRES", POSTGRES_READ)
 
 export const pool = new Pool({ connectionString: POSTGRES_READ});

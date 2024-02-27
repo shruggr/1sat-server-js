@@ -14,7 +14,7 @@ import { Redis } from 'ioredis';
 import * as responseTime from 'response-time'
 // import { pool } from './db';
 
-const { PORT, REDIS } = process.env;
+const { PORT, REDIS_URL } = process.env;
 const server = express();
 
 async function main() {
@@ -81,11 +81,8 @@ server.use("/api/subscribe", (req, res, next) => {
             'Cache-Control': 'no-cache',
             'X-Accel-Buffering': 'no'
         });
-        const rparts = (REDIS || '').split(':')
-        const subClient = new Redis({
-            port: rparts[1] ? parseInt(rparts[1]) : 6379,
-            host: rparts[0],
-        });
+
+        const subClient = new Redis(REDIS_URL as string);
         subClient.subscribe(...channels);
         const interval = setInterval(() => res.write('event: ping\n'), 5000)
 
