@@ -3,15 +3,24 @@ import { Tx, TxOut } from '@ts-bitcoin/core';
 import createError, { NotFound } from 'http-errors';
 import { Redis } from "ioredis";
 import { Pool } from 'pg';
+import { readFileSync } from 'fs';
 import { Outpoint } from "./models/outpoint";
 // import {PreviousOutput} from 'bitcoin-ef/dist/typescript-npm-package.esm'
 
-const { POSTGRES_READ, BITCOIN_HOST, BITCOIN_PORT, JUNGLEBUS, REDIS_URL} = process.env;
+const { POSTGRES_READ, BITCOIN_HOST, BITCOIN_PORT, JUNGLEBUS, REDIS_URL, CA_CERT_PATH} = process.env;
+
+const ssl = CA_CERT_PATH
+? {
+    rejectUnauthorized: true,
+    ca: readFileSync(CA_CERT_PATH).toString(),
+  }
+: undefined;
+
 export const jb = new JungleBusClient(JUNGLEBUS || 'http://junglebus.gorillapool.io');
 export const redis = new Redis(REDIS_URL as string);
 console.log("POSTGRES", POSTGRES_READ)
 
-export const pool = new Pool({ connectionString: POSTGRES_READ});
+export const pool = new Pool({ connectionString: POSTGRES_READ, ssl: ssl});
 
 export async function loadTx(txid: string): Promise<Tx> {
     let rawtx = await redis.getBuffer(txid);
