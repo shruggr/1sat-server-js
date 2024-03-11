@@ -18,7 +18,7 @@ console.log("POSTGRES", POSTGRES_READ)
 export const pool = new Pool({ connectionString: POSTGRES_READ});
 
 export async function loadTx(txid: string): Promise<Tx> {
-    let rawtx = await redis.getBuffer(txid);
+    let rawtx = await redis.hgetBuffer('tx', txid);
     if (!rawtx) {
         try {
             const url = `${JUNGLEBUS}/v1/transaction/get/${txid}/bin`
@@ -26,8 +26,10 @@ export async function loadTx(txid: string): Promise<Tx> {
             if(!resp.ok) {
                 throw createError(resp.status, resp.statusText)
             }
-            rawtx = Buffer.from(await resp.arrayBuffer());
-            await redis.set(txid, rawtx)
+
+            if(resp.status >= 200 && resp.status < 300) {
+                await redis.hset('tx', txid, Buffer.from(await resp.arrayBuffer()))
+            }
         } catch {
             console.log('Fetch from JB error:', txid)
         }
@@ -39,8 +41,9 @@ export async function loadTx(txid: string): Promise<Tx> {
             if(!resp.ok) {
                 throw createError(resp.status, resp.statusText)
             }
-            rawtx = Buffer.from(await resp.arrayBuffer());
-            await redis.set(txid, rawtx)
+            if(resp.status >= 200 && resp.status < 300) {
+                await redis.hset('tx', txid, Buffer.from(await resp.arrayBuffer()))
+            }
         } catch {
             console.log('Fetch from node error:', txid)
         }
@@ -53,7 +56,7 @@ export async function loadTx(txid: string): Promise<Tx> {
 }
 
 export async function loadTxo(op: Outpoint): Promise<any> {
-    let rawtx = await redis.getBuffer(op.txid.toString('hex'));
+    let rawtx = await redis.hgetBuffer('tx', op.txid.toString('hex'));
     if (rawtx) {
         const tx = Tx.fromBuffer(rawtx);
         return {

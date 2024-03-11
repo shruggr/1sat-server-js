@@ -499,6 +499,10 @@
 							"$ref": "#/components/schemas/Claim"
 						},
 						"type": "array"
+					},
+					"inum": {
+						"type": "number",
+						"format": "double"
 					}
 				},
 				"required": [
@@ -649,7 +653,7 @@
 				]
 			}
 		},
-		"/content/{outpoint}/latest": {
+		"/content/{origin}/latest": {
 			"get": {
 				"operationId": "GetLatestFile",
 				"responses": {
@@ -661,7 +665,7 @@
 				"parameters": [
 					{
 						"in": "path",
-						"name": "outpoint",
+						"name": "origin",
 						"required": true,
 						"schema": {
 							"type": "string"
@@ -1894,6 +1898,34 @@
 						"schema": {
 							"default": false,
 							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/inscriptions/num/{num}": {
+			"get": {
+				"operationId": "GetTxoByNum",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Txo"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "num",
+						"required": true,
+						"schema": {
+							"type": "string"
 						}
 					}
 				]

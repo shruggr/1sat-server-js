@@ -457,11 +457,10 @@ export class FungiblesController extends Controller {
             FROM bsv20_txos
             WHERE id=$1 AND status=1 AND spend='\\x'
             GROUP BY pkhash
-            ORDER BY amt DESC
-            LIMIT 10`,
+            ORDER BY amt DESC`,
             [Outpoint.fromString(id).toBuffer()],
         );
-        const tokens = rows.map(r => ({
+        const tokens = rows.filter(r => r.pkhash?.length).map(r => ({
             address: Address.fromPubKeyHashBuf(r.pkhash).toString(),
             amt: r.amt,
         }))

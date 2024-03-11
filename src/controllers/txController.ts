@@ -58,15 +58,15 @@ export class TxController extends Controller {
                     await this.broadcastArc(tx);
                 }
             } else if (TAAL_TOKEN) {
-                try {
+                // try {
                     await this.broadcastTaal(tx);
                     this.broadcastArc(tx).catch(console.error)
-                } catch (e: any) {
-                    if (e.status && e.status >= 300 && e.status < 500) {
-                        throw e;
-                    }
-                    await this.broadcastArc(tx);
-                }
+                // } catch (e: any) {
+                //     if (!e.status || (e.status >= 300 && e.status < 500)) {
+                //         throw e;
+                //     }
+                //     await this.broadcastArc(tx);
+                // }
             } else {
                 await this.broadcastArc(tx);
             }
@@ -115,7 +115,7 @@ export class TxController extends Controller {
         });
 
         const respText = await resp.text();
-        console.log("TAAL Response:", resp.status, respText);
+        console.log("TAAL Response:", tx.id(), resp.status, respText);
         if (!resp.ok) {
             try {
                 const { status, error } = JSON.parse(respText);

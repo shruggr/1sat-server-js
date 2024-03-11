@@ -28,7 +28,7 @@ server.set('trust proxy', true);
 server.use(cors({
     origin: true,
 }));
-server.use(express.json({ limit: '50mb' }));
+server.use(express.json({ limit: '150mb' }));
 server.use(express.raw({type: 'application/octet-stream'}))
 server.use(responseTime(async (req, res, time) => {
     const reqTime = new Date();

@@ -180,6 +180,7 @@ const models: TsoaRoute.Models = {
             "num": {"dataType":"double"},
             "map": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
             "claims": {"dataType":"array","array":{"dataType":"refObject","ref":"Claim"}},
+            "inum": {"dataType":"double"},
         },
         "additionalProperties": false,
     },
@@ -270,13 +271,13 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/content/:outpoint/latest',
+        app.get('/content/:origin/latest',
             ...(fetchMiddlewares<RequestHandler>(ContentController)),
             ...(fetchMiddlewares<RequestHandler>(ContentController.prototype.getLatestFile)),
 
             function ContentController_getLatestFile(request: any, response: any, next: any) {
             const args = {
-                    outpoint: {"in":"path","name":"outpoint","required":true,"dataType":"string"},
+                    origin: {"in":"path","name":"origin","required":true,"dataType":"string"},
                     req: {"in":"request","name":"req","required":true,"dataType":"object"},
             };
 
@@ -894,6 +895,31 @@ export function RegisterRoutes(app: Router) {
 
 
               const promise = controller.getTxoByOutpoint.apply(controller, validatedArgs as any);
+              promiseHandler(controller, promise, response, undefined, next);
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/inscriptions/num/:num',
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getTxoByNum)),
+
+            function InscriptionsController_getTxoByNum(request: any, response: any, next: any) {
+            const args = {
+                    num: {"in":"path","name":"num","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = getValidatedArgs(args, request, response);
+
+                const controller = new InscriptionsController();
+
+
+              const promise = controller.getTxoByNum.apply(controller, validatedArgs as any);
               promiseHandler(controller, promise, response, undefined, next);
             } catch (err) {
                 return next(err);

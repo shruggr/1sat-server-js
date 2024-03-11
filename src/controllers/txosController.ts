@@ -177,7 +177,7 @@ export class TxosController extends Controller {
         if (bsv20) {
             sql.push(`AND t.data->'bsv20' IS NOT NULL`)
         } else {
-            sql.push(`AND t.data->'bsv20' IS NULL`)
+            sql.push(`AND t.data->'bsv20' IS NULL AND o.data->'bsv20' IS NULL`)
         }
         if (query) {
             params.push(query);

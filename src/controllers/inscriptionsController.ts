@@ -108,6 +108,26 @@ export class InscriptionsController extends Controller {
         return txo
     }
 
+    @Get("num/{num}")
+    public async getTxoByNum(
+        @Path() num: string,
+    ): Promise<Txo> {
+        this.setHeader('Cache-Control', 'public,max-age=86400')
+        const { rows: [row] } = await pool.query(`
+            SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout, i.num as inum
+            FROM txos t
+            JOIN txos o ON o.outpoint = t.origin
+            JOIN inscriptions i ON i.height=o.height AND i.idx=o.idx AND i.vout=o.vout
+            WHERE i.num = $1`,
+            [num],
+        );
+
+        if(!row) {
+            throw new NotFound();
+        }
+        return Txo.fromRow(row);
+    }
+
     @Get("{origin}/latest")
     public async getLatestByOrigin(
         @Path() origin: string,
@@ -116,7 +136,7 @@ export class InscriptionsController extends Controller {
         const { INDEXER } = process.env;
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         const url = `${INDEXER}/origin/${origin}/latest`
-        // console.log("URL:", url)
+        console.log("URL:", url)
         const resp  = await fetch(url)
         if (!resp.ok) {
             console.log("latest error:", resp.status, await resp.text())

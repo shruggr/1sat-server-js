@@ -35,9 +35,9 @@ export class ContentController extends Controller {
         req.res!.status(200).send(file.data);
     }
 
-    @Get("{outpoint}/latest")
+    @Get("{origin}/latest")
     public async getLatestFile(
-        @Path() outpoint: string,
+        @Path() origin: string,
         @Request() req: ExpRequest
     ): 
     Promise<void> {

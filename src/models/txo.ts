@@ -23,7 +23,8 @@ export interface Origin {
     data?: TxoData;
     num?: number;
     map?: { [key: string]: any };
-    claims?: Claim[]
+    claims?: Claim[];
+    inum?: number;
 }
 
 export enum Bsv20Status {
@@ -99,9 +100,10 @@ export class Txo {
 
     static async getByOutpoint(outpoint: Outpoint): Promise<Txo> {
         const { rows: [row] } = await pool.query(`
-            SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
+            SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout, i.num as inum
             FROM txos t
             LEFT JOIN txos o ON o.outpoint = t.origin
+            LEFT JOIN inscriptions i ON i.height=o.height AND i.idx=o.idx AND i.vout=o.vout
             WHERE t.outpoint = $1`,
             [outpoint.toBuffer()],
         );
@@ -139,10 +141,12 @@ export class Txo {
             outpoint: Outpoint.fromBuffer(row.origin),
             data: row.odata ? row.odata : undefined,
             num: row.oheight ? `${row.oheight.toString().padStart(7, '0')}:${row.oidx}:${row.vout}` : undefined,
+            inum: row.inum ? parseInt(row.inum, 10) : undefined,
         }
         if(row.sale !== undefined && txo.data?.list) {
             txo.data.list.sale = row.sale;
         }
+
         return txo;
     }
 
