@@ -44,7 +44,8 @@ export class TxController extends Controller {
     async doBroadcast(txbuf: Buffer): Promise<string> {
         const tx = Tx.fromBuffer(txbuf);
         let txid = tx.id();
-        console.log('Broadcasting TX:', txid, tx.toHex());
+        console.time('Broadcast: ' + txid)
+        console.timeLog('Broadcast: ' + txid, txbuf.toString('hex'))
         await pubClient.set(txid, txbuf)
         try {
             if (NETWORK == 'testnet') {
@@ -59,7 +60,9 @@ export class TxController extends Controller {
                 }
             } else if (TAAL_TOKEN) {
                 // try {
+                    console.timeLog('Broadcast: ' + txid, "Broadcasting to TAAL")
                     await this.broadcastTaal(tx);
+                    console.timeLog('Broadcast: ' + txid, "Broadcasting to ARC")
                     this.broadcastArc(tx).catch(console.error)
                 // } catch (e: any) {
                 //     if (!e.status || (e.status >= 300 && e.status < 500)) {
@@ -72,11 +75,14 @@ export class TxController extends Controller {
             }
 
             // await pubClient.set(txid, txbuf)
+            console.timeLog('Broadcast: ' + txid, "Publishing to redis")
             pubClient.publish('broadcast', tx.toBuffer().toString('base64'));
             return txid;
         } catch (e: any) {
             console.error("Broadcast Error:", e)
             throw e;
+        } finally {
+            console.timeEnd('Broadcast: ' + txid)
         }
     }
 
@@ -115,7 +121,7 @@ export class TxController extends Controller {
         });
 
         const respText = await resp.text();
-        console.log("TAAL Response:", tx.id(), resp.status, respText);
+        console.log("TAAL Response:", tx.id(), resp.status, respText, new Date().toISOString());
         if (!resp.ok) {
             try {
                 const { status, error } = JSON.parse(respText);
@@ -157,7 +163,7 @@ export class TxController extends Controller {
             body: txbuf,
         })
         const respText = await resp.text();
-        console.log("ARC Response:", resp.status, tx.id(), respText);
+        console.log("ARC Response:", resp.status, tx.id(), respText, new Date().toISOString());
         const result = JSON.parse(respText)
         if (result.status != 200 || result.detail == 'REJECTED') {
             throw createError(result.status || 500, `Broadcast failed: ${result.detail} ${result.extraInfo}`);

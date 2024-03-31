@@ -6,19 +6,21 @@ import { Pool } from 'pg';
 import { Outpoint } from "./models/outpoint";
 // import {PreviousOutput} from 'bitcoin-ef/dist/typescript-npm-package.esm'
 
-const { POSTGRES_READ, BITCOIN_HOST, BITCOIN_PORT, JUNGLEBUS, REDIS } = process.env;
-export const jb = new JungleBusClient(JUNGLEBUS || 'http://junglebus.gorillapool.io');
+const { POSTGRES_FULL, BITCOIN_HOST, BITCOIN_PORT, JUNGLEBUS, REDIS } = process.env;
+export const jb = new JungleBusClient(JUNGLEBUS || 'https://junglebus.gorillapool.io');
 const rparts = (REDIS || '').split(':')
 export const redis = new Redis({
     port: rparts[1] ? parseInt(rparts[1]) : 6379,
     host: rparts[0],
 });
-console.log("POSTGRES", POSTGRES_READ)
+const POSTGRES = POSTGRES_FULL
+console.log("POSTGRES", POSTGRES)
 
-export const pool = new Pool({ connectionString: POSTGRES_READ});
+export const pool = new Pool({ connectionString: POSTGRES});
 
 export async function loadTx(txid: string): Promise<Tx> {
     let rawtx = await redis.hgetBuffer('tx', txid);
+    console.log("from cache", rawtx?.toString('hex'))
     if (!rawtx) {
         try {
             const url = `${JUNGLEBUS}/v1/transaction/get/${txid}/bin`
@@ -28,7 +30,8 @@ export async function loadTx(txid: string): Promise<Tx> {
             }
 
             if(resp.status >= 200 && resp.status < 300) {
-                await redis.hset('tx', txid, Buffer.from(await resp.arrayBuffer()))
+                rawtx = Buffer.from(await resp.arrayBuffer())
+                await redis.hset('tx', txid, rawtx)
             }
         } catch {
             console.log('Fetch from JB error:', txid)
@@ -42,7 +45,8 @@ export async function loadTx(txid: string): Promise<Tx> {
                 throw createError(resp.status, resp.statusText)
             }
             if(resp.status >= 200 && resp.status < 300) {
-                await redis.hset('tx', txid, Buffer.from(await resp.arrayBuffer()))
+                rawtx = Buffer.from(await resp.arrayBuffer())
+                await redis.hset('tx', txid, rawtx)
             }
         } catch {
             console.log('Fetch from node error:', txid)

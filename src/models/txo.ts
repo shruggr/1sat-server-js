@@ -83,6 +83,7 @@ export interface Inscription {
     text?: string;
     words?: string[];
     file?: File;
+    parent?: string;
 }
 export class Txo {
     txid: string = '';
@@ -177,7 +178,6 @@ export class Txo {
             if (chunk.buf?.equals(ORD) && opFalse === i - 2 && opIf === i - 1) {
                 let insData = {} as InscriptionData;
                 for (let j = i + 1; j < script.chunks.length; j += 2) {
-                    if (script.chunks[j].buf) break;
                     switch (script.chunks[j].opCodeNum) {
                         case OpCode.OP_0:
                             insData.data = script.chunks[j + 1].buf;

@@ -29,7 +29,7 @@ server.use(cors({
     origin: true,
 }));
 server.use(express.json({ limit: '150mb' }));
-server.use(express.raw({type: 'application/octet-stream'}))
+server.use(express.raw({type: 'application/octet-stream', limit: '100mb'}))
 server.use(responseTime(async (req, res, time) => {
     const reqTime = new Date();
     console.log(reqTime.toISOString(), req.path, req.method, `${time}ms`);

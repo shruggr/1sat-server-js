@@ -1,12 +1,14 @@
 import { NotFound } from 'http-errors';
 import * as createError from 'http-errors'
 import { Body, Controller, Get, Path, Post, Query, Route } from "tsoa";
-import { loadTx, pool } from "../db";
+import { loadTx, pool, redis } from "../db";
 import { Txo } from "../models/txo";
 import { TxoData } from "../models/txo";
 import { Outpoint } from "../models/outpoint";
 import { BadRequest } from "http-errors";
 import { SortDirection } from '../models/sort-direction';
+
+const { INDEXER } = process.env;
 
 @Route("api/inscriptions")
 export class InscriptionsController extends Controller {
@@ -51,7 +53,7 @@ export class InscriptionsController extends Controller {
         @Query() offset: number = 0
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-        const {rows} = await pool.query(`
+        const { rows } = await pool.query(`
             SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
@@ -122,7 +124,7 @@ export class InscriptionsController extends Controller {
             [num],
         );
 
-        if(!row) {
+        if (!row) {
             throw new NotFound();
         }
         return Txo.fromRow(row);
@@ -133,17 +135,10 @@ export class InscriptionsController extends Controller {
         @Path() origin: string,
         @Query() script = false
     ): Promise<Txo> {
-        const { INDEXER } = process.env;
-        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        const url = `${INDEXER}/origin/${origin}/latest`
-        console.log("URL:", url)
-        const resp  = await fetch(url)
-        if (!resp.ok) {
-            console.log("latest error:", resp.status, await resp.text())
-            throw createError(resp.status, resp.statusText)
-        }
-        const outpoint = Buffer.from(await resp.arrayBuffer())
-        console.log("Latest Outpoint", Outpoint.fromBuffer(outpoint).toString())
+        this.setHeader('Cache-Control', 'public,immutable,max-age=10')
+        
+        const outpoint = await this.getLatest(origin);
+
         const sql = `SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
@@ -153,7 +148,7 @@ export class InscriptionsController extends Controller {
             [outpoint]
         );
 
-        if(!latest) {
+        if (!latest) {
             throw new NotFound();
         }
         // console.log(sql, origin)
@@ -164,6 +159,38 @@ export class InscriptionsController extends Controller {
         }
         return txo;
     }
+
+    public async getLatest(origin: string): Promise<Buffer> {
+        let outpoint = await redis.hgetBuffer('latest', origin);
+        
+        if (!outpoint) {
+            console.log('Uncached latest', origin)
+            outpoint = await this.callLatest(origin);
+        } else {
+            const refresh = await redis.set(`origin:${origin}:fresh`, Date.now(), 'EX', 15, 'NX')
+            if (refresh == 'OK') {
+                console.log('Refreshing latest', origin, outpoint.toString('hex'))
+                this.callLatest(origin);
+            } else {
+                console.log('Using cached latest', origin, outpoint.toString('hex'))
+            }
+        }
+        
+        return outpoint;
+    }
+
+    public async callLatest(origin: string): Promise<Buffer> {
+        const url = `${INDEXER}/origin/${origin}/latest`
+        const resp = await fetch(url)
+        if (!resp.ok) {
+            console.log("latest error:", resp.status, await resp.text())
+            throw createError(resp.status, resp.statusText)
+        }
+        const outpoint = Buffer.from(await resp.arrayBuffer())
+        redis.hset('latest', origin, outpoint);
+        return outpoint;
+    }
+
 
     @Get("{origin}/history")
     public async getHistoryByOrigin(
@@ -186,25 +213,10 @@ export class InscriptionsController extends Controller {
     public async getLatestByOrigins(
         @Body() origins: string[]
     ): Promise<Txo[]> {
-        const { INDEXER } = process.env;
-        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         if (origins.length > 100) {
             throw new BadRequest('Too many origins');
         }
-        const outpoints = await Promise.all(origins.map(async o => {
-            this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-            const url = `${INDEXER}/origin/${o}/latest`
-            // console.log("URL:", url)
-            const resp  = await fetch(url)
-            if (!resp.ok) {
-                if(resp.status == 404) {
-                    return Outpoint.fromString(o).toBuffer();
-                }
-                console.log("latest error:", resp.status, await resp.text())
-                throw createError(resp.status, resp.statusText)
-            }
-            return Buffer.from(await resp.arrayBuffer())
-        }))
+        const outpoints = await Promise.all(origins.map(this.getLatest))
         const { rows } = await pool.query(`
             SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
             FROM txos t
