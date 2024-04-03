@@ -45,7 +45,7 @@ export class TxController extends Controller {
         const tx = Tx.fromBuffer(txbuf);
         let txid = tx.id();
         console.time('Broadcast: ' + txid)
-        console.timeLog('Broadcast: ' + txid, txbuf.toString('hex'))
+        // console.timeLog('Broadcast: ' + txid, txbuf.toString('hex'))
         await pubClient.set(txid, txbuf)
         try {
             if (NETWORK == 'testnet') {

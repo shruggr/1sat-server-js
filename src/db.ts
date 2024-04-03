@@ -20,7 +20,7 @@ export const pool = new Pool({ connectionString: POSTGRES});
 
 export async function loadTx(txid: string): Promise<Tx> {
     let rawtx = await redis.hgetBuffer('tx', txid);
-    console.log("from cache", rawtx?.toString('hex'))
+    // console.log("from cache", rawtx?.toString('hex'))
     if (!rawtx) {
         try {
             const url = `${JUNGLEBUS}/v1/transaction/get/${txid}/bin`
