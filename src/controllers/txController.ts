@@ -76,6 +76,7 @@ export class TxController extends Controller {
 
             // await pubClient.set(txid, txbuf)
             console.timeLog('Broadcast: ' + txid, "Publishing to redis")
+            await pubClient.hset('tx', txid, txbuf)
             pubClient.publish('broadcast', tx.toBuffer().toString('base64'));
             return txid;
         } catch (e: any) {

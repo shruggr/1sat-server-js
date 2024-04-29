@@ -16,45 +16,57 @@ export const redis = new Redis({
 const POSTGRES = POSTGRES_FULL
 console.log("POSTGRES", POSTGRES)
 
-export const pool = new Pool({ connectionString: POSTGRES});
+export const pool = new Pool({ connectionString: POSTGRES });
 
 export async function loadTx(txid: string): Promise<Tx> {
     let rawtx = await redis.hgetBuffer('tx', txid);
     // console.log("from cache", rawtx?.toString('hex'))
-    if (!rawtx) {
-        try {
-            const url = `${JUNGLEBUS}/v1/transaction/get/${txid}/bin`
-            const resp = await fetch(url);
-            if(!resp.ok) {
-                throw createError(resp.status, resp.statusText)
-            }
-
-            if(resp.status >= 200 && resp.status < 300) {
-                rawtx = Buffer.from(await resp.arrayBuffer())
-                await redis.hset('tx', txid, rawtx)
-            }
-        } catch {
-            console.log('Fetch from JB error:', txid)
+    try {
+        if (rawtx) {
+            console.log(`Tx ${txid} from redis ${rawtx.length} bytes`)
+            const tx = Tx.fromBuffer(rawtx);
+            return tx
         }
+    } catch {
+        console.log('Fetch from redis error:', txid)
     }
-    if (!rawtx) {
-        try {
-            const url = `http://${BITCOIN_HOST}:${BITCOIN_PORT}/rest/tx/${txid}.bin`
-            const resp = await fetch(url);
-            if(!resp.ok) {
-                throw createError(resp.status, resp.statusText)
-            }
-            if(resp.status >= 200 && resp.status < 300) {
-                rawtx = Buffer.from(await resp.arrayBuffer())
-                await redis.hset('tx', txid, rawtx)
-            }
-        } catch {
-            console.log('Fetch from node error:', txid)
+    try {
+        const url = `${JUNGLEBUS}/v1/transaction/get/${txid}/bin`
+        const resp = await fetch(url);
+        if (!resp.ok) {
+            throw createError(resp.status, resp.statusText)
         }
+
+        if (resp.status >= 200 && resp.status < 300) {
+            rawtx = Buffer.from(await resp.arrayBuffer())
+            console.log(`Tx ${txid} from jb ${rawtx.length} bytes`)
+            const tx = Tx.fromBuffer(rawtx);
+            await redis.hset('tx', txid, rawtx)
+            return tx
+        }
+    } catch {
+        console.log('Fetch from JB error:', txid)
     }
 
+    try {
+        const url = `http://${BITCOIN_HOST}:${BITCOIN_PORT}/rest/tx/${txid}.bin`
+        const resp = await fetch(url);
+        if (!resp.ok) {
+            throw createError(resp.status, resp.statusText)
+        }
+        if (resp.status >= 200 && resp.status < 300) {
+            rawtx = Buffer.from(await resp.arrayBuffer())
+            console.log(`Tx ${txid} from node ${rawtx.length} bytes`)
+            const tx = Tx.fromBuffer(rawtx);
+            await redis.hset('tx', txid, rawtx)
+            return tx
+        }
+    } catch {
+        console.log('Fetch from node error:', txid)
+    }
+
     if (!rawtx) {
-        throw new NotFound(`Transaction ${txid} not found`);
+        throw new NotFound(`${txid} not found`);
     }
     return Tx.fromBuffer(rawtx);
 }
@@ -70,7 +82,7 @@ export async function loadTxo(op: Outpoint): Promise<any> {
     }
     const url = `${JUNGLEBUS}/v1/txo/get/${op.toString()}`
     const resp = await fetch(url);
-    if(!resp.ok) {
+    if (!resp.ok) {
         throw createError(resp.status, resp.statusText)
     }
     const txOut = TxOut.fromBuffer(Buffer.from(await resp.arrayBuffer()));

@@ -3512,6 +3512,49 @@
 					}
 				]
 			}
+		},
+		"/api/collections/{collectionId}/holders": {
+			"get": {
+				"operationId": "GetCollectionHolders",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"properties": {
+											"amt": {
+												"type": "string"
+											},
+											"address": {
+												"type": "string"
+											}
+										},
+										"required": [
+											"amt",
+											"address"
+										],
+										"type": "object"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "collectionId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
 		}
 	},
 	"servers": [

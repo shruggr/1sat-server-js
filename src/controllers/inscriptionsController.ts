@@ -216,7 +216,7 @@ export class InscriptionsController extends Controller {
         if (origins.length > 100) {
             throw new BadRequest('Too many origins');
         }
-        const outpoints = await Promise.all(origins.map(this.getLatest))
+        const outpoints = await Promise.all(origins.map(o => this.getLatest(o)))
         const { rows } = await pool.query(`
             SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
             FROM txos t
