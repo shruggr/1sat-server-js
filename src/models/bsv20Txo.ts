@@ -28,6 +28,10 @@ export class BSV20Txo {
     payout?: string;
     pricePerUnit?: number;
     sale?: boolean;
+    lock?: {
+        address: string;
+        until: number;
+    }
 
 
     static fromRow(row: any) {
@@ -56,6 +60,8 @@ export class BSV20Txo {
         txo.payout = row.payout && row.payout.toString('base64')
         txo.script = row.script && row.script.toString('base64')
         txo.sale = !!row.sale
+        txo.lock = row.lock && JSON.parse(row.lock)
+
         return txo;
     }
 }

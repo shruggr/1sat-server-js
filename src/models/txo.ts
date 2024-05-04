@@ -94,6 +94,8 @@ export class Txo {
     owner?: string;
     script?: string;
     spend?: string;
+    spend_height?: number;
+    spend_idx?: number;
     origin?: Origin;
     height: number = 0;
     idx: number = 0;
@@ -134,6 +136,8 @@ export class Txo {
         txo.accSats = row.outacc;
         txo.owner = row.pkhash && Address.fromPubKeyHashBuf(row.pkhash).toString();
         txo.spend = row.spend?.toString('hex');
+        txo.spend_height = row.spend_height;
+        txo.spend_idx = row.spend_idx;
         txo.origin = row.origin && Outpoint.fromBuffer(row.origin);
         txo.height = row.height;
         txo.idx = row.idx;
@@ -200,7 +204,7 @@ export class Txo {
         return;
     }
 
-    static async search(unspent = false, query?: TxoData, limit = 100, offset = 0, dir: SortDirection = SortDirection.ASC, type?: string): Promise<Txo[]> {
+    static async search(unspent = false, query?: TxoData, limit = 100, offset = 0, dir?: SortDirection, type?: string): Promise<Txo[]> {
         if ((query as any)?.txid !== undefined) throw BadRequest('This is not a valid query. Reach out on 1sat discord for assistance.')
         const params: any[] = [];
         let sql = `SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
@@ -231,7 +235,7 @@ export class Txo {
         params.push(offset);
         sql += `OFFSET $${params.length} `
 
-        // console.log(sql, params)
+        console.log(sql, params)
         const { rows } = await pool.query(sql, params);
         return rows.map((row: any) => Txo.fromRow(row));
     }

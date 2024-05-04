@@ -126,6 +126,8 @@ const models: TsoaRoute.Models = {
             "owner": {"dataType":"string"},
             "script": {"dataType":"string"},
             "spend": {"dataType":"string"},
+            "spend_height": {"dataType":"double"},
+            "spend_idx": {"dataType":"double"},
             "origin": {"ref":"Origin"},
             "height": {"dataType":"double","default":0},
             "idx": {"dataType":"double","default":0},
@@ -203,6 +205,7 @@ const models: TsoaRoute.Models = {
             "payout": {"dataType":"string"},
             "pricePerUnit": {"dataType":"double"},
             "sale": {"dataType":"boolean"},
+            "lock": {"dataType":"nestedObjectLiteral","nestedProperties":{"until":{"dataType":"double","required":true},"address":{"dataType":"string","required":true}}},
         },
         "additionalProperties": false,
     },
@@ -971,6 +974,82 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/market/sales',
+            ...(fetchMiddlewares<RequestHandler>(MarketController)),
+            ...(fetchMiddlewares<RequestHandler>(MarketController.prototype.getMarketSales)),
+
+            function MarketController_getMarketSales(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    sort: {"default":"recent","in":"query","name":"sort","ref":"ListingSort"},
+                    dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
+                    q: {"in":"query","name":"q","dataType":"string"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    type: {"in":"query","name":"type","dataType":"string"},
+                    text: {"default":"","in":"query","name":"text","dataType":"string"},
+                    minPrice: {"in":"query","name":"minPrice","dataType":"double"},
+                    maxPrice: {"in":"query","name":"maxPrice","dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new MarketController();
+
+              templateService.apiHandler({
+                methodName: 'getMarketSales',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/market/sales',
+            ...(fetchMiddlewares<RequestHandler>(MarketController)),
+            ...(fetchMiddlewares<RequestHandler>(MarketController.prototype.postMarketSalesSearch)),
+
+            function MarketController_postMarketSalesSearch(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    data: {"in":"body","name":"data","dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
+                    sort: {"default":"recent","in":"query","name":"sort","ref":"ListingSort"},
+                    dir: {"default":"desc","in":"query","name":"dir","ref":"SortDirection"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    type: {"in":"query","name":"type","dataType":"string"},
+                    text: {"default":"","in":"query","name":"text","dataType":"string"},
+                    minPrice: {"in":"query","name":"minPrice","dataType":"double"},
+                    maxPrice: {"in":"query","name":"maxPrice","dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new MarketController();
+
+              templateService.apiHandler({
+                methodName: 'postMarketSalesSearch',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/locks/txid/:txid',
             ...(fetchMiddlewares<RequestHandler>(LocksController)),
             ...(fetchMiddlewares<RequestHandler>(LocksController.prototype.getLocksByTxid)),
@@ -1118,6 +1197,39 @@ export function RegisterRoutes(app: Router) {
 
               templateService.apiHandler({
                 methodName: 'postLocksSearch',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/locks/address/:address/search',
+            ...(fetchMiddlewares<RequestHandler>(LocksController)),
+            ...(fetchMiddlewares<RequestHandler>(LocksController.prototype.postLocksSearchByAddress)),
+
+            function LocksController_postLocksSearchByAddress(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+                    query: {"in":"body","name":"query","required":true,"ref":"TxoData"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new LocksController();
+
+              templateService.apiHandler({
+                methodName: 'postLocksSearchByAddress',
                 controller,
                 response,
                 next,
@@ -1736,14 +1848,13 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/bsv20/:address/unspent',
+        app.get('/api/bsv20/:address/locks',
             ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
-            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20UtxosByAddress)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20Locks)),
 
-            function FungiblesController_getBsv20UtxosByAddress(request: ExRequest, response: ExResponse, next: any) {
+            function FungiblesController_getBsv20Locks(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
-                    status: {"in":"query","name":"status","ref":"Bsv20Status"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     dir: {"default":"DESC","in":"query","name":"dir","ref":"SortDirection"},
@@ -1758,7 +1869,145 @@ export function RegisterRoutes(app: Router) {
                 const controller = new FungiblesController();
 
               templateService.apiHandler({
+                methodName: 'getBsv20Locks',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/bsv20/:address/id/:id/locks',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20LocksById)),
+
+            function FungiblesController_getBsv20LocksById(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+                    id: {"in":"path","name":"id","required":true,"dataType":"string"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"default":"DESC","in":"query","name":"dir","ref":"SortDirection"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new FungiblesController();
+
+              templateService.apiHandler({
+                methodName: 'getBsv20LocksById',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/bsv20/:address/tick/:tick/locks',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20LocksByTick)),
+
+            function FungiblesController_getBsv20LocksByTick(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+                    tick: {"in":"path","name":"tick","required":true,"dataType":"string"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"default":"DESC","in":"query","name":"dir","ref":"SortDirection"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new FungiblesController();
+
+              templateService.apiHandler({
+                methodName: 'getBsv20LocksByTick',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/bsv20/:address/unspent',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20UtxosByAddress)),
+
+            function FungiblesController_getBsv20UtxosByAddress(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+                    status: {"in":"query","name":"status","ref":"Bsv20Status"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"default":"DESC","in":"query","name":"dir","ref":"SortDirection"},
+                    type: {"default":"all","in":"query","name":"type","dataType":"union","subSchemas":[{"dataType":"enum","enums":["v1"]},{"dataType":"enum","enums":["v2"]},{"dataType":"enum","enums":["all"]}]},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new FungiblesController();
+
+              templateService.apiHandler({
                 methodName: 'getBsv20UtxosByAddress',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/bsv20/:address/history',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20HistoryByAddress)),
+
+            function FungiblesController_getBsv20HistoryByAddress(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+                    status: {"in":"query","name":"status","ref":"Bsv20Status"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"default":"DESC","in":"query","name":"dir","ref":"SortDirection"},
+                    type: {"default":"all","in":"query","name":"type","dataType":"union","subSchemas":[{"dataType":"enum","enums":["v1"]},{"dataType":"enum","enums":["v2"]},{"dataType":"enum","enums":["all"]}]},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new FungiblesController();
+
+              templateService.apiHandler({
+                methodName: 'getBsv20HistoryByAddress',
                 controller,
                 response,
                 next,

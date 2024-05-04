@@ -289,6 +289,14 @@
 					"spend": {
 						"type": "string"
 					},
+					"spend_height": {
+						"type": "number",
+						"format": "double"
+					},
+					"spend_idx": {
+						"type": "number",
+						"format": "double"
+					},
 					"origin": {
 						"$ref": "#/components/schemas/Origin"
 					},
@@ -516,6 +524,22 @@
 					},
 					"sale": {
 						"type": "boolean"
+					},
+					"lock": {
+						"properties": {
+							"until": {
+								"type": "number",
+								"format": "double"
+							},
+							"address": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"until",
+							"address"
+						],
+						"type": "object"
 					}
 				},
 				"type": "object",
@@ -1825,6 +1849,212 @@
 				}
 			}
 		},
+		"/api/market/sales": {
+			"get": {
+				"operationId": "GetMarketSales",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/ListingSort"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "q",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "text",
+						"required": false,
+						"schema": {
+							"default": "",
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "minPrice",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "maxPrice",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "PostMarketSalesSearch",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/ListingSort"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "text",
+						"required": false,
+						"schema": {
+							"default": "",
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "minPrice",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "maxPrice",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"application/json": {
+							"schema": {
+								"properties": {},
+								"additionalProperties": {},
+								"type": "object"
+							}
+						}
+					}
+				}
+			}
+		},
 		"/api/locks/txid/{txid}": {
 			"get": {
 				"operationId": "GetLocksByTxid",
@@ -2027,6 +2257,67 @@
 				},
 				"security": [],
 				"parameters": [
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/TxoData"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/locks/address/{address}/search": {
+			"post": {
+				"operationId": "PostLocksSearchByAddress",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
 					{
 						"in": "query",
 						"name": "limit",
@@ -3006,6 +3297,199 @@
 				]
 			}
 		},
+		"/api/bsv20/{address}/locks": {
+			"get": {
+				"operationId": "GetBsv20Locks",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/{address}/id/{id}/locks": {
+			"get": {
+				"operationId": "GetBsv20LocksById",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/{address}/tick/{tick}/locks": {
+			"get": {
+				"operationId": "GetBsv20LocksByTick",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "tick",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					}
+				]
+			}
+		},
 		"/api/bsv20/{address}/unspent": {
 			"get": {
 				"operationId": "GetBsv20UtxosByAddress",
@@ -3068,6 +3552,101 @@
 						"required": false,
 						"schema": {
 							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"default": "all",
+							"type": "string",
+							"enum": [
+								"v1",
+								"v2",
+								"all"
+							]
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/{address}/history": {
+			"get": {
+				"operationId": "GetBsv20HistoryByAddress",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "status",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/Bsv20Status"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "dir",
+						"required": false,
+						"schema": {
+							"$ref": "#/components/schemas/SortDirection"
+						}
+					},
+					{
+						"in": "query",
+						"name": "type",
+						"required": false,
+						"schema": {
+							"default": "all",
+							"type": "string",
+							"enum": [
+								"v1",
+								"v2",
+								"all"
+							]
 						}
 					}
 				]

@@ -2,23 +2,33 @@ import { NotFound } from 'http-errors';
 import { Controller, Get, Path, Route } from "tsoa";
 import { pool } from "../db";
 import { Address } from '@ts-bitcoin/core';
+import { redis } from '../db';
+
 
 @Route("api/collections")
 export class CollectionsController extends Controller {
     @Get("{collectionId}/stats")
     public async getCollection(
         @Path() collectionId: string,
-    ): Promise<{count: number, max: number}> {
-        const { rows: [row]} = await pool.query(`
-            SELECT MAX((data->'map'->'subTypeData'->>'mintNumber')::BIGINT) as maxnum, 
-            COUNT(1)::INTEGER as count
-            FROM txos
-            WHERE data @> $1`, 
-            [JSON.stringify({map: {subTypeData: {collectionId}}})],
+    ): Promise<{ count: number, max: number }> {
+        const cacheKey = `stats:${collectionId}`;
+        const cached = await redis.get(cacheKey);
+        if(cached) {
+            return JSON.parse(cached);
+        }
+        const { rows: [row] } = await pool.query(`
+        SELECT MAX((data->'map'->'subTypeData'->>'mintNumber')::BIGINT) as maxnum, 
+        COUNT(1)::INTEGER as count
+        FROM txos
+        WHERE data @> $1`,
+            [JSON.stringify({ map: { subTypeData: { collectionId } } })],
         )
 
+        this.setHeader('Cache-Control', 'max-age=600')
         if (!row) throw new NotFound();
-        return {count: row.count, max: row.maxnum};
+        const value = { count: row.count, max: row.maxnum };
+        await redis.set(cacheKey, JSON.stringify(value), 'EX', 600);
+        return value;
     }
 
     @Get("{collectionId}/holders")
@@ -33,14 +43,14 @@ export class CollectionsController extends Controller {
         //     return JSON.parse(status).slice(0, limit);
         // }
 
-        const { rows} = await pool.query(`
+        const { rows } = await pool.query(`
             SELECT t.pkhash, COUNT(1) as amt
             FROM txos t
             LEFT JOIN txos o ON o.outpoint = t.origin
             WHERE o.data @> $1
             GROUP BY t.pkhash
             ORDER BY amt DESC`,
-            [JSON.stringify({map: {subTypeData: {collectionId}}})],
+            [JSON.stringify({ map: { subTypeData: { collectionId } } })],
         )
 
         // const { rows } = await pool.query(`

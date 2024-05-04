@@ -12,10 +12,10 @@ export class LocksController extends Controller {
     ): Promise<Txo[]> {
         const { rows } = await pool.query(`SELECT *
             FROM txos
-            WHERE txid = $1`, 
+            WHERE txid = $1`,
             [Buffer.from(txid, 'hex')]
         );
-        if(rows.length) {
+        if (rows.length) {
             this.setHeader('Cache-Control', 'public,max-age=86400')
         }
         return rows.map((row: any) => Txo.fromRow(row));
@@ -28,7 +28,7 @@ export class LocksController extends Controller {
         @Query() offset: number = 0,
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        return this.searchByAddress(address, true, limit, offset);
+        return this.searchByAddress(address, true, undefined, limit, offset);
     }
 
     @Get("address/{address}/history")
@@ -38,24 +38,28 @@ export class LocksController extends Controller {
         @Query() offset: number = 0,
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        return this.searchByAddress(address, false, limit, offset);
+        return this.searchByAddress(address, false, undefined, limit, offset);
     }
 
-    public async searchByAddress(address: string, unspent = true, limit: number = 100, offset: number = 0): Promise<Txo[]> {
+    public async searchByAddress(address: string, unspent = true, query?: TxoData, limit: number = 100, offset: number = 0): Promise<Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf];
         let sql = [`SELECT t.*
             FROM txos t
             WHERE t.pkhash = $1 AND data ? 'lock'`]
-        if(unspent) {
+        if (unspent) {
             sql.push(`AND t.spend = '\\x'`)
+        }
+        if (query) {
+            params.push(JSON.stringify(query));
+            sql.push(`AND t.data @> $${params.length}`)
         }
         sql.push(`ORDER BY height DESC, idx DESC`)
         params.push(limit);
         sql.push(`LIMIT $${params.length}`)
         params.push(offset);
         sql.push(`OFFSET $${params.length}`)
-        
+
         // console.log(sql, params)
         const { rows } = await pool.query(sql.join(' '), params);
         return rows.map((row: any) => Txo.fromRow(row));
@@ -69,7 +73,7 @@ export class LocksController extends Controller {
             WHERE txid IN (
                 SELECT txid FROM txos 
                 WHERE t.pkhash = $1 AND data ? 'lock'`]
-        if(unspent) {
+        if (unspent) {
             sql.push(`AND t.spend = '\\x'`)
         } else {
             sql.push(`AND t.spend != '\\x'`)
@@ -80,7 +84,7 @@ export class LocksController extends Controller {
         sql.push(`LIMIT $${params.length}`)
         params.push(offset);
         sql.push(`OFFSET $${params.length}`)
-        
+
         // console.log(sql.join(' '), params)
         const { rows } = await pool.query(sql.join(' '), params);
         return rows.map((row: any) => Txo.fromRow(row));
@@ -134,4 +138,13 @@ export class LocksController extends Controller {
         });
     }
 
+    @Post("address/{address}/search")
+    public async postLocksSearchByAddress(
+        @Path() address: string,
+        @Body() query: TxoData,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0
+    ): Promise<Txo[]> {
+        return this.searchByAddress(address, true, query, limit, offset);
+    }
 }

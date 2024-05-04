@@ -292,13 +292,85 @@ export class FungiblesController extends Controller {
         return rows.map((row: any) => BSV20Txo.fromRow(row));
     }
 
+    @Get("{address}/locks")
+    public async getBsv20Locks(
+        @Path() address: string,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+        @Query() dir: SortDirection = SortDirection.DESC,
+    ): Promise<BSV20Txo[]> {
+        const add = Address.fromString(address);
+        const params: any[] = [add.hashBuf];
+        let sql = `SELECT b.*, t.data->>'lock' as lock
+            FROM txos t
+            JOIN bsv20_txos b ON b.txid=t.txid AND b.vout=t.vout
+            WHERE t.pkhash = $1 AND t.spend = '\\x' AND 
+            t.data ? 'lock' AND b.status=1
+            ORDER BY t.height ${dir}, t.idx ${dir}
+            LIMIT $${params.push(limit)}
+            OFFSET $${params.push(offset)}`
+
+        console.log(sql, params)
+        const { rows } = await pool.query(sql, params);
+        return rows.map(BSV20Txo.fromRow);
+    }
+
+    @Get("{address}/id/{id}/locks")
+    public async getBsv20LocksById(
+        @Path() address: string,
+        @Path() id: string,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+        @Query() dir: SortDirection = SortDirection.DESC,
+    ): Promise<BSV20Txo[]> {
+        const add = Address.fromString(address);
+        const params: any[] = [add.hashBuf, Outpoint.fromString(id).toBuffer()];
+        let sql = `SELECT b.*, t.data->>'lock' as lock
+            FROM txos t
+            JOIN bsv20_txos b ON b.txid=t.txid AND b.vout=t.vout
+            WHERE t.pkhash = $1 AND t.spend = '\\x' AND 
+                t.data ? 'lock' AND b.status=1 AND b.id=$2
+            ORDER BY t.height ${dir}, t.idx ${dir}
+            LIMIT $${params.push(limit)}
+            OFFSET $${params.push(offset)}`
+
+        console.log(sql, params)
+        const { rows } = await pool.query(sql, params);
+        return rows.map(BSV20Txo.fromRow);
+    }
+
+    @Get("{address}/tick/{tick}/locks")
+    public async getBsv20LocksByTick(
+        @Path() address: string,
+        @Path() tick: string,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+        @Query() dir: SortDirection = SortDirection.DESC,
+    ): Promise<BSV20Txo[]> {
+        const add = Address.fromString(address);
+        const params: any[] = [add.hashBuf, tick];
+        let sql = `SELECT b.*, t.data->>'lock' as lock
+            FROM txos t
+            JOIN bsv20_txos b ON b.txid=t.txid AND b.vout=t.vout
+            WHERE t.pkhash = $1 AND t.spend = '\\x' AND 
+                t.data ? 'lock' AND b.status=1 AND b.tick=$2
+            ORDER BY t.height ${dir}, t.idx ${dir}
+            LIMIT $${params.push(limit)}
+            OFFSET $${params.push(offset)}`
+
+        // console.log(sql, params)
+        const { rows } = await pool.query(sql, params);
+        return rows.map(BSV20Txo.fromRow);
+    }
+
     @Get("{address}/unspent")
     public async getBsv20UtxosByAddress(
         @Path() address: string,
         @Query() status?: Bsv20Status,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
-        @Query() dir: SortDirection = SortDirection.DESC
+        @Query() dir: SortDirection = SortDirection.DESC,
+        @Query() type: 'v1' | 'v2' | 'all' = 'all',
     ): Promise<BSV20Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [];
@@ -306,6 +378,32 @@ export class FungiblesController extends Controller {
             FROM bsv20_txos
             WHERE pkhash = $${params.push(add.hashBuf)} AND spend = '\\x'
                 ${status !== undefined ? `AND status=$${params.push(status)}` : ''}
+                ${type == 'v1' ? "AND tick != ''" : type == 'v2' ? "AND id != '\\x'" : ''}
+            ORDER BY height ${dir}, idx ${dir}
+            LIMIT $${params.push(limit)}
+            OFFSET $${params.push(offset)}`
+
+        // console.log(sql, params)
+        const { rows } = await pool.query(sql, params);
+        return rows.map((row: any) => BSV20Txo.fromRow(row));
+    }
+
+    @Get("{address}/history")
+    public async getBsv20HistoryByAddress(
+        @Path() address: string,
+        @Query() status?: Bsv20Status,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+        @Query() dir: SortDirection = SortDirection.DESC,
+        @Query() type: 'v1' | 'v2' | 'all' = 'all',
+    ): Promise<BSV20Txo[]> {
+        const add = Address.fromString(address);
+        const params: any[] = [];
+        let sql = `SELECT *
+            FROM bsv20_txos
+            WHERE pkhash = $${params.push(add.hashBuf)} AND spend != '\\x'
+                ${status !== undefined ? `AND status=$${params.push(status)}` : ''}
+                ${type == 'v1' ? "AND tick != ''" : type == 'v2' ? "AND id != '\\x'" : ''}
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`

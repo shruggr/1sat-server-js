@@ -24,7 +24,7 @@ export class InscriptionsController extends Controller {
         if (q) {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
-        // console.log("Query:", query)
+        console.log("GET search", {query, limit, offset, dir})
         return Txo.search(false, query, limit, offset, dir);
     }
 
