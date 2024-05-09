@@ -40,8 +40,9 @@ export class FungiblesController extends Controller {
         @Query() dir: 'asc' | 'desc' = 'desc',
         @Query() included = true,
     ): Promise<Token[]> {
-        const { rows } = await pool.query(`SELECT b.*, b.fund_total>=${includeThreshold} as included
+        const { rows } = await pool.query(`SELECT b.*, b.fund_total>=${includeThreshold} as included, t.data
             FROM bsv20_v2 b
+            JOIN txos t ON t.outpoint = b.id
             ${included ? `WHERE fund_total>=${includeThreshold}` : ''}
             ORDER BY ${sort} ${dir}, b.idx ${dir}, b.vout ${dir}
             LIMIT $1 OFFSET $2`,

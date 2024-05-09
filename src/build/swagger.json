@@ -426,6 +426,9 @@
 						"type": "number",
 						"format": "double",
 						"default": 0
+					},
+					"data": {
+						"$ref": "#/components/schemas/TxoData"
 					}
 				},
 				"type": "object",

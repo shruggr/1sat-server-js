@@ -173,6 +173,7 @@ const models: TsoaRoute.Models = {
             "fundTotal": {"dataType":"double","default":0},
             "fundUsed": {"dataType":"double","default":0},
             "fundBalance": {"dataType":"double","default":0},
+            "data": {"ref":"TxoData"},
         },
         "additionalProperties": false,
     },

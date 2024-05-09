@@ -1,6 +1,6 @@
 import { Address } from "@ts-bitcoin/core";
 import { Outpoint } from "./outpoint";
-import { Bsv20Status } from "./txo";
+import { Bsv20Status, TxoData } from "./txo";
 
 export class Token {
     txid: string = '';
@@ -27,6 +27,7 @@ export class Token {
     fundTotal = 0;
     fundUsed = 0;
     fundBalance = 0;
+    data?: TxoData;
 
     static fromRow(row: any) {
         const txo = new Token();
@@ -55,6 +56,7 @@ export class Token {
         txo.fundTotal = row.fund_total || 0;
         txo.fundUsed = row.fund_used || 0;
         txo.fundBalance = row.fund_balance || 0;
+        txo.data = row.data;
 
         return txo;
     }
