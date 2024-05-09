@@ -49,6 +49,8 @@ export class LocksController extends Controller {
             WHERE t.pkhash = $1 AND data ? 'lock'`]
         if (unspent) {
             sql.push(`AND t.spend = '\\x'`)
+        } else {
+            sql.push(`AND t.spend != '\\x'`)
         }
         if (query) {
             params.push(JSON.stringify(query));

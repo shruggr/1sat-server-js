@@ -989,6 +989,7 @@ export function RegisterRoutes(app: Router) {
                     text: {"default":"","in":"query","name":"text","dataType":"string"},
                     minPrice: {"in":"query","name":"minPrice","dataType":"double"},
                     maxPrice: {"in":"query","name":"maxPrice","dataType":"double"},
+                    address: {"in":"query","name":"address","dataType":"string"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1027,6 +1028,7 @@ export function RegisterRoutes(app: Router) {
                     text: {"default":"","in":"query","name":"text","dataType":"string"},
                     minPrice: {"in":"query","name":"minPrice","dataType":"double"},
                     maxPrice: {"in":"query","name":"maxPrice","dataType":"double"},
+                    address: {"in":"query","name":"address","dataType":"string"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1592,7 +1594,7 @@ export function RegisterRoutes(app: Router) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
-                    sort: {"default":"fund_total","in":"query","name":"sort","dataType":"union","subSchemas":[{"dataType":"enum","enums":["fund_total"]},{"dataType":"enum","enums":["fund_used"]},{"dataType":"enum","enums":["fund_balance"]}]},
+                    sort: {"default":"fund_total","in":"query","name":"sort","dataType":"union","subSchemas":[{"dataType":"enum","enums":["fund_total"]},{"dataType":"enum","enums":["fund_used"]},{"dataType":"enum","enums":["fund_balance"]},{"dataType":"enum","enums":["height"]}]},
                     dir: {"default":"desc","in":"query","name":"dir","dataType":"union","subSchemas":[{"dataType":"enum","enums":["asc"]},{"dataType":"enum","enums":["desc"]}]},
                     included: {"default":true,"in":"query","name":"included","dataType":"boolean"},
             };
@@ -2190,6 +2192,7 @@ export function RegisterRoutes(app: Router) {
                     id: {"in":"query","name":"id","dataType":"string"},
                     tick: {"in":"query","name":"tick","dataType":"string"},
                     pending: {"default":false,"in":"query","name":"pending","dataType":"boolean"},
+                    address: {"in":"query","name":"address","dataType":"string"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

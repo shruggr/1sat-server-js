@@ -36,7 +36,7 @@ export class FungiblesController extends Controller {
     public async getAllBsv20V2Stats(
         @Query() limit: number = 100,
         @Query() offset: number = 0,
-        @Query() sort: 'fund_total' | 'fund_used' | 'fund_balance' = 'fund_total',
+        @Query() sort: 'fund_total' | 'fund_used' | 'fund_balance' | 'height' = 'fund_total',
         @Query() dir: 'asc' | 'desc' = 'desc',
         @Query() included = true,
     ): Promise<Token[]> {
@@ -625,6 +625,7 @@ export class FungiblesController extends Controller {
         @Query() id?: string,
         @Query() tick?: string,
         @Query() pending = false,
+        @Query() address?: string,
     ): Promise<BSV20Txo[]> {
         let params: any[] = [];
         let where = 't.sale=true '
@@ -644,6 +645,10 @@ export class FungiblesController extends Controller {
         }
         if (tick) {
             where += `AND t.tick = $${params.push(tick.toUpperCase())} `
+        }
+        if (address) {
+            const add = Address.fromString(address);
+            where += `AND t.pkhash = $${params.push(add.hashBuf)} `
         }
 
         let sql = `SELECT t.*, b2.sym, b2.icon, b2.dec as b2dec, b1.dec b1dec

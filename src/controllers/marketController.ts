@@ -2,6 +2,7 @@ import { Body, Controller, Get, Post, Query, Route } from "tsoa";
 import { pool } from "../db";
 import { Txo } from "../models/txo";
 import { SortDirection } from "../models/sort-direction";
+import { Address } from "@ts-bitcoin/core";
 
 export enum ListingSort {
     recent = 'recent',
@@ -19,6 +20,7 @@ export class MarketSearch {
     maxPrice?: number
     limit: number = 100
     offset: number = 0
+    address?: string 
 }
 @Route("api/market")
 export class MarketController extends Controller {
@@ -129,13 +131,14 @@ export class MarketController extends Controller {
         @Query() text = '',
         @Query() minPrice?: number,
         @Query() maxPrice?: number,
+        @Query() address?: string,
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         let data: {[key: string]: any} | undefined;
         if (q) {
             data = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
-        return this.searchSales({sort, dir, type, data, text, minPrice, maxPrice, limit, offset});
+        return this.searchSales({sort, dir, type, data, text, minPrice, maxPrice, limit, offset, address});
     }
 
     @Post("sales")
@@ -149,13 +152,14 @@ export class MarketController extends Controller {
         @Query() text = '',
         @Query() minPrice?: number,
         @Query() maxPrice?: number,
+        @Query() address?: string,
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        return this.searchSales({sort, dir, type, data, text, minPrice, maxPrice, limit, offset});
+        return this.searchSales({sort, dir, type, data, text, minPrice, maxPrice, limit, offset, address});
     }
 
     public async searchSales(search: MarketSearch): Promise<Txo[]> {
-        const { sort, dir, type, data, text, minPrice, maxPrice, limit, offset } = search;
+        const { sort, dir, type, data, text, minPrice, maxPrice, limit, offset, address } = search;
         const params: any[] = [];
 
         let sql = [`SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout, l.sale
@@ -172,6 +176,12 @@ export class MarketController extends Controller {
         if(data) {
             params.push(data);
             sql.push(`AND l.data @> $${params.length}`)
+        }
+
+        if (address) {
+            const add = Address.fromString(address);
+            params.push(add.hashBuf);
+            sql.push(`AND l.pkhash = $${params.length}`)
         }
 
         if(text) {

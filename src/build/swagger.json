@@ -1947,6 +1947,14 @@
 							"format": "double",
 							"type": "number"
 						}
+					},
+					{
+						"in": "query",
+						"name": "address",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
 					}
 				]
 			},
@@ -2038,6 +2046,14 @@
 						"schema": {
 							"format": "double",
 							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "address",
+						"required": false,
+						"schema": {
+							"type": "string"
 						}
 					}
 				],
@@ -2874,7 +2890,8 @@
 							"enum": [
 								"fund_total",
 								"fund_used",
-								"fund_balance"
+								"fund_balance",
+								"height"
 							]
 						}
 					},
@@ -3994,6 +4011,14 @@
 						"schema": {
 							"default": false,
 							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "address",
+						"required": false,
+						"schema": {
+							"type": "string"
 						}
 					}
 				]

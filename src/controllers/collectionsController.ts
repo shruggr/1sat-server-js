@@ -47,7 +47,7 @@ export class CollectionsController extends Controller {
             SELECT t.pkhash, COUNT(1) as amt
             FROM txos t
             LEFT JOIN txos o ON o.outpoint = t.origin
-            WHERE o.data @> $1
+            WHERE o.data @> $1 AND t.spend='\\x'
             GROUP BY t.pkhash
             ORDER BY amt DESC`,
             [JSON.stringify({ map: { subTypeData: { collectionId } } })],
