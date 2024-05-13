@@ -204,14 +204,14 @@ export class Txo {
         return;
     }
 
-    static async search(unspent = false, query?: TxoData, limit = 100, offset = 0, dir?: SortDirection, type?: string): Promise<Txo[]> {
+    static async search(unspent = false, query?: TxoData, tag='', limit = 100, offset = 0, dir: SortDirection = SortDirection.ASC, type?: string): Promise<Txo[]> {
         if ((query as any)?.txid !== undefined) throw BadRequest('This is not a valid query. Reach out on 1sat discord for assistance.')
         const params: any[] = [];
         let sql = `SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
             FROM txos t
             LEFT JOIN txos o ON o.outpoint = t.origin `;
 
-        if (query || unspent || type) {
+        if (query || unspent || type || tag) {
             let wheres = [] as string[]
             if (query) {
                 params.push(JSON.stringify(query));
@@ -224,6 +224,10 @@ export class Txo {
                 params.push(`${type}%`);
                 wheres.push(`o.filetype like $${params.length}`)
             }
+            if (tag) {
+                params.push(tag);
+                wheres.push(`t.data ? $${params.length}`)
+            }
             sql += `WHERE ${wheres.join(' AND ')} `
         }
 
@@ -235,7 +239,7 @@ export class Txo {
         params.push(offset);
         sql += `OFFSET $${params.length} `
 
-        console.log(sql, params)
+        // console.log(sql, params)
         const { rows } = await pool.query(sql, params);
         return rows.map((row: any) => Txo.fromRow(row));
     }

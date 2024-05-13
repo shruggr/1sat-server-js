@@ -13,11 +13,12 @@ export class TxosController extends Controller {
         @Path() address: string,
         @Query() q?: string,
         @Query() type?: string,
+        @Query() tag?: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() bsv20 = false,
         @Query() origins = false,
-        @Query() refresh = false
+        @Query() refresh = false,
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         await TxosController.refreshAddress(address, refresh);
@@ -25,7 +26,7 @@ export class TxosController extends Controller {
         if (q) {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
-        return this.searchByAddress(address, true, query, type, bsv20, origins, limit, offset);
+        return this.searchByAddress(address, true, query, tag, type, bsv20, origins, limit, offset);
     }
 
     @Post("address/{address}/unspent")
@@ -33,6 +34,7 @@ export class TxosController extends Controller {
         @Path() address: string,
         @Body() query?: TxoData,
         @Query() type?: string,
+        @Query() tag?: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() bsv20 = false,
@@ -41,7 +43,7 @@ export class TxosController extends Controller {
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
         await TxosController.refreshAddress(address, refresh);
-        const txos = await this.searchByAddress(address, true, query, type, bsv20, origins, limit, offset);
+        const txos = await this.searchByAddress(address, true, query, tag, type, bsv20, origins, limit, offset);
         return txos
     }
 
@@ -49,6 +51,7 @@ export class TxosController extends Controller {
     public async getHistoryByAddress(
         @Path() address: string,
         @Query() q?: string,
+        @Query() tag?: string,
         @Query() type?: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
@@ -60,13 +63,14 @@ export class TxosController extends Controller {
         if (q) {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
-        return this.searchByAddress(address, false, query, type, bsv20, origins, limit, offset);
+        return this.searchByAddress(address, false, query, tag, type, bsv20, origins, limit, offset);
     }
 
     @Post("address/{address}/history")
     public async postHistoryByAddress(
         @Path() address: string,
         @Body() query?: TxoData,
+        @Query() tag?: string,
         @Query() type?: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
@@ -74,7 +78,7 @@ export class TxosController extends Controller {
         @Query() origins = false
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        return this.searchByAddress(address, false, query, type, bsv20, origins, limit, offset);
+        return this.searchByAddress(address, false, query, tag, type, bsv20, origins, limit, offset);
     }
 
     static async refreshAddress(address: string, force = false) {
@@ -124,7 +128,7 @@ export class TxosController extends Controller {
         return balance;
     }
 
-    public async searchByAddress(address: string, unspent = true, query?: TxoData, type = '', bsv20 = false, origins = false, limit: number = 100, offset: number = 0): Promise<Txo[]> {
+    public async searchByAddress(address: string, unspent = true, query?: TxoData, tag = '', type = '', bsv20 = false, origins = false, limit: number = 100, offset: number = 0): Promise<Txo[]> {
         // const start = Date.now();
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf];
@@ -146,11 +150,14 @@ export class TxosController extends Controller {
             params.push(query);
             sql.push(`AND (t.data @> $${params.length} OR o.data @> $${params.length})`)
         }
-
         if (type) {
             params.push(`${type}%`);
             sql.push(`AND o.filetype like $${params.length}`)
             // sql.push(`AND t.data->'insc'->'file'->>'type' like $${params.length}`)
+        }
+        if (tag) {
+            params.push(tag);
+            sql.push(`AND (t.data ? $${params.length} OR o.data ? $${params.length})`)
         }
 
         sql.push(`ORDER BY height DESC, idx DESC`)
@@ -168,6 +175,7 @@ export class TxosController extends Controller {
     @Get("search")
     public async getTxoSearchAll(
         @Query() q?: string,
+        @Query() tag?: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() dir?: SortDirection,
@@ -179,12 +187,13 @@ export class TxosController extends Controller {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
         // console.log("Query:", query)
-        return Txo.search(false, query, limit, offset, dir, type);
+        return Txo.search(false, query, tag, limit, offset, dir, type);
     }
 
     @Post("search")
     public async postTxoSearchAll(
         @Body() query?: TxoData,
+        @Query() tag?: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() dir?: SortDirection,
@@ -192,12 +201,13 @@ export class TxosController extends Controller {
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         console.log("POST search")
-        return Txo.search(false, query, limit, offset, dir, type);
+        return Txo.search(false, query, tag, limit, offset, dir, type);
     }
 
     @Get("search/unspent")
     public async getTxoSearchUnspent(
         @Query() q?: string,
+        @Query() tag?: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() dir?: SortDirection,
@@ -208,19 +218,20 @@ export class TxosController extends Controller {
         if (q) {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
-        return Txo.search(true, query, limit, offset, dir, type);
+        return Txo.search(true, query, tag, limit, offset, dir, type);
     }
 
     @Post("search/unspent")
     public async postTxoSearchUnspent(
         @Body() query?: TxoData,
+        @Query() tag?: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() dir?: SortDirection,
         @Query() type?: string,
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        return Txo.search(true, query, limit, offset, dir, type);
+        return Txo.search(true, query, tag, limit, offset, dir, type);
     }
 
     @Get("{outpoint}")

@@ -15,6 +15,7 @@ export class InscriptionsController extends Controller {
     @Get("search")
     public async getInscriptionSearch(
         @Query() q?: string,
+        @Query() tag?: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() dir?: SortDirection
@@ -25,7 +26,7 @@ export class InscriptionsController extends Controller {
             query = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
         console.log("GET search", {query, limit, offset, dir})
-        return Txo.search(false, query, limit, offset, dir);
+        return Txo.search(false, query, tag, limit, offset, dir);
     }
 
     /**
@@ -38,13 +39,14 @@ export class InscriptionsController extends Controller {
     @Post("search")
     public async postInscriptionSearch(
         @Body() query?: TxoData,
+        @Query() tag?: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() dir?: SortDirection
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         console.log("POST search")
-        return Txo.search(false, query, limit, offset, dir);
+        return Txo.search(false, query, tag, limit, offset, dir);
     }
 
     @Get("recent")

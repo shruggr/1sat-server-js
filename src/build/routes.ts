@@ -235,6 +235,7 @@ export function RegisterRoutes(app: Router) {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
                     q: {"in":"query","name":"q","dataType":"string"},
                     type: {"in":"query","name":"type","dataType":"string"},
+                    tag: {"in":"query","name":"tag","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     bsv20: {"default":false,"in":"query","name":"bsv20","dataType":"boolean"},
@@ -272,6 +273,7 @@ export function RegisterRoutes(app: Router) {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
                     query: {"in":"body","name":"query","ref":"TxoData"},
                     type: {"in":"query","name":"type","dataType":"string"},
+                    tag: {"in":"query","name":"tag","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     bsv20: {"default":false,"in":"query","name":"bsv20","dataType":"boolean"},
@@ -308,6 +310,7 @@ export function RegisterRoutes(app: Router) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
                     q: {"in":"query","name":"q","dataType":"string"},
+                    tag: {"in":"query","name":"tag","dataType":"string"},
                     type: {"in":"query","name":"type","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
@@ -344,6 +347,7 @@ export function RegisterRoutes(app: Router) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
                     query: {"in":"body","name":"query","ref":"TxoData"},
+                    tag: {"in":"query","name":"tag","dataType":"string"},
                     type: {"in":"query","name":"type","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
@@ -410,6 +414,7 @@ export function RegisterRoutes(app: Router) {
             function TxosController_getTxoSearchAll(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     q: {"in":"query","name":"q","dataType":"string"},
+                    tag: {"in":"query","name":"tag","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     dir: {"in":"query","name":"dir","ref":"SortDirection"},
@@ -444,6 +449,7 @@ export function RegisterRoutes(app: Router) {
             function TxosController_postTxoSearchAll(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     query: {"in":"body","name":"query","ref":"TxoData"},
+                    tag: {"in":"query","name":"tag","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     dir: {"in":"query","name":"dir","ref":"SortDirection"},
@@ -478,6 +484,7 @@ export function RegisterRoutes(app: Router) {
             function TxosController_getTxoSearchUnspent(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     q: {"in":"query","name":"q","dataType":"string"},
+                    tag: {"in":"query","name":"tag","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     dir: {"in":"query","name":"dir","ref":"SortDirection"},
@@ -512,6 +519,7 @@ export function RegisterRoutes(app: Router) {
             function TxosController_postTxoSearchUnspent(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     query: {"in":"body","name":"query","ref":"TxoData"},
+                    tag: {"in":"query","name":"tag","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     dir: {"in":"query","name":"dir","ref":"SortDirection"},
@@ -1251,6 +1259,7 @@ export function RegisterRoutes(app: Router) {
             function InscriptionsController_getInscriptionSearch(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     q: {"in":"query","name":"q","dataType":"string"},
+                    tag: {"in":"query","name":"tag","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     dir: {"in":"query","name":"dir","ref":"SortDirection"},
@@ -1284,6 +1293,7 @@ export function RegisterRoutes(app: Router) {
             function InscriptionsController_postInscriptionSearch(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     query: {"in":"body","name":"query","ref":"TxoData"},
+                    tag: {"in":"query","name":"tag","dataType":"string"},
                     limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     dir: {"in":"query","name":"dir","ref":"SortDirection"},
