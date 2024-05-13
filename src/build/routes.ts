@@ -403,68 +403,6 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/txos/:outpoint',
-            ...(fetchMiddlewares<RequestHandler>(TxosController)),
-            ...(fetchMiddlewares<RequestHandler>(TxosController.prototype.getTxoByOutpoint)),
-
-            function TxosController_getTxoByOutpoint(request: ExRequest, response: ExResponse, next: any) {
-            const args: Record<string, TsoaRoute.ParameterSchema> = {
-                    outpoint: {"in":"path","name":"outpoint","required":true,"dataType":"string"},
-                    script: {"default":false,"in":"query","name":"script","dataType":"boolean"},
-            };
-
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = templateService.getValidatedArgs({ args, request, response });
-
-                const controller = new TxosController();
-
-              templateService.apiHandler({
-                methodName: 'getTxoByOutpoint',
-                controller,
-                response,
-                next,
-                validatedArgs,
-                successStatus: undefined,
-              });
-            } catch (err) {
-                return next(err);
-            }
-        });
-        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/txos/outpoints',
-            ...(fetchMiddlewares<RequestHandler>(TxosController)),
-            ...(fetchMiddlewares<RequestHandler>(TxosController.prototype.postOutpoints)),
-
-            function TxosController_postOutpoints(request: ExRequest, response: ExResponse, next: any) {
-            const args: Record<string, TsoaRoute.ParameterSchema> = {
-                    outpoints: {"in":"body","name":"outpoints","required":true,"dataType":"array","array":{"dataType":"string"}},
-                    script: {"default":false,"in":"query","name":"script","dataType":"boolean"},
-            };
-
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = templateService.getValidatedArgs({ args, request, response });
-
-                const controller = new TxosController();
-
-              templateService.apiHandler({
-                methodName: 'postOutpoints',
-                controller,
-                response,
-                next,
-                validatedArgs,
-                successStatus: undefined,
-              });
-            } catch (err) {
-                return next(err);
-            }
-        });
-        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/txos/search',
             ...(fetchMiddlewares<RequestHandler>(TxosController)),
             ...(fetchMiddlewares<RequestHandler>(TxosController.prototype.getTxoSearchAll)),
@@ -590,6 +528,68 @@ export function RegisterRoutes(app: Router) {
 
               templateService.apiHandler({
                 methodName: 'postTxoSearchUnspent',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/txos/:outpoint',
+            ...(fetchMiddlewares<RequestHandler>(TxosController)),
+            ...(fetchMiddlewares<RequestHandler>(TxosController.prototype.getTxoByOutpoint)),
+
+            function TxosController_getTxoByOutpoint(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    outpoint: {"in":"path","name":"outpoint","required":true,"dataType":"string"},
+                    script: {"default":false,"in":"query","name":"script","dataType":"boolean"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new TxosController();
+
+              templateService.apiHandler({
+                methodName: 'getTxoByOutpoint',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/txos/outpoints',
+            ...(fetchMiddlewares<RequestHandler>(TxosController)),
+            ...(fetchMiddlewares<RequestHandler>(TxosController.prototype.postOutpoints)),
+
+            function TxosController_postOutpoints(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    outpoints: {"in":"body","name":"outpoints","required":true,"dataType":"array","array":{"dataType":"string"}},
+                    script: {"default":false,"in":"query","name":"script","dataType":"boolean"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new TxosController();
+
+              templateService.apiHandler({
+                methodName: 'postOutpoints',
                 controller,
                 response,
                 next,

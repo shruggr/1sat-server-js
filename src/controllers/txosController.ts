@@ -124,43 +124,6 @@ export class TxosController extends Controller {
         return balance;
     }
 
-    @Get("{outpoint}")
-    public async getTxoByOutpoint(
-        @Path() outpoint: string,
-        @Query() script = false
-    ): Promise<Txo> {
-        this.setHeader('Cache-Control', 'public,max-age=86400')
-        const txo = await Txo.getByOutpoint(Outpoint.fromString(outpoint));
-        if (script) {
-            const tx = await loadTx(txo.txid);
-            txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
-        }
-        return txo
-    }
-
-    @Post("outpoints")
-    public async postOutpoints(
-        @Body() outpoints: string[],
-        @Query() script = false,
-    ): Promise<Txo[]> {
-        const op = outpoints.map((op) => Outpoint.fromString(op).toBuffer());
-        const { rows } = await pool.query(`
-            SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
-            FROM txos t
-            LEFT JOIN txos o ON o.outpoint = t.origin
-            WHERE t.outpoint = ANY($1)`,
-            [op]
-        );
-        return Promise.all(rows.map(async (row: any) => {
-            const txo = Txo.fromRow(row)
-            if (script) {
-                const tx = await loadTx(txo.txid);
-                txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
-            }
-            return txo;
-        }));
-    }
-
     public async searchByAddress(address: string, unspent = true, query?: TxoData, type = '', bsv20 = false, origins = false, limit: number = 100, offset: number = 0): Promise<Txo[]> {
         // const start = Date.now();
         const add = Address.fromString(address);
@@ -258,5 +221,42 @@ export class TxosController extends Controller {
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         return Txo.search(true, query, limit, offset, dir, type);
+    }
+
+    @Get("{outpoint}")
+    public async getTxoByOutpoint(
+        @Path() outpoint: string,
+        @Query() script = false
+    ): Promise<Txo> {
+        this.setHeader('Cache-Control', 'public,max-age=86400')
+        const txo = await Txo.getByOutpoint(Outpoint.fromString(outpoint));
+        if (script) {
+            const tx = await loadTx(txo.txid);
+            txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
+        }
+        return txo
+    }
+
+    @Post("outpoints")
+    public async postOutpoints(
+        @Body() outpoints: string[],
+        @Query() script = false,
+    ): Promise<Txo[]> {
+        const op = outpoints.map((op) => Outpoint.fromString(op).toBuffer());
+        const { rows } = await pool.query(`
+            SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
+            FROM txos t
+            LEFT JOIN txos o ON o.outpoint = t.origin
+            WHERE t.outpoint = ANY($1)`,
+            [op]
+        );
+        return Promise.all(rows.map(async (row: any) => {
+            const txo = Txo.fromRow(row)
+            if (script) {
+                const tx = await loadTx(txo.txid);
+                txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
+            }
+            return txo;
+        }));
     }
 }

@@ -1007,88 +1007,6 @@
 				]
 			}
 		},
-		"/api/txos/{outpoint}": {
-			"get": {
-				"operationId": "GetTxoByOutpoint",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/Txo"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "outpoint",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "script",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					}
-				]
-			}
-		},
-		"/api/txos/outpoints": {
-			"post": {
-				"operationId": "PostOutpoints",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Txo"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "query",
-						"name": "script",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					}
-				],
-				"requestBody": {
-					"required": true,
-					"content": {
-						"application/json": {
-							"schema": {
-								"items": {
-									"type": "string"
-								},
-								"type": "array"
-							}
-						}
-					}
-				}
-			}
-		},
 		"/api/txos/search": {
 			"get": {
 				"operationId": "GetTxoSearchAll",
@@ -1351,6 +1269,88 @@
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/TxoData"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/txos/{outpoint}": {
+			"get": {
+				"operationId": "GetTxoByOutpoint",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/Txo"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "outpoint",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "script",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/txos/outpoints": {
+			"post": {
+				"operationId": "PostOutpoints",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "script",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
 							}
 						}
 					}
