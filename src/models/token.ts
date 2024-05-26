@@ -28,6 +28,7 @@ export class Token {
     fundUsed = 0;
     fundBalance = 0;
     data?: TxoData;
+    contract?: string;
 
     static fromRow(row: any) {
         const txo = new Token();
@@ -57,6 +58,7 @@ export class Token {
         txo.fundUsed = row.fund_used || 0;
         txo.fundBalance = row.fund_balance || 0;
         txo.data = row.data;
+        txo.contract = row.contract;
 
         return txo;
     }

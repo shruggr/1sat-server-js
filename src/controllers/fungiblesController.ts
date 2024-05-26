@@ -501,8 +501,9 @@ export class FungiblesController extends Controller {
     ): Promise<Token> {
         const tokenId = Outpoint.fromString(id).toBuffer();
         const { rows: [row] } = await pool.query(`
-            SELECT *, fund_total>=${includeThreshold} as included
-            FROM bsv20_v2
+            SELECT *, fund_total>=${includeThreshold} as included, t.data->'insc'->'json'->>'contract' as contract
+            FROM bsv20_v2 b
+            JOIN txos t ON t.txid=b.txid AND t.vout=b.vout
             WHERE id=$1`,
             [tokenId],
         );

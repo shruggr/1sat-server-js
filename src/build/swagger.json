@@ -429,6 +429,9 @@
 					},
 					"data": {
 						"$ref": "#/components/schemas/TxoData"
+					},
+					"contract": {
+						"type": "string"
 					}
 				},
 				"type": "object",
