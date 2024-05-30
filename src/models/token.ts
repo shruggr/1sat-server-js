@@ -21,7 +21,7 @@ export class Token {
     pctMinted?: number;
     accounts?: number;
     pending?: string;
-    pendingOps = 0;
+    pendingOps? = 0;
     included = false;
     fundAddress?: string;
     fundTotal = 0;
@@ -50,7 +50,7 @@ export class Token {
         txo.pctMinted = row.pct_minted;
         txo.accounts = row.accounts;
         txo.pending = row.pending;
-        txo.pendingOps = row.pending_ops || 0;
+        txo.pendingOps = row.pending_ops;
         txo.included = row.included;
         txo.fundAddress = row.fund_pkhash && Address.fromPubKeyHashBuf(row.fund_pkhash).toString();
         txo.fundTotal = row.fund_total || 0;
