@@ -1894,17 +1894,13 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/bsv20/:address/id/:id/locks',
+        app.get('/api/bsv20/id/:id/locked',
             ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
             ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20LocksById)),
 
             function FungiblesController_getBsv20LocksById(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
-                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
                     id: {"in":"path","name":"id","required":true,"dataType":"string"},
-                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
-                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
-                    dir: {"default":"DESC","in":"query","name":"dir","ref":"SortDirection"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -1928,11 +1924,75 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/bsv20/id/:id/burned',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20BurnsById)),
+
+            function FungiblesController_getBsv20BurnsById(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    id: {"in":"path","name":"id","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new FungiblesController();
+
+              templateService.apiHandler({
+                methodName: 'getBsv20BurnsById',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/bsv20/:address/id/:id/locks',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getAddressBsv20LocksById)),
+
+            function FungiblesController_getAddressBsv20LocksById(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+                    id: {"in":"path","name":"id","required":true,"dataType":"string"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+                    dir: {"default":"DESC","in":"query","name":"dir","ref":"SortDirection"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new FungiblesController();
+
+              templateService.apiHandler({
+                methodName: 'getAddressBsv20LocksById',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/bsv20/:address/tick/:tick/locks',
             ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
-            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20LocksByTick)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getAddressBsv20LocksByTick)),
 
-            function FungiblesController_getBsv20LocksByTick(request: ExRequest, response: ExResponse, next: any) {
+            function FungiblesController_getAddressBsv20LocksByTick(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
                     tick: {"in":"path","name":"tick","required":true,"dataType":"string"},
@@ -1950,7 +2010,7 @@ export function RegisterRoutes(app: Router) {
                 const controller = new FungiblesController();
 
               templateService.apiHandler({
-                methodName: 'getBsv20LocksByTick',
+                methodName: 'getAddressBsv20LocksByTick',
                 controller,
                 response,
                 next,

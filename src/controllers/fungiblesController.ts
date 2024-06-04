@@ -93,7 +93,7 @@ export class FungiblesController extends Controller {
 
         const sql = `SELECT txid, vout, op, tick, id, listing, status, amt
             FROM bsv20_txos
-            WHERE pkhash=$1 AND spend='\\x' AND status IN (0, 1)`
+            WHERE pkhash=$1 AND spend='\\x' AND status IN (0, 1) AND op != 'burn'`
         const { rows } = await pool.query(sql, [hashBuf]);
         // console.log(sql, hashBuf.toString('hex'))
 
@@ -207,7 +207,7 @@ export class FungiblesController extends Controller {
         let sql = `SELECT *
             FROM bsv20_txos
             WHERE pkhash = $1 AND spend = '\\x' AND 
-                status=1 AND tick=$2
+                status=1 AND tick=$2 AND op != 'burn'
                 ${listing ? 'AND listing=true' : ''}
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
@@ -257,7 +257,7 @@ export class FungiblesController extends Controller {
         let sql = `SELECT *
             FROM bsv20_txos
             WHERE pkhash = $1 AND spend = '\\x' AND 
-                status=1 AND id=$2
+                status=1 AND id=$2 AND op != 'burn'
                 ${listing ? 'AND listing=true' : ''}
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
@@ -306,7 +306,7 @@ export class FungiblesController extends Controller {
             FROM txos t
             JOIN bsv20_txos b ON b.txid=t.txid AND b.vout=t.vout
             WHERE t.pkhash = $1 AND t.spend = '\\x' AND 
-            t.data ? 'lock' AND b.status=1
+            t.data ? 'lock' AND b.status=1 AND b.op != 'burn'
             ORDER BY t.height ${dir}, t.idx ${dir}
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`
@@ -316,8 +316,51 @@ export class FungiblesController extends Controller {
         return rows.map(BSV20Txo.fromRow);
     }
 
-    @Get("{address}/id/{id}/locks")
+    @Get("id/{id}/locked")
     public async getBsv20LocksById(
+        @Path() id: string,
+    ): Promise<number> {
+        const cacheId = `locked:${id}`
+        let cached = await redis.get(cacheId)
+        if(cached) {
+            return parseInt(cached, 10)
+        }
+        const params: any[] = [Outpoint.fromString(id).toBuffer()];
+        let sql = `SELECT sum(b.amt) as locked_amt
+            FROM txos t
+            JOIN bsv20_txos b ON b.txid=t.txid AND b.vout=t.vout
+            WHERE t.spend = '\\x' AND 
+                t.data ? 'lock' AND b.status=1 AND b.id=$1`
+
+        // console.log(sql, params)
+        const { rows: [stats] } = await pool.query(sql, params);
+        await redis.set(cacheId, stats.locked_amt, 'EX', 600)
+        return stats.locked_amt
+    }
+
+    @Get("id/{id}/burned")
+    public async getBsv20BurnsById(
+        @Path() id: string,
+    ): Promise<number> {
+        const cacheId = `burned:${id}`
+        let cached = await redis.get(cacheId)
+        if(cached) {
+            return parseInt(cached, 10)
+        }
+        const params: any[] = [Outpoint.fromString(id).toBuffer()];
+        let sql = `SELECT COALESCE(sum(amt), 0) as burned_amt
+            FROM bsv20_txos
+            WHERE status=1 AND op='burn' AND id=$1`
+
+        // console.log(sql, params)
+        const { rows: [stats] } = await pool.query(sql, params);
+        await redis.set(cacheId, stats.burned_amt, 'EX', 600)
+        return stats.burned_amt
+    }
+
+
+    @Get("{address}/id/{id}/locks")
+    public async getAddressBsv20LocksById(
         @Path() address: string,
         @Path() id: string,
         @Query() limit: number = 100,
@@ -341,7 +384,7 @@ export class FungiblesController extends Controller {
     }
 
     @Get("{address}/tick/{tick}/locks")
-    public async getBsv20LocksByTick(
+    public async getAddressBsv20LocksByTick(
         @Path() address: string,
         @Path() tick: string,
         @Query() limit: number = 100,
@@ -377,7 +420,7 @@ export class FungiblesController extends Controller {
         const params: any[] = [];
         let sql = `SELECT *
             FROM bsv20_txos
-            WHERE pkhash = $${params.push(add.hashBuf)} AND spend = '\\x'
+            WHERE pkhash = $${params.push(add.hashBuf)} AND spend = '\\x' AND op != 'burn'
                 ${status !== undefined ? `AND status=$${params.push(status)}` : ''}
                 ${type == 'v1' ? "AND tick != ''" : type == 'v2' ? "AND id != '\\x'" : ''}
             ORDER BY height ${dir}, idx ${dir}
