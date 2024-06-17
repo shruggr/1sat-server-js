@@ -3031,6 +3031,37 @@
 				]
 			}
 		},
+		"/api/bsv20/txid/{txid}": {
+			"get": {
+				"operationId": "GetBsv20ByTxid",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BSV20Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "txid",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/bsv20/spends/{txid}": {
 			"get": {
 				"operationId": "GetBsv20Spends",

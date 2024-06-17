@@ -70,6 +70,20 @@ export class FungiblesController extends Controller {
         return BSV20Txo.fromRow(row);
     }
 
+    @Get("txid/{txid}")
+    public async getBsv20ByTxid(
+        @Path() txid: string,
+    ): Promise<BSV20Txo[]> {
+        let sql = `SELECT *
+            FROM bsv20_txos
+            WHERE txid=$1`
+        const params = [Buffer.from(txid, 'hex')]
+
+        // console.log(sql, params)
+        const { rows } = await pool.query(sql, params);
+        return rows.map(row => BSV20Txo.fromRow(row));
+    }
+
     @Get("spends/{txid}")
     public async getBsv20Spends(
         @Path() txid: string,
