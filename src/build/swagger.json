@@ -202,26 +202,6 @@
 				"type": "object",
 				"additionalProperties": false
 			},
-			"Claim": {
-				"properties": {
-					"sub": {
-						"type": "string"
-					},
-					"type": {
-						"type": "string"
-					},
-					"value": {
-						"type": "string"
-					}
-				},
-				"required": [
-					"sub",
-					"type",
-					"value"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
 			"Origin": {
 				"properties": {
 					"outpoint": {
@@ -238,12 +218,6 @@
 						"properties": {},
 						"additionalProperties": {},
 						"type": "object"
-					},
-					"claims": {
-						"items": {
-							"$ref": "#/components/schemas/Claim"
-						},
-						"type": "array"
 					},
 					"inum": {
 						"type": "number",
@@ -602,6 +576,51 @@
 					"all"
 				],
 				"type": "object"
+			},
+			"BlockHeader": {
+				"properties": {
+					"hash": {
+						"type": "string"
+					},
+					"height": {
+						"type": "number",
+						"format": "double"
+					},
+					"version": {
+						"type": "number",
+						"format": "double"
+					},
+					"prevHash": {
+						"type": "string"
+					},
+					"merkleroot": {
+						"type": "string"
+					},
+					"time": {
+						"type": "number",
+						"format": "double"
+					},
+					"bits": {
+						"type": "number",
+						"format": "double"
+					},
+					"nonce": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"hash",
+					"height",
+					"version",
+					"prevHash",
+					"merkleroot",
+					"time",
+					"bits",
+					"nonce"
+				],
+				"type": "object",
+				"additionalProperties": false
 			}
 		},
 		"securitySchemes": {}
@@ -1623,37 +1642,6 @@
 				}
 			}
 		},
-		"/api/origins/{origin}/claims": {
-			"get": {
-				"operationId": "GetClaims",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/Claim"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "origin",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					}
-				]
-			}
-		},
 		"/api/origins/count": {
 			"get": {
 				"operationId": "GetCount",
@@ -1702,6 +1690,32 @@
 					{
 						"in": "path",
 						"name": "num",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/origins/{origin}/map": {
+			"get": {
+				"operationId": "GetOriginMap",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "origin",
 						"required": true,
 						"schema": {
 							"type": "string"
@@ -4324,6 +4338,93 @@
 					{
 						"in": "path",
 						"name": "collectionId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/blocks/tip": {
+			"get": {
+				"operationId": "GetChaintip",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BlockHeader"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/api/blocks/list/{id}": {
+			"get": {
+				"operationId": "ListBlocks",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/BlockHeader"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": "100",
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/blocks/get/{id}": {
+			"get": {
+				"operationId": "GetBlock",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BlockHeader"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "id",
 						"required": true,
 						"schema": {
 							"type": "string"

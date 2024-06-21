@@ -13,17 +13,11 @@ export interface InscriptionData {
     data?: Buffer;
 }
 
-export interface Claim {
-    sub: string;
-    type: string;
-    value: string;
-}
 export interface Origin {
     outpoint: Outpoint;
     data?: TxoData;
     num?: number;
     map?: { [key: string]: any };
-    claims?: Claim[];
     inum?: number;
 }
 
@@ -215,7 +209,7 @@ export class Txo {
             let wheres = [] as string[]
             if (query) {
                 params.push(JSON.stringify(query));
-                wheres.push(`t.data @> $${params.length}`)
+                wheres.push(`o.data @> $${params.length}`)
             }
             if(unspent) { 
                 wheres.push(`t.spend = '\\x'`)

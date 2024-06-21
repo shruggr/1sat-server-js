@@ -1,27 +1,11 @@
 import { NotFound } from 'http-errors';
 import { Controller, Get, Path, Route } from "tsoa";
 import { pool } from "../db";
-import { Claim, Txo } from '../models/txo';
+import { Txo } from '../models/txo';
 import { Outpoint } from '../models/outpoint';
 
 @Route("api/origins")
 export class OriginsController extends Controller {
-    @Get("{origin}/claims")
-    public async getClaims(
-        @Path() origin: string,
-    ): Promise<Claim[]> {
-        const { rows } = await pool.query(`
-            SELECT t.data->'claims' as oclaims
-            FROM txos t
-            WHERE origin = $1 AND data->'claims' IS NOT NULL`, 
-            [Outpoint.fromString(origin).toBuffer()],
-        )
-
-        const claims: Claim[] = [];
-        rows.forEach(({oclaims}) => claims.push(...oclaims))
-        return claims;
-    }
-
     @Get("count")
     public async getCount(): Promise<{count: number}> {
         const { rows: [{count}] } = await pool.query(`SELECT MAX(num) as count FROM inscriptions`);
@@ -48,5 +32,21 @@ export class OriginsController extends Controller {
             throw new NotFound();
         }
         return Txo.fromRow(latest);
+    }
+
+    @Get("{origin}/map")
+    public async getOriginMap(
+        @Path() origin: string,
+    ): Promise<any> {
+        const {rows: {map}} = await pool.query(`
+            SELECT map
+            FROM origins
+            WHERE origin = $1`,
+            [Outpoint.fromString(origin).toBuffer()]
+        );
+        if (!map) {
+            throw new NotFound();
+        }
+        return map;
     }
 }

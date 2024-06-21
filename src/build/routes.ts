@@ -24,6 +24,8 @@ import { FungiblesController } from './../controllers/fungiblesController';
 import { ContentController } from './../controllers/contentController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { CollectionsController } from './../controllers/collectionsController';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { BlocksController } from './../controllers/blocksController';
 import type { Request as ExRequest, Response as ExResponse, RequestHandler, Router } from 'express';
 
 
@@ -92,16 +94,6 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Claim": {
-        "dataType": "refObject",
-        "properties": {
-            "sub": {"dataType":"string","required":true},
-            "type": {"dataType":"string","required":true},
-            "value": {"dataType":"string","required":true},
-        },
-        "additionalProperties": false,
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Origin": {
         "dataType": "refObject",
         "properties": {
@@ -109,7 +101,6 @@ const models: TsoaRoute.Models = {
             "data": {"ref":"TxoData"},
             "num": {"dataType":"double"},
             "map": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
-            "claims": {"dataType":"array","array":{"dataType":"refObject","ref":"Claim"}},
             "inum": {"dataType":"double"},
         },
         "additionalProperties": false,
@@ -214,6 +205,21 @@ const models: TsoaRoute.Models = {
     "TokenBalanceResponse": {
         "dataType": "refAlias",
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"listed":{"dataType":"nestedObjectLiteral","nestedProperties":{"pending":{"dataType":"string","required":true},"confirmed":{"dataType":"string","required":true}},"required":true},"all":{"dataType":"nestedObjectLiteral","nestedProperties":{"pending":{"dataType":"string","required":true},"confirmed":{"dataType":"string","required":true}},"required":true},"icon":{"dataType":"string"},"dec":{"dataType":"double"},"sym":{"dataType":"string"},"id":{"dataType":"string"},"tick":{"dataType":"string"}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "BlockHeader": {
+        "dataType": "refObject",
+        "properties": {
+            "hash": {"dataType":"string","required":true},
+            "height": {"dataType":"double","required":true},
+            "version": {"dataType":"double","required":true},
+            "prevHash": {"dataType":"string","required":true},
+            "merkleroot": {"dataType":"string","required":true},
+            "time": {"dataType":"double","required":true},
+            "bits": {"dataType":"double","required":true},
+            "nonce": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
@@ -818,36 +824,6 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/origins/:origin/claims',
-            ...(fetchMiddlewares<RequestHandler>(OriginsController)),
-            ...(fetchMiddlewares<RequestHandler>(OriginsController.prototype.getClaims)),
-
-            function OriginsController_getClaims(request: ExRequest, response: ExResponse, next: any) {
-            const args: Record<string, TsoaRoute.ParameterSchema> = {
-                    origin: {"in":"path","name":"origin","required":true,"dataType":"string"},
-            };
-
-            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-
-            let validatedArgs: any[] = [];
-            try {
-                validatedArgs = templateService.getValidatedArgs({ args, request, response });
-
-                const controller = new OriginsController();
-
-              templateService.apiHandler({
-                methodName: 'getClaims',
-                controller,
-                response,
-                next,
-                validatedArgs,
-                successStatus: undefined,
-              });
-            } catch (err) {
-                return next(err);
-            }
-        });
-        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/origins/count',
             ...(fetchMiddlewares<RequestHandler>(OriginsController)),
             ...(fetchMiddlewares<RequestHandler>(OriginsController.prototype.getCount)),
@@ -896,6 +872,36 @@ export function RegisterRoutes(app: Router) {
 
               templateService.apiHandler({
                 methodName: 'getOriginByNum',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/origins/:origin/map',
+            ...(fetchMiddlewares<RequestHandler>(OriginsController)),
+            ...(fetchMiddlewares<RequestHandler>(OriginsController.prototype.getOriginMap)),
+
+            function OriginsController_getOriginMap(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    origin: {"in":"path","name":"origin","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new OriginsController();
+
+              templateService.apiHandler({
+                methodName: 'getOriginMap',
                 controller,
                 response,
                 next,
@@ -2429,6 +2435,96 @@ export function RegisterRoutes(app: Router) {
 
               templateService.apiHandler({
                 methodName: 'getCollectionHolders',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/blocks/tip',
+            ...(fetchMiddlewares<RequestHandler>(BlocksController)),
+            ...(fetchMiddlewares<RequestHandler>(BlocksController.prototype.getChaintip)),
+
+            function BlocksController_getChaintip(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new BlocksController();
+
+              templateService.apiHandler({
+                methodName: 'getChaintip',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/blocks/list/:id',
+            ...(fetchMiddlewares<RequestHandler>(BlocksController)),
+            ...(fetchMiddlewares<RequestHandler>(BlocksController.prototype.listBlocks)),
+
+            function BlocksController_listBlocks(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    id: {"in":"path","name":"id","required":true,"dataType":"string"},
+                    limit: {"default":"100","in":"query","name":"limit","dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new BlocksController();
+
+              templateService.apiHandler({
+                methodName: 'listBlocks',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/blocks/get/:id',
+            ...(fetchMiddlewares<RequestHandler>(BlocksController)),
+            ...(fetchMiddlewares<RequestHandler>(BlocksController.prototype.getBlock)),
+
+            function BlocksController_getBlock(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    id: {"in":"path","name":"id","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new BlocksController();
+
+              templateService.apiHandler({
+                methodName: 'getBlock',
                 controller,
                 response,
                 next,
