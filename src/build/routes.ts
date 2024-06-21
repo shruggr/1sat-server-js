@@ -13,6 +13,8 @@ import { SPendsController } from './../controllers/spendsController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { OriginsController } from './../controllers/originsController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { OpnsController } from './../controllers/opnsController';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { MarketController } from './../controllers/marketController';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { LocksController } from './../controllers/locksController';
@@ -130,6 +132,17 @@ const models: TsoaRoute.Models = {
     "SortDirection": {
         "dataType": "refEnum",
         "enums": ["asc","desc","ASC","DESC"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "OpnsResponse": {
+        "dataType": "refObject",
+        "properties": {
+            "outpoint": {"ref":"Outpoint","required":true},
+            "origin": {"ref":"Outpoint","required":true},
+            "domain": {"dataType":"string","required":true},
+            "map": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
+        },
+        "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ListingSort": {
@@ -902,6 +915,36 @@ export function RegisterRoutes(app: Router) {
 
               templateService.apiHandler({
                 methodName: 'getOriginMap',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/opns/:domain',
+            ...(fetchMiddlewares<RequestHandler>(OpnsController)),
+            ...(fetchMiddlewares<RequestHandler>(OpnsController.prototype.getOpns)),
+
+            function OpnsController_getOpns(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    domain: {"in":"path","name":"domain","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new OpnsController();
+
+              templateService.apiHandler({
+                methodName: 'getOpns',
                 controller,
                 response,
                 next,
