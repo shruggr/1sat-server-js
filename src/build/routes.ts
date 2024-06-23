@@ -139,8 +139,21 @@ const models: TsoaRoute.Models = {
         "properties": {
             "outpoint": {"ref":"Outpoint","required":true},
             "origin": {"ref":"Outpoint","required":true},
+            "owner": {"dataType":"string","required":true},
             "domain": {"dataType":"string","required":true},
             "map": {"dataType":"nestedObjectLiteral","nestedProperties":{},"additionalProperties":{"dataType":"any"}},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "OpnsMine": {
+        "dataType": "refObject",
+        "properties": {
+            "outpoint": {"ref":"Outpoint","required":true},
+            "origin": {"ref":"Outpoint","required":true},
+            "domain": {"dataType":"string","required":true},
+            "pow": {"dataType":"string","required":true},
+            "script": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
@@ -945,6 +958,36 @@ export function RegisterRoutes(app: Router) {
 
               templateService.apiHandler({
                 methodName: 'getOpns',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/opns/:domain/mine',
+            ...(fetchMiddlewares<RequestHandler>(OpnsController)),
+            ...(fetchMiddlewares<RequestHandler>(OpnsController.prototype.getOpnsMine)),
+
+            function OpnsController_getOpnsMine(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    domain: {"in":"path","name":"domain","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new OpnsController();
+
+              templateService.apiHandler({
+                methodName: 'getOpnsMine',
                 controller,
                 response,
                 next,
