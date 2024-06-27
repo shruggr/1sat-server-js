@@ -202,6 +202,7 @@ const models: TsoaRoute.Models = {
             "vout": {"dataType":"double","default":0},
             "outpoint": {"ref":"Outpoint"},
             "owner": {"dataType":"string"},
+            "satoshis": {"dataType":"double","default":1},
             "script": {"dataType":"string"},
             "spend": {"dataType":"string"},
             "spendHeight": {"dataType":"double"},

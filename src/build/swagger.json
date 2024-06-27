@@ -482,6 +482,11 @@
 					"owner": {
 						"type": "string"
 					},
+					"satoshis": {
+						"type": "number",
+						"format": "double",
+						"default": 1
+					},
 					"script": {
 						"type": "string"
 					},

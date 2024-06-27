@@ -79,6 +79,7 @@ export interface Inscription {
     file?: File;
     parent?: string;
 }
+
 export class Txo {
     txid: string = '';
     vout: number = 0;

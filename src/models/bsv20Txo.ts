@@ -7,6 +7,7 @@ export class BSV20Txo {
     vout: number = 0;
     outpoint: Outpoint = new Outpoint();
     owner?: string;
+    satoshis = 1;
     script?: string;
     spend?: string;
     spendHeight?: number;
