@@ -307,6 +307,27 @@ export class FungiblesController extends Controller {
         return rows.map((row: any) => BSV20Txo.fromRow(row));
     }
 
+    @Get("{address}/id/{id}/txids")
+    public async getBsv21Txids(
+        @Path() address: string,
+        @Path() id: string,
+    ): Promise<string[]> {
+        const add = Address.fromString(address);
+        const params: any[] = [add.hashBuf, Outpoint.fromString(id).toBuffer()];
+        let sql = `SELECT DISTINCT txid
+            FROM bsv20_txos
+            WHERE pkhash = $1 AND spend != '\\x' AND 
+                status=1 AND id=$2`
+
+        // console.log(sql, params)
+        const { rows } = await pool.query(sql, params);
+        let ancestors: string[] = []
+        for (let row of rows) {
+            ancestors = await this.getAncestors(Outpoint.fromString(id), row.txid.toString('hex'), ancestors)
+        }
+        return ancestors
+    }
+
     @Get("{address}/locks")
     public async getBsv20Locks(
         @Path() address: string,
@@ -722,6 +743,29 @@ export class FungiblesController extends Controller {
         // console.log(sql, params);
         const { rows } = await pool.query(sql, params)
         return rows.map(BSV20Txo.fromRow)
+    }
+
+    async getAncestors(id: Outpoint, txid: string, descendants: string[] = [], cache = new Set<string>()): Promise<string[]> {
+        descendants = [txid, ...descendants]
+        if(txid == id.txid.toString('hex')) {
+            return descendants;
+        }
+
+        const { rows } = await pool.query(`
+            SELECT txid
+            FROM txos
+            WHERE spend!=$1`,
+            [Buffer.from(txid, 'hex')],
+        );
+
+        for (let row of rows) {
+            const txid = row.txid.toString('hex');
+            if (!cache.has(txid)) {
+                cache.add(txid);
+                descendants = await this.getAncestors(id, row.txid.toString('hex'), descendants, cache);
+            }
+        }
+        return descendants;
     }
 }
 
