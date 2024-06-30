@@ -214,15 +214,18 @@ export class FungiblesController extends Controller {
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() dir: SortDirection = SortDirection.DESC,
-        @Query() listing = false
+        @Query() listing?: boolean
     ): Promise<BSV20Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf, tick];
+        if (listing !== undefined) {
+            params.push(listing)
+        }
         let sql = `SELECT *
             FROM bsv20_txos
             WHERE pkhash = $1 AND spend = '\\x' AND 
                 status=1 AND tick=$2 AND op != 'burn'
-                ${listing ? 'AND listing=true' : ''}
+                ${listing !== undefined ? 'AND listing=$3' : ''}
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`
@@ -239,15 +242,18 @@ export class FungiblesController extends Controller {
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() dir: SortDirection = SortDirection.DESC,
-        @Query() listing = false
+        @Query() listing?: boolean
     ): Promise<BSV20Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf, tick];
+        if (listing !== undefined) {
+            params.push(listing)
+        }
         let sql = `SELECT *
             FROM bsv20_txos
             WHERE pkhash = $1 AND spend != '\\x' AND 
                 status=1 AND tick=$2
-                ${listing ? 'AND listing=true' : ''}
+                ${listing !== undefined ? 'AND listing=$3' : ''}
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`
@@ -264,15 +270,19 @@ export class FungiblesController extends Controller {
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() dir: SortDirection = SortDirection.DESC,
-        @Query() listing = false
+        @Query() listing?: boolean
     ): Promise<BSV20Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf, Outpoint.fromString(id).toBuffer()];
+        if (listing !== undefined) {
+            params.push(listing)
+        }
+
         let sql = `SELECT *
             FROM bsv20_txos
             WHERE pkhash = $1 AND spend = '\\x' AND 
                 status=1 AND id=$2 AND op != 'burn'
-                ${listing ? 'AND listing=true' : ''}
+                ${listing !== undefined ? 'AND listing=$3' : ''}
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`
@@ -289,15 +299,18 @@ export class FungiblesController extends Controller {
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() dir: SortDirection = SortDirection.DESC,
-        @Query() listing = false
+        @Query() listing?: boolean
     ): Promise<BSV20Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf, Outpoint.fromString(id).toBuffer()];
+        if (listing !== undefined) {
+            params.push(listing)
+        }
         let sql = `SELECT *
             FROM bsv20_txos
             WHERE pkhash = $1 AND spend != '\\x' AND 
                 status=1 AND id=$2
-                ${listing ? 'AND listing=true' : ''}
+                ${listing !== undefined ? 'AND listing=$3' : ''}
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`
@@ -746,15 +759,14 @@ export class FungiblesController extends Controller {
     }
 
     async getAncestors(id: Outpoint, txid: string, descendants: string[] = [], cache = new Set<string>()): Promise<string[]> {
+        console.log('loading ancestors', txid, descendants.length)
         descendants = [txid, ...descendants]
         if(txid == id.txid.toString('hex')) {
             return descendants;
         }
 
         const { rows } = await pool.query(`
-            SELECT txid
-            FROM txos
-            WHERE spend!=$1`,
+            SELECT txid FROM bsv20_txos WHERE spend=$1 AND status=1`,
             [Buffer.from(txid, 'hex')],
         );
 

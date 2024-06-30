@@ -3325,7 +3325,6 @@
 						"name": "listing",
 						"required": false,
 						"schema": {
-							"default": false,
 							"type": "boolean"
 						}
 					}
@@ -3401,7 +3400,6 @@
 						"name": "listing",
 						"required": false,
 						"schema": {
-							"default": false,
 							"type": "boolean"
 						}
 					}
@@ -3477,7 +3475,6 @@
 						"name": "listing",
 						"required": false,
 						"schema": {
-							"default": false,
 							"type": "boolean"
 						}
 					}
@@ -3553,7 +3550,6 @@
 						"name": "listing",
 						"required": false,
 						"schema": {
-							"default": false,
 							"type": "boolean"
 						}
 					}
