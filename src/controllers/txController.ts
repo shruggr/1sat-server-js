@@ -2,7 +2,7 @@ import * as createError from "http-errors";
 import { Redis } from "ioredis";
 import { Body, BodyProp, Controller, Get, Path, Post, Route } from "tsoa";
 import { Tx } from "@ts-bitcoin/core";
-import { loadTxo } from "../db";
+import { loadTxo, pool } from "../db";
 import { Outpoint } from "../models/outpoint";
 
 const {StandardToExtended} = require('bitcoin-ef')
@@ -183,6 +183,29 @@ export class TxController extends Controller {
         @Path() txid: string,
     ): Promise<void> {
         pubClient.publish('submit', txid);
+    }
+
+
+    @Get("{txid}/status")
+    public async getTxStatus(
+        @Path() txid: string,
+    ): Promise<{height: number, idx: number, hash: string} | undefined> {
+        const {rows: [row]} = await pool.query(`SELECT height, block_id, idx 
+            FROM txns WHERE txid=$1`, 
+            [Buffer.from(txid, 'hex')]
+        );
+        if (!row) {
+            throw new createError.NotFound();
+        } else if (!row.height) {
+            this.setStatus(204);
+            return;
+        } else {
+            return {
+                height: row.height,
+                idx: row.idx,
+                hash: row.block_id.toString('hex')
+            }
+        }
     }
 }
 

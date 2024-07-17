@@ -762,6 +762,36 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/tx/:txid/status',
+            ...(fetchMiddlewares<RequestHandler>(TxController)),
+            ...(fetchMiddlewares<RequestHandler>(TxController.prototype.getTxStatus)),
+
+            function TxController_getTxStatus(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    txid: {"in":"path","name":"txid","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new TxController();
+
+              templateService.apiHandler({
+                methodName: 'getTxStatus',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/stats',
             ...(fetchMiddlewares<RequestHandler>(StatsController)),
             ...(fetchMiddlewares<RequestHandler>(StatsController.prototype.getOpenListings)),
