@@ -10,6 +10,7 @@
   },
   "main": "lib/server.js",
   "dependencies": {
+    "@bsv/sdk": "^1.1.12",
     "@gorillapool/js-junglebus": "^0.4.1",
     "@ts-bitcoin/core": "^2.2.0",
     "axios": "^1.4.0",

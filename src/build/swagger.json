@@ -1655,6 +1655,101 @@
 				]
 			}
 		},
+		"/api/tx/{txid}/rawtx": {
+			"get": {
+				"operationId": "GetTxRawtx",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "txid",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/tx/{txid}/proof": {
+			"get": {
+				"operationId": "GetTxProof",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "txid",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/tx/{txid}": {
+			"get": {
+				"operationId": "GetTx",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"proof": {
+											"type": "string"
+										},
+										"rawtx": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"rawtx"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "txid",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
 		"/api/stats": {
 			"get": {
 				"operationId": "GetOpenListings",
@@ -3448,6 +3543,14 @@
 						"schema": {
 							"type": "boolean"
 						}
+					},
+					{
+						"in": "query",
+						"name": "sale",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
 					}
 				]
 			}
@@ -3598,44 +3701,13 @@
 						"schema": {
 							"type": "boolean"
 						}
-					}
-				]
-			}
-		},
-		"/api/bsv20/{address}/id/{id}/txids": {
-			"get": {
-				"operationId": "GetBsv21Txids",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"type": "string"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "address",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
 					},
 					{
-						"in": "path",
-						"name": "id",
-						"required": true,
+						"in": "query",
+						"name": "sale",
+						"required": false,
 						"schema": {
-							"type": "string"
+							"type": "boolean"
 						}
 					}
 				]
@@ -4402,6 +4474,76 @@
 						"in": "query",
 						"name": "address",
 						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/{address}/id/{id}/txids": {
+			"get": {
+				"operationId": "GetBsv21Txids",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"type": "string"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/{outpoint}/ancestors": {
+			"get": {
+				"operationId": "GetBsv20Ancestors",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"type": "string"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "outpoint",
+						"required": true,
 						"schema": {
 							"type": "string"
 						}

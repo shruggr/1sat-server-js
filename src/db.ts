@@ -4,7 +4,6 @@ import createError, { NotFound } from 'http-errors';
 import { Redis } from "ioredis";
 import { Pool } from 'pg';
 import { Outpoint } from "./models/outpoint";
-// import {PreviousOutput} from 'bitcoin-ef/dist/typescript-npm-package.esm'
 
 const { POSTGRES_FULL, BITCOIN_HOST, BITCOIN_PORT, JUNGLEBUS, REDIS } = process.env;
 export const jb = new JungleBusClient(JUNGLEBUS || 'https://junglebus.gorillapool.io');
@@ -18,57 +17,74 @@ console.log("POSTGRES", POSTGRES)
 
 export const pool = new Pool({ connectionString: POSTGRES });
 
-export async function loadTx(txid: string): Promise<Tx> {
-    let rawtx = await redis.hgetBuffer('tx', txid);
-    // console.log("from cache", rawtx?.toString('hex'))
-    try {
-        if (rawtx) {
-            console.log(`Tx ${txid} from redis ${rawtx.length} bytes`)
-            const tx = Tx.fromBuffer(rawtx);
-            return tx
-        }
-    } catch {
-        console.log('Fetch from redis error:', txid)
-    }
-    try {
-        const url = `${JUNGLEBUS}/v1/transaction/get/${txid}/bin`
-        const resp = await fetch(url);
-        if (!resp.ok) {
-            throw createError(resp.status, resp.statusText)
-        }
-
-        if (resp.status >= 200 && resp.status < 300) {
-            rawtx = Buffer.from(await resp.arrayBuffer())
-            console.log(`Tx ${txid} from jb ${rawtx.length} bytes`)
-            const tx = Tx.fromBuffer(rawtx);
-            await redis.hset('tx', txid, rawtx)
-            return tx
-        }
-    } catch {
-        console.log('Fetch from JB error:', txid)
-    }
-
-    try {
-        const url = `http://${BITCOIN_HOST}:${BITCOIN_PORT}/rest/tx/${txid}.bin`
-        const resp = await fetch(url);
-        if (!resp.ok) {
-            throw createError(resp.status, resp.statusText)
-        }
-        if (resp.status >= 200 && resp.status < 300) {
-            rawtx = Buffer.from(await resp.arrayBuffer())
-            console.log(`Tx ${txid} from node ${rawtx.length} bytes`)
-            const tx = Tx.fromBuffer(rawtx);
-            await redis.hset('tx', txid, rawtx)
-            return tx
-        }
-    } catch {
-        console.log('Fetch from node error:', txid)
-    }
+export async function loadRawtx(txid: string): Promise<Buffer> {
+    let rawtx = await redis.hgetBuffer('tx', txid).catch(console.error);
 
     if (!rawtx) {
+        const url = `${JUNGLEBUS}/v1/transaction/get/${txid}/bin`
+        const resp = await fetch(url);
+        if (resp.ok && resp.status == 200) {
+            const buf = await resp.arrayBuffer();
+            if (buf.byteLength > 0) {
+                rawtx = Buffer.from(buf);
+                await redis.hset('tx', txid, rawtx);
+            }
+        } else console.error('JB error:', txid, resp.status, resp.statusText)
+    }
+
+    if (!rawtx && BITCOIN_HOST) {
+        const url = `http://${BITCOIN_HOST}:${BITCOIN_PORT}/rest/tx/${txid}.bin`
+        const resp = await fetch(url);
+        if (resp.ok && resp.status == 200) {
+            const buf = await resp.arrayBuffer();
+            if (buf.byteLength > 0) {
+                rawtx = Buffer.from(buf);
+                await redis.hset('tx', txid, rawtx);
+            }
+        } else console.error('Node error:', txid, resp.status, resp.statusText)
+    }
+
+    if (rawtx) return rawtx;
+    throw new NotFound(`${txid} not found`);
+}
+
+export async function loadTx(txid: string): Promise<Tx> {
+    const rawtx = await loadRawtx(txid);
+    return Tx.fromBuffer(rawtx);
+}
+
+
+export async function loadProof(txid: string): Promise<Buffer> {
+    let proof: Buffer | null = null
+    // console.log("from cache", rawtx?.toString('hex'))
+    try {
+        proof = await redis.hgetBuffer('proof', txid);
+    } catch (e) {
+        console.log('Fetch from redis error:', txid, e)
+    }
+
+    try {
+        
+        let url = `${JUNGLEBUS}/v1/transaction/proof/${txid}`
+        let resp = await fetch(url);
+        if (!resp.ok) {
+            throw createError(resp.status, resp.statusText)
+        }
+
+        if (resp.status == 200) {
+            proof = Buffer.from(await resp.arrayBuffer())
+            if (proof.byteLength > 0) {
+                await redis.hset('proof', txid, proof)
+            }
+        }
+    } catch (e) {
+        console.log('Fetch from node error:', txid, e)
+    }
+
+    if (!proof) {
         throw new NotFound(`${txid} not found`);
     }
-    return Tx.fromBuffer(rawtx);
+    return proof;
 }
 
 export async function loadTxo(op: Outpoint): Promise<any> {

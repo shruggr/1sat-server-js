@@ -2,7 +2,7 @@ import * as createError from "http-errors";
 import { Redis } from "ioredis";
 import { Body, BodyProp, Controller, Get, Path, Post, Route } from "tsoa";
 import { Tx } from "@ts-bitcoin/core";
-import { loadTxo, pool } from "../db";
+import { loadProof, loadRawtx, loadTxo, pool } from "../db";
 import { Outpoint } from "../models/outpoint";
 
 const {StandardToExtended} = require('bitcoin-ef')
@@ -206,6 +206,38 @@ export class TxController extends Controller {
                 hash: row.block_id.toString('hex')
             }
         }
+    }
+
+    @Get("{txid}/rawtx")
+    public async getTxRawtx(
+        @Path() txid: string,
+    ): Promise<string> {
+        const rawtx = await loadRawtx(txid);
+        if (!rawtx) {
+            throw new createError.NotFound();
+        }
+        return rawtx.toString('base64');
+    }
+
+    @Get("{txid}/proof")
+    public async getTxProof(
+        @Path() txid: string,
+    ): Promise<string> {
+        const proof = await loadProof(txid);
+        if (!proof) {
+            throw new createError.NotFound();
+        }
+        return proof.toString('base64');
+    }
+
+    @Get("{txid}")
+    public async getTx(
+        @Path() txid: string,
+    ): Promise<{rawtx: string, proof?: string}> {
+        const rawtx = await this.getTxRawtx(txid);
+        const proof = await this.getTxProof(txid).catch(() => undefined);
+        return {rawtx, proof};
+
     }
 }
 

@@ -242,18 +242,18 @@ export class FungiblesController extends Controller {
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() dir: SortDirection = SortDirection.DESC,
-        @Query() listing?: boolean
+        @Query() listing?: boolean,
+        @Query() sale?: boolean,
     ): Promise<BSV20Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf, tick];
-        if (listing !== undefined) {
-            params.push(listing)
-        }
+
         let sql = `SELECT *
             FROM bsv20_txos
             WHERE pkhash = $1 AND spend != '\\x' AND 
                 status=1 AND tick=$2
-                ${listing !== undefined ? 'AND listing=$3' : ''}
+                ${listing !== undefined ? `AND listing=$${params.push(listing)}` : ''}
+                ${sale !== undefined ? `AND sale=$${params.push(sale)}` : ''}
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`
@@ -299,46 +299,25 @@ export class FungiblesController extends Controller {
         @Query() limit: number = 100,
         @Query() offset: number = 0,
         @Query() dir: SortDirection = SortDirection.DESC,
-        @Query() listing?: boolean
+        @Query() listing?: boolean,
+        @Query() sale?: boolean,
     ): Promise<BSV20Txo[]> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf, Outpoint.fromString(id).toBuffer()];
-        if (listing !== undefined) {
-            params.push(listing)
-        }
+        
         let sql = `SELECT *
             FROM bsv20_txos
             WHERE pkhash = $1 AND spend != '\\x' AND 
                 status=1 AND id=$2
-                ${listing !== undefined ? 'AND listing=$3' : ''}
+                ${listing !== undefined ? `AND listing=$${params.push(listing)}` : ''}
+                ${sale !== undefined ? `AND sale=$${params.push(sale)}` : ''}
             ORDER BY height ${dir}, idx ${dir}
             LIMIT $${params.push(limit)}
             OFFSET $${params.push(offset)}`
 
-        // console.log(sql, params)
+        console.log(sql, params)
         const { rows } = await pool.query(sql, params);
         return rows.map((row: any) => BSV20Txo.fromRow(row));
-    }
-
-    @Get("{address}/id/{id}/txids")
-    public async getBsv21Txids(
-        @Path() address: string,
-        @Path() id: string,
-    ): Promise<string[]> {
-        const add = Address.fromString(address);
-        const params: any[] = [add.hashBuf, Outpoint.fromString(id).toBuffer()];
-        let sql = `SELECT DISTINCT txid
-            FROM bsv20_txos
-            WHERE pkhash = $1 AND spend != '\\x' AND 
-                status=1 AND id=$2`
-
-        // console.log(sql, params)
-        const { rows } = await pool.query(sql, params);
-        let ancestors: string[] = []
-        for (let row of rows) {
-            ancestors = await this.getAncestors(Outpoint.fromString(id), row.txid.toString('hex'), ancestors)
-        }
-        return ancestors
     }
 
     @Get("{address}/locks")
@@ -370,7 +349,7 @@ export class FungiblesController extends Controller {
     ): Promise<number> {
         const cacheId = `locked:${id}`
         let cached = await redis.get(cacheId)
-        if(cached) {
+        if (cached) {
             return parseInt(cached, 10)
         }
         const params: any[] = [Outpoint.fromString(id).toBuffer()];
@@ -392,7 +371,7 @@ export class FungiblesController extends Controller {
     ): Promise<number> {
         const cacheId = `burned:${id}`
         let cached = await redis.get(cacheId)
-        if(cached) {
+        if (cached) {
             return parseInt(cached, 10)
         }
         const params: any[] = [Outpoint.fromString(id).toBuffer()];
@@ -528,19 +507,19 @@ export class FungiblesController extends Controller {
 
         let accounts = await redis.get(`accts:${tick}`)
         if (!accounts) {
-            const { rows: [row]} = await pool.query(`
+            const { rows: [row] } = await pool.query(`
                 SELECT COUNT(DISTINCT pkhash) as count
                 FROM bsv20_txos
                 WHERE spend='\\x' AND tick=$1 AND status=1`,
                 [tick],
             )
             accounts = row.count
-            await redis.set(`accts:${tick}`, row.count , 'EX', 600)
+            await redis.set(`accts:${tick}`, row.count, 'EX', 600)
         }
         token.accounts = parseInt(accounts || '0', 10)
 
         const fundsJson = await redis.hget("v1funds", tick)
-        if(fundsJson) {
+        if (fundsJson) {
             const funds = JSON.parse(fundsJson) as BalanceUpdate
             token.included = funds.fundTotal >= includeThreshold
             token.pending = funds.pending
@@ -606,21 +585,21 @@ export class FungiblesController extends Controller {
 
         let accounts = await redis.get(`accts:${id}`)
         if (!accounts) {
-            const { rows: [row]} = await pool.query(`
+            const { rows: [row] } = await pool.query(`
                 SELECT COUNT(DISTINCT pkhash) as count
                 FROM bsv20_txos
                 WHERE spend='\\x' AND id=$1 AND status=1`,
                 [tokenId],
             )
             if (row) {
-                accounts = row.count.toString() 
+                accounts = row.count.toString()
                 await redis.set(`accts:${id}`, accounts || '0', 'EX', 60)
             }
         }
         token.accounts = parseInt(accounts || '0', 10)
 
         const fundsJson = await redis.hget("v2funds", id)
-        if(fundsJson) {
+        if (fundsJson) {
             const funds = JSON.parse(fundsJson) as BalanceUpdate
             token.included = funds.fundTotal >= includeThreshold
             token.fundTotal = funds.fundTotal
@@ -758,26 +737,56 @@ export class FungiblesController extends Controller {
         return rows.map(BSV20Txo.fromRow)
     }
 
-    async getAncestors(id: Outpoint, txid: string, descendants: string[] = [], cache = new Set<string>()): Promise<string[]> {
-        console.log('loading ancestors', txid, descendants.length)
-        descendants = [txid, ...descendants]
-        if(txid == id.txid.toString('hex')) {
-            return descendants;
-        }
+    @Get("{address}/id/{id}/txids")
+    public async getBsv21Txids(
+        @Path() address: string,
+        @Path() id: string,
+    ): Promise<string[]> {
+        const add = Address.fromString(address);
+        const params: any[] = [add.hashBuf, Outpoint.fromString(id).toBuffer()];
+        let sql = `SELECT DISTINCT txid
+            FROM bsv20_txos
+            WHERE pkhash = $1 AND spend = '\\x' AND 
+                status=1 AND id=$2`
 
-        const { rows } = await pool.query(`
-            SELECT txid FROM bsv20_txos WHERE spend=$1 AND status=1`,
-            [Buffer.from(txid, 'hex')],
-        );
-
+        const { rows } = await pool.query(sql, params);
+        const processed = new Set<string>()
+        let txids: string[] = []
+        console.log("GET ANCESTORS", address, id, rows.length)
         for (let row of rows) {
-            const txid = row.txid.toString('hex');
-            if (!cache.has(txid)) {
-                cache.add(txid);
-                descendants = await this.getAncestors(id, row.txid.toString('hex'), descendants, cache);
-            }
+            const txid = row.txid.toString('hex')
+            if (processed.has(txid)) continue
+            processed.add(txid)
+            const ancestors = await this.getAncestors(txid, processed)
+            txids.push(...ancestors)
+            txids.push(txid)
+            console.log('ANCESTORS', txid, ancestors.length)
         }
-        return descendants;
+        return txids
+    }
+
+    @Get("{outpoint}/ancestors")
+    public async getBsv20Ancestors(
+        @Path() outpoint: string,
+    ): Promise<string[]> {
+        const op = Outpoint.fromString(outpoint)
+        return this.getAncestors(op.txid.toString('hex'))
+    }
+
+    async getAncestors(txid: string, processed = new Set<string>()): Promise<string[]> {
+        const parents = await redis.smembers(`dep:${txid}`)
+        if (!parents.length) {
+            return parents
+        }
+        let txids: string[] = []
+        for await(const parent of parents) {
+            if (processed.has(parent)) continue
+            processed.add(parent)
+            const ancestors = await this.getAncestors(parent, processed)
+            txids.push(...ancestors)
+            txids.push(parent)
+        }
+        return txids;
     }
 }
 
