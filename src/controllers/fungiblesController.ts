@@ -536,6 +536,7 @@ export class FungiblesController extends Controller {
     public async getBsv20TickHolders(
         @Path() tick: string,
         @Query() limit = 10,
+        @Query() offset = 0,
     ): Promise<{ address: string, amt: string }[]> {
         if (tick.length > 4 || tick.includes("'") || tick.includes('"')) {
             throw new BadRequest();
@@ -546,7 +547,7 @@ export class FungiblesController extends Controller {
         // this.setHeader('Cache-Control', 'max-age=3600')
         const status = await redis.get(cacheKey);
         if (status) {
-            return JSON.parse(status).slice(0, limit);
+            return JSON.parse(status).slice(offset, offset+limit);
         }
 
         const { rows } = await pool.query(`
@@ -561,8 +562,8 @@ export class FungiblesController extends Controller {
             address: Address.fromPubKeyHashBuf(r.pkhash).toString(),
             amt: r.amt,
         }))
-        await redis.set(cacheKey, JSON.stringify(tokens), 'EX', 60);
-        return tokens.slice(0, limit);
+        await redis.set(cacheKey, JSON.stringify(tokens), 'EX', 300);
+        return tokens.slice(offset, offset+limit);
     }
 
     @Get("id/{id}")
@@ -614,12 +615,14 @@ export class FungiblesController extends Controller {
     public async getBsv20V2Holders(
         @Path() id: string,
         @Query() limit = 10,
+        @Query() offset = 0,
     ): Promise<{ address: string, amt: string }[]> {
         const cacheKey = `id:${id}:holders`
         this.setHeader('Cache-Control', 'max-age=300')
+        
         const status = await redis.get(cacheKey);
         if (status) {
-            return JSON.parse(status).slice(0, limit);
+            return JSON.parse(status).slice(offset, offset+limit);
         }
 
         const { rows } = await pool.query(`
@@ -634,8 +637,8 @@ export class FungiblesController extends Controller {
             address: Address.fromPubKeyHashBuf(r.pkhash).toString(),
             amt: r.amt,
         }))
-        await redis.set(cacheKey, JSON.stringify(tokens), 'EX', 60);
-        return tokens.slice(0, limit);
+        await redis.set(cacheKey, JSON.stringify(tokens), 'EX', 300);
+        return tokens.slice(offset, offset+limit);
     }
 
     @Get("market")

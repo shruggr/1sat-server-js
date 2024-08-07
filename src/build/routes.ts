@@ -2375,6 +2375,7 @@ export function RegisterRoutes(app: Router) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     tick: {"in":"path","name":"tick","required":true,"dataType":"string"},
                     limit: {"default":10,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -2436,6 +2437,7 @@ export function RegisterRoutes(app: Router) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     id: {"in":"path","name":"id","required":true,"dataType":"string"},
                     limit: {"default":10,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
