@@ -59,6 +59,7 @@ export class InscriptionsController extends Controller {
             SELECT t.*, o.data as odata, o.height as oheight, o.idx as oidx, o.vout as ovout
             FROM txos t
             JOIN txos o ON o.outpoint = t.origin
+            WHERE t.height IS NOT NULL
             ORDER BY t.height DESC, t.idx DESC
             LIMIT $1 OFFSET $2`,
             [limit, offset]
