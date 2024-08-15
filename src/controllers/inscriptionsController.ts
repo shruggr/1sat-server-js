@@ -7,8 +7,15 @@ import { TxoData } from "../models/txo";
 import { Outpoint } from "../models/outpoint";
 import { BadRequest } from "http-errors";
 import { SortDirection } from '../models/sort-direction';
+import { Address } from '@ts-bitcoin/core';
 
 const { INDEXER } = process.env;
+
+interface TxidsResponse {
+    txid: string;
+    height: number;
+    idx: number;
+}
 
 @Route("api/inscriptions")
 export class InscriptionsController extends Controller {
@@ -194,6 +201,30 @@ export class InscriptionsController extends Controller {
         return outpoint;
     }
 
+    @Get("address/{address}/ancestors")
+    public async getOriginTxidsByAddress(
+        @Path() address: string,
+        @Query() limit: number = 1000,
+        @Query() offset: number = 0,
+    ): Promise<TxidsResponse[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        const add = Address.fromString(address);
+        const { rows } = await pool.query(`
+            SELECT o.txid, o.height, o.idx
+            FROM txos t
+            JOIN txos o ON o.origin = t.origin AND o.spend != '\\x'
+            WHERE t.pkhash=$1 AND t.spend='\\x' AND t.origin IS NOT NULL
+            ORDER BY o.height ASC, o.idx ASC
+            LIMIT $2 OFFSET $3`,
+            [add.hashBuf, limit, offset]
+        );
+
+        return rows.map(r => ({
+            txid: r.txid.toString('hex'),
+            height: r.height,
+            idx: r.idx
+        }));
+    }
 
     @Get("{origin}/history")
     public async getHistoryByOrigin(
@@ -210,6 +241,26 @@ export class InscriptionsController extends Controller {
         );
 
         return rows.map(r => Txo.fromRow(r));
+    }
+
+    @Get("{origin}/txids")
+    public async getOriginTxids(
+        @Path() origin: string,
+    ): Promise<TxidsResponse[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        const { rows } = await pool.query(`
+            SELECT txid, height, idx
+            FROM txos
+            WHERE t.origin = $1
+            ORDER BY t.height ASC, t.idx ASC`,
+            [Outpoint.fromString(origin).toBuffer()]
+        );
+
+        return rows.map(r => ({
+            txid: r.txid.toString('hex'),
+            height: r.height,
+            idx: r.idx
+        }));
     }
 
     @Post("latest")

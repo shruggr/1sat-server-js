@@ -65,7 +65,7 @@ export async function loadProof(txid: string): Promise<Buffer> {
 
     try {
         
-        let url = `${JUNGLEBUS}/v1/transaction/proof/${txid}`
+        let url = `${JUNGLEBUS}/v1/transaction/proof/${txid}/bin`
         let resp = await fetch(url);
         if (!resp.ok) {
             throw createError(resp.status, resp.statusText)

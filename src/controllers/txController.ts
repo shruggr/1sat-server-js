@@ -1,9 +1,11 @@
 import * as createError from "http-errors";
 import { Redis } from "ioredis";
-import { Body, BodyProp, Controller, Get, Path, Post, Route } from "tsoa";
+import { Request as ExpRequest } from "express";
+import { Body, BodyProp, Controller, Get, Path, Post, Request, Route } from "tsoa";
 import { Tx } from "@ts-bitcoin/core";
 import { loadProof, loadRawtx, loadTxo, pool } from "../db";
 import { Outpoint } from "../models/outpoint";
+import { MerklePath, Transaction, Utils } from "@bsv/sdk";
 
 const {StandardToExtended} = require('bitcoin-ef')
 
@@ -211,33 +213,63 @@ export class TxController extends Controller {
     @Get("{txid}/rawtx")
     public async getTxRawtx(
         @Path() txid: string,
-    ): Promise<string> {
+        @Request() req: ExpRequest
+    ): Promise<void> {
         const rawtx = await loadRawtx(txid);
         if (!rawtx) {
             throw new createError.NotFound();
         }
-        return rawtx.toString('base64');
+        req.res!.type('application/octet-stream').status(200).send(rawtx);
     }
 
     @Get("{txid}/proof")
     public async getTxProof(
         @Path() txid: string,
-    ): Promise<string> {
+        @Request() req: ExpRequest
+    ): Promise<void> {
         const proof = await loadProof(txid);
         if (!proof) {
             throw new createError.NotFound();
         }
-        return proof.toString('base64');
+        req.res!.type('application/octet-stream').status(200).send(proof);
     }
 
     @Get("{txid}")
     public async getTx(
         @Path() txid: string,
-    ): Promise<{rawtx: string, proof?: string}> {
-        const rawtx = await this.getTxRawtx(txid);
-        const proof = await this.getTxProof(txid).catch(() => undefined);
-        return {rawtx, proof};
+        @Request() req: ExpRequest
+    ): Promise<void> {
+        const [rawtx, proof] = await Promise.all([
+            loadRawtx(txid),
+            await loadProof(txid).catch(() => undefined)
+        ])
+        const tx = Transaction.fromBinary([...rawtx]);
+        if (proof) {
+            tx.merklePath = MerklePath.fromBinary([...proof]);
+        }
+        req.res!.type('application/octet-stream').status(200).send(Buffer.from(tx.toBEEF()));
+    }
 
+    @Post("batch")
+    public async getTxBatch(
+        @Body() txids: string[],
+        @Request() req: ExpRequest
+    ): Promise<void> {
+        const writer = new Utils.Writer()
+        for await (const txid of txids) {
+            const [rawtx, proof] = await Promise.all([
+                loadRawtx(txid),
+                await loadProof(txid).catch(() => undefined)
+            ])
+            const tx = Transaction.fromBinary([...rawtx]);
+            if (proof) {
+                tx.merklePath = MerklePath.fromBinary([...proof]);
+            }
+            const beef = tx.toBEEF();
+            writer.writeVarIntNum(beef.length)
+            writer.write(beef)
+        }
+        req.res!.type('application/octet-stream').status(200).send(Buffer.from(writer.toArray()));
     }
 }
 

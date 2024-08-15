@@ -122,7 +122,7 @@ export class TxosController extends Controller {
         const {rows: [{balance}]} = await pool.query(`
             SELECT SUM(satoshis) as balance
             FROM txos
-            WHERE pkhash=$1 AND spend='\\x'`,
+            WHERE pkhash=$1 AND spend='\\x' AND data->'lock' IS NULL`,
             params,
         )
         return balance;

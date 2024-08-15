@@ -365,6 +365,28 @@
 				],
 				"type": "string"
 			},
+			"TxidsResponse": {
+				"properties": {
+					"txid": {
+						"type": "string"
+					},
+					"height": {
+						"type": "number",
+						"format": "double"
+					},
+					"idx": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"txid",
+					"height",
+					"idx"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"Token": {
 				"properties": {
 					"txid": {
@@ -1659,15 +1681,8 @@
 			"get": {
 				"operationId": "GetTxRawtx",
 				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"type": "string"
-								}
-							}
-						}
+					"204": {
+						"description": "No content"
 					}
 				},
 				"security": [],
@@ -1687,15 +1702,8 @@
 			"get": {
 				"operationId": "GetTxProof",
 				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"type": "string"
-								}
-							}
-						}
+					"204": {
+						"description": "No content"
 					}
 				},
 				"security": [],
@@ -1715,26 +1723,8 @@
 			"get": {
 				"operationId": "GetTx",
 				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"properties": {
-										"proof": {
-											"type": "string"
-										},
-										"rawtx": {
-											"type": "string"
-										}
-									},
-									"required": [
-										"rawtx"
-									],
-									"type": "object"
-								}
-							}
-						}
+					"204": {
+						"description": "No content"
 					}
 				},
 				"security": [],
@@ -1748,6 +1738,31 @@
 						}
 					}
 				]
+			}
+		},
+		"/api/tx/batch": {
+			"post": {
+				"operationId": "GetTxBatch",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"items": {
+									"type": "string"
+								},
+								"type": "array"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/api/stats": {
@@ -3049,6 +3064,57 @@
 				]
 			}
 		},
+		"/api/inscriptions/address/{address}/ancestors": {
+			"get": {
+				"operationId": "GetOriginTxidsByAddress",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/TxidsResponse"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 1000,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
 		"/api/inscriptions/{origin}/history": {
 			"get": {
 				"operationId": "GetHistoryByOrigin",
@@ -3060,6 +3126,37 @@
 								"schema": {
 									"items": {
 										"$ref": "#/components/schemas/Txo"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "origin",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/inscriptions/{origin}/txids": {
+			"get": {
+				"operationId": "GetOriginTxids",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/TxidsResponse"
 									},
 									"type": "array"
 								}
@@ -3625,6 +3722,78 @@
 						"required": false,
 						"schema": {
 							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "includePending",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/bsv20/{address}/id/{id}/deps": {
+			"get": {
+				"operationId": "GetBsv20UtxosByIdWithDeps",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {},
+									"additionalProperties": {
+										"items": {
+											"type": "string"
+										},
+										"type": "array"
+									},
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
 						}
 					}
 				]
@@ -4501,19 +4670,20 @@
 				]
 			}
 		},
-		"/api/bsv20/{address}/id/{id}/txids": {
+		"/api/bsv20/{address}/id/{id}/ancestors": {
 			"get": {
-				"operationId": "GetBsv21Txids",
+				"operationId": "GetBsv21Ancestors",
 				"responses": {
 					"200": {
 						"description": "Ok",
 						"content": {
 							"application/json": {
 								"schema": {
-									"items": {
+									"properties": {},
+									"additionalProperties": {
 										"type": "string"
 									},
-									"type": "array"
+									"type": "object"
 								}
 							}
 						}

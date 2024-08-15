@@ -163,6 +163,16 @@ const models: TsoaRoute.Models = {
         "enums": ["recent","price","num"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TxidsResponse": {
+        "dataType": "refObject",
+        "properties": {
+            "txid": {"dataType":"string","required":true},
+            "height": {"dataType":"double","required":true},
+            "idx": {"dataType":"double","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Token": {
         "dataType": "refObject",
         "properties": {
@@ -799,6 +809,7 @@ export function RegisterRoutes(app: Router) {
             function TxController_getTxRawtx(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     txid: {"in":"path","name":"txid","required":true,"dataType":"string"},
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -829,6 +840,7 @@ export function RegisterRoutes(app: Router) {
             function TxController_getTxProof(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     txid: {"in":"path","name":"txid","required":true,"dataType":"string"},
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -859,6 +871,7 @@ export function RegisterRoutes(app: Router) {
             function TxController_getTx(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     txid: {"in":"path","name":"txid","required":true,"dataType":"string"},
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -871,6 +884,37 @@ export function RegisterRoutes(app: Router) {
 
               templateService.apiHandler({
                 methodName: 'getTx',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/tx/batch',
+            ...(fetchMiddlewares<RequestHandler>(TxController)),
+            ...(fetchMiddlewares<RequestHandler>(TxController.prototype.getTxBatch)),
+
+            function TxController_getTxBatch(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    txids: {"in":"body","name":"txids","required":true,"dataType":"array","array":{"dataType":"string"}},
+                    req: {"in":"request","name":"req","required":true,"dataType":"object"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new TxController();
+
+              templateService.apiHandler({
+                methodName: 'getTxBatch',
                 controller,
                 response,
                 next,
@@ -1716,6 +1760,38 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/inscriptions/address/:address/ancestors',
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getOriginTxidsByAddress)),
+
+            function InscriptionsController_getOriginTxidsByAddress(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+                    limit: {"default":1000,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new InscriptionsController();
+
+              templateService.apiHandler({
+                methodName: 'getOriginTxidsByAddress',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
         app.get('/api/inscriptions/:origin/history',
             ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
             ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getHistoryByOrigin)),
@@ -1735,6 +1811,36 @@ export function RegisterRoutes(app: Router) {
 
               templateService.apiHandler({
                 methodName: 'getHistoryByOrigin',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/inscriptions/:origin/txids',
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getOriginTxids)),
+
+            function InscriptionsController_getOriginTxids(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    origin: {"in":"path","name":"origin","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new InscriptionsController();
+
+              templateService.apiHandler({
+                methodName: 'getOriginTxids',
                 controller,
                 response,
                 next,
@@ -2047,6 +2153,7 @@ export function RegisterRoutes(app: Router) {
                     offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
                     dir: {"default":"DESC","in":"query","name":"dir","ref":"SortDirection"},
                     listing: {"in":"query","name":"listing","dataType":"boolean"},
+                    includePending: {"default":false,"in":"query","name":"includePending","dataType":"boolean"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -2059,6 +2166,39 @@ export function RegisterRoutes(app: Router) {
 
               templateService.apiHandler({
                 methodName: 'getBsv20UtxosById',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/bsv20/:address/id/:id/deps',
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv20UtxosByIdWithDeps)),
+
+            function FungiblesController_getBsv20UtxosByIdWithDeps(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    address: {"in":"path","name":"address","required":true,"dataType":"string"},
+                    id: {"in":"path","name":"id","required":true,"dataType":"string"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new FungiblesController();
+
+              templateService.apiHandler({
+                methodName: 'getBsv20UtxosByIdWithDeps',
                 controller,
                 response,
                 next,
@@ -2534,11 +2674,11 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/bsv20/:address/id/:id/txids',
+        app.get('/api/bsv20/:address/id/:id/ancestors',
             ...(fetchMiddlewares<RequestHandler>(FungiblesController)),
-            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv21Txids)),
+            ...(fetchMiddlewares<RequestHandler>(FungiblesController.prototype.getBsv21Ancestors)),
 
-            function FungiblesController_getBsv21Txids(request: ExRequest, response: ExResponse, next: any) {
+            function FungiblesController_getBsv21Ancestors(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
                     id: {"in":"path","name":"id","required":true,"dataType":"string"},
@@ -2553,7 +2693,7 @@ export function RegisterRoutes(app: Router) {
                 const controller = new FungiblesController();
 
               templateService.apiHandler({
-                methodName: 'getBsv21Txids',
+                methodName: 'getBsv21Ancestors',
                 controller,
                 response,
                 next,
