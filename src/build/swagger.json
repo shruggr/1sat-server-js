@@ -2018,7 +2018,7 @@
 				]
 			}
 		},
-		"/api/opns/{domain}/since/{blockHeight}": {
+		"/api/opns/{domain}/txns/since/{blockHeight}": {
 			"get": {
 				"operationId": "GetWalletTxs",
 				"responses": {
@@ -2078,7 +2078,7 @@
 				]
 			}
 		},
-		"/api/opns/{domain}/tx": {
+		"/api/opns/{domain}/txns/{txid}": {
 			"post": {
 				"operationId": "ListBlocks",
 				"responses": {
@@ -2094,6 +2094,28 @@
 						"required": true,
 						"schema": {
 							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "txid",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "format",
+						"required": false,
+						"schema": {
+							"default": "beef",
+							"type": "string",
+							"enum": [
+								"tx",
+								"ef",
+								"beef"
+							]
 						}
 					},
 					{
@@ -2116,24 +2138,10 @@
 							"default": false,
 							"type": "boolean"
 						}
-					},
-					{
-						"in": "query",
-						"name": "format",
-						"required": false,
-						"schema": {
-							"default": "beef",
-							"type": "string",
-							"enum": [
-								"tx",
-								"ef",
-								"beef"
-							]
-						}
 					}
 				],
 				"requestBody": {
-					"required": true,
+					"required": false,
 					"content": {
 						"application/json": {
 							"schema": {

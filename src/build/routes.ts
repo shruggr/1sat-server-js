@@ -1174,7 +1174,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/opns/:domain/since/:blockHeight',
+        app.get('/api/opns/:domain/txns/since/:blockHeight',
             ...(fetchMiddlewares<RequestHandler>(OpnsController)),
             ...(fetchMiddlewares<RequestHandler>(OpnsController.prototype.getWalletTxs)),
 
@@ -1207,17 +1207,18 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/opns/:domain/tx',
+        app.post('/api/opns/:domain/txns/:txid',
             ...(fetchMiddlewares<RequestHandler>(OpnsController)),
             ...(fetchMiddlewares<RequestHandler>(OpnsController.prototype.listBlocks)),
 
             function OpnsController_listBlocks(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     domain: {"in":"path","name":"domain","required":true,"dataType":"string"},
-                    txbuf: {"in":"body","name":"txbuf","required":true,"dataType":"buffer"},
+                    txid: {"in":"path","name":"txid","required":true,"dataType":"string"},
+                    txbuf: {"in":"body","name":"txbuf","dataType":"buffer"},
+                    format: {"default":"beef","in":"query","name":"format","dataType":"union","subSchemas":[{"dataType":"enum","enums":["tx"]},{"dataType":"enum","enums":["ef"]},{"dataType":"enum","enums":["beef"]}]},
                     tags: {"default":[],"in":"query","name":"tags","dataType":"array","array":{"dataType":"string"}},
                     broadcast: {"default":false,"in":"query","name":"broadcast","dataType":"boolean"},
-                    format: {"default":"beef","in":"query","name":"format","dataType":"union","subSchemas":[{"dataType":"enum","enums":["tx"]},{"dataType":"enum","enums":["ef"]},{"dataType":"enum","enums":["beef"]}]},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

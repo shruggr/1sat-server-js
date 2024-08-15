@@ -62,7 +62,7 @@ export class OpnsController extends Controller {
         return mine;
     }
 
-    @Get("{domain}/since/{blockHeight}")
+    @Get("{domain}/txns/since/{blockHeight}")
     public async getWalletTxs(
         @Path() domain: string,
         @Path() blockHeight: number,
@@ -74,16 +74,12 @@ export class OpnsController extends Controller {
             throw new NotFound();
         }
         const key = `txlog:${opns.owner}`
-        console.log("TXLOG", { key })
         const latest = await redis.zrevrangebyscore(key, 9999999, 0, 'WITHSCORES', 'LIMIT', 0, 1)
         let syncFrom = latest[1] ? parseInt(latest[1]) - 5 : 0
-        console.log("TXLOG", { blockHeight })
         
         const url = `${JUNGLEBUS}/v1/address/get/${opns.owner}/${syncFrom}`
-        console.log("TXLOG", { url })
         const resp = await fetch(url)
         const results = await resp.json() as {transaction_id: string, block_height: number, block_index: number}[]
-        console.log("TXLOG", { length: results.length, results })
 
         const toUpdate = new Set<string>()
         for (const tx of results) {
@@ -111,6 +107,7 @@ export class OpnsController extends Controller {
         }
         for (const txid of toUpdate) {
             pipe.zadd(key, Date.now(), txid)
+            redis.publish('submit', txid);
         }
         await pipe.exec()
         
@@ -131,30 +128,46 @@ export class OpnsController extends Controller {
         return out
     }
 
-    @Post("{domain}/tx")
+    @Post("{domain}/txns/{txid}")
     public async listBlocks(
         @Path() domain: string,
-        @Body() txbuf: Buffer,
+        @Path() txid?: string,
+        @Body() txbuf?: Buffer,
+        @Query() format: 'tx' | 'ef' | 'beef' = 'beef',
         @Query() tags: string[] = [],
         @Query() broadcast = false,
-        @Query() format: 'tx' | 'ef' | 'beef' = 'beef',
     ): Promise<void> {
+        if(!txid && (!txbuf || txbuf.length === 0)) {
+            throw new Error('txid or txbuf required')
+        }
         const opns = await OpnsController.lookupOpns(domain)
         if (!opns) {
             throw new NotFound();
         }
 
-        let tx = format == 'tx' ?
-            Transaction.fromBinary([...txbuf]) :
-            format == 'beef' ?
-                Transaction.fromBEEF([...txbuf]) :
-                Transaction.fromEF([...txbuf]);
-        
-        const txid = tx.id('hex') as string
-        if (broadcast) {
-            await TxController.doBroadcast(tx)
+        if (txbuf && txbuf.length > 0) {
+            let tx = format == 'tx' ?
+                Transaction.fromBinary([...txbuf]) :
+                format == 'beef' ?
+                    Transaction.fromBEEF([...txbuf]) :
+                    Transaction.fromEF([...txbuf]);
+            
+            const newTxid = tx.id('hex') as string
+            if (txid && txid !== newTxid) {
+                throw new Error('txid mismatch')
+            } else {
+                txid = newTxid
+            }
+            if (broadcast) {
+                await TxController.doBroadcast(tx)
+            }
         }
-        await redis.sadd(`txtag:${txid}:${opns.owner}`,  ...tags)
+
+        const pipe = redis.pipeline()
+        pipe.zadd(`txlog:${opns.owner}`, Date.now(), txid!)
+        tags.forEach(tag => pipe.zadd(`txtag:${tag}:${opns.owner}`, Date.now(), txid!))
+        pipe.sadd(`txtag:${txid}:${opns.owner}`,  ...tags)
+        await pipe.exec()
     }
 
     static async lookupOpns(domain: string): Promise<OpnsResponse | undefined> {
