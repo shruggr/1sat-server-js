@@ -2,12 +2,8 @@ import * as createError from "http-errors";
 import { Redis } from "ioredis";
 import { Request as ExpRequest } from "express";
 import { Body, BodyProp, Controller, Get, Path, Post, Request, Route } from "tsoa";
-import { Tx } from "@ts-bitcoin/core";
-import { loadProof, loadRawtx, loadTxo, pool } from "../db";
-import { Outpoint } from "../models/outpoint";
+import { loadProof, loadRawtx, loadTx, pool } from "../db";
 import { MerklePath, Transaction, Utils } from "@bsv/sdk";
-
-const {StandardToExtended} = require('bitcoin-ef')
 
 let { ARC, ARC_TOKEN, NETWORK, TAAL_TOKEN, REDIS } = process.env;
 
@@ -31,41 +27,41 @@ export class TxController extends Controller {
     public async broadcastBuf(
         @Body() txbuf: Buffer
     ) {
-        return this.doBroadcast(txbuf);
+        const tx = Transaction.fromBinary([...txbuf]);
+        return TxController.doBroadcast(tx);
     }
 
     @Post()
     public async broadcast(
         @BodyProp() rawtx: string,
     ): Promise<string> {
-        const txbuf = Buffer.from(rawtx, 'base64')
-
-        return this.doBroadcast(txbuf);
+        const tx = Transaction.fromBinary(Utils.toArray(rawtx, 'base64'));
+        return TxController.doBroadcast(tx);
     }
 
-    async doBroadcast(txbuf: Buffer): Promise<string> {
-        const tx = Tx.fromBuffer(txbuf);
-        let txid = tx.id();
+    static async doBroadcast(tx: Transaction): Promise<string> {
+        let txid = tx.id('hex') as string;
         console.time('Broadcast: ' + txid)
         // console.timeLog('Broadcast: ' + txid, txbuf.toString('hex'))
+        const txbuf = Buffer.from(tx.toBinary())
         await pubClient.set(txid, txbuf)
         try {
             if (NETWORK == 'testnet') {
                 try {
-                    await this.broadcastWOC(tx);
-                    this.broadcastArc(tx).catch(console.error)
+                    await TxController.broadcastWOC(tx);
+                    TxController.broadcastArc(tx).catch(console.error)
                 } catch (e: any) {
                     if (e.status && e.status >= 300 && e.status < 500) {
                         throw e;
                     }
-                    await this.broadcastArc(tx);
+                    await TxController.broadcastArc(tx);
                 }
             } else if (TAAL_TOKEN) {
                 // try {
                     console.timeLog('Broadcast: ' + txid, "Broadcasting to TAAL")
-                    await this.broadcastTaal(tx);
+                    await TxController.broadcastTaal(tx);
                     console.timeLog('Broadcast: ' + txid, "Broadcasting to ARC")
-                    this.broadcastArc(tx).catch(console.error)
+                    TxController.broadcastArc(tx).catch(console.error)
                 // } catch (e: any) {
                 //     if (!e.status || (e.status >= 300 && e.status < 500)) {
                 //         throw e;
@@ -73,13 +69,13 @@ export class TxController extends Controller {
                 //     await this.broadcastArc(tx);
                 // }
             } else {
-                await this.broadcastArc(tx);
+                await TxController.broadcastArc(tx);
             }
 
             // await pubClient.set(txid, txbuf)
             console.timeLog('Broadcast: ' + txid, "Publishing to redis")
             await pubClient.hset('tx', txid, txbuf)
-            pubClient.publish('broadcast', tx.toBuffer().toString('base64'));
+            pubClient.publish('broadcast', Utils.toBase64(tx.toBinary()));
             return txid;
         } catch (e: any) {
             console.error("Broadcast Error:", e)
@@ -89,7 +85,7 @@ export class TxController extends Controller {
         }
     }
 
-    async broadcastWOC(tx: Tx) {
+    static async broadcastWOC(tx: Transaction) {
         const net = NETWORK == 'testnet' ? 'test' : 'main'
         const resp = await fetch(`https://api.whatsonchain.com/v1/bsv/${net}/tx/raw`, {
             method: 'POST',
@@ -113,18 +109,18 @@ export class TxController extends Controller {
         }
     }
 
-    async broadcastTaal(tx: Tx) {
+    static async broadcastTaal(tx: Transaction) {
         const resp = await fetch('https://api.taal.com/api/v1/broadcast', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/octet-stream',
                 'Authorization': TAAL_TOKEN!
             },
-            body: tx.toBuffer()
+            body: Buffer.from(tx.toBinary())
         });
 
         const respText = await resp.text();
-        console.log("TAAL Response:", tx.id(), resp.status, respText, new Date().toISOString());
+        console.log("TAAL Response:", tx.id('hex'), resp.status, respText, new Date().toISOString());
         if (!resp.ok) {
             try {
                 const { status, error } = JSON.parse(respText);
@@ -137,19 +133,19 @@ export class TxController extends Controller {
         }
     }
 
-    async broadcastArc(tx: Tx) {
+    static async broadcastArc(tx: Transaction) {
         let txbuf: Buffer
         try {
-            const parents = await Promise.all(tx.txIns.map(async txIn => {
-                const inTxid = Buffer.from(txIn.txHashBuf).reverse()
-                const op = new Outpoint(inTxid, txIn.txOutNum)
-                return loadTxo(op)
+            await Promise.all(tx.inputs.map(async txIn => {
+                if (txIn.sourceTransaction) return
+                txIn.sourceTransaction = await loadTx(txIn.sourceTXID!)
             }))
-            txbuf = StandardToExtended(tx.toBuffer(), parents) as Buffer
+            txbuf = Buffer.from(tx.toEF());
+            // txbuf = StandardToExtended(tx.toBuffer(), parents) as Buffer
             // console.error("ARC EXT:", txbuf.toString('hex'), parents)
         } catch (e) {
-            console.error("Error loading txos", tx.id)
-            txbuf = tx.toBuffer();
+            console.error("Error loading txos", tx.id('hex'), e)
+            txbuf = Buffer.from(tx.toBinary());
         }
 
         const headers: { [key: string]: string } = {
@@ -166,7 +162,7 @@ export class TxController extends Controller {
             body: txbuf,
         })
         const respText = await resp.text();
-        console.log("ARC Response:", resp.status, tx.id(), respText, new Date().toISOString());
+        console.log("ARC Response:", resp.status, tx.id('hex'), respText, new Date().toISOString());
         const result = JSON.parse(respText)
         if (result.status != 200 || result.detail == 'REJECTED') {
             throw createError(result.status || 500, `Broadcast failed: ${result.detail} ${result.extraInfo}`);

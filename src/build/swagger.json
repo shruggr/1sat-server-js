@@ -357,6 +357,26 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"TxLog": {
+				"properties": {
+					"txid": {
+						"type": "string"
+					},
+					"height": {
+						"type": "number",
+						"format": "double"
+					},
+					"idx": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"txid"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"ListingSort": {
 				"enum": [
 					"recent",
@@ -1996,6 +2016,133 @@
 						}
 					}
 				]
+			}
+		},
+		"/api/opns/{domain}/since/{blockHeight}": {
+			"get": {
+				"operationId": "GetWalletTxs",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/TxLog"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "domain",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "blockHeight",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/opns/{domain}/tx": {
+			"post": {
+				"operationId": "ListBlocks",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "domain",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "tags",
+						"required": false,
+						"schema": {
+							"default": [],
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					},
+					{
+						"in": "query",
+						"name": "broadcast",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					},
+					{
+						"in": "query",
+						"name": "format",
+						"required": false,
+						"schema": {
+							"default": "beef",
+							"type": "string",
+							"enum": [
+								"tx",
+								"ef",
+								"beef"
+							]
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "string",
+								"format": "byte"
+							}
+						}
+					}
+				}
 			}
 		},
 		"/api/market": {

@@ -1,8 +1,8 @@
 import { NotFound } from 'http-errors';
 import { Controller, Get, Path, Route } from "tsoa";
 import { pool } from "../db";
-import { Address } from '@ts-bitcoin/core';
 import { redis } from '../db';
+import { Utils } from '@bsv/sdk';
 
 
 @Route("api/collections")
@@ -62,7 +62,7 @@ export class CollectionsController extends Controller {
         //     [tick],
         // );
         const tokens = rows.map(r => ({
-            address: Address.fromPubKeyHashBuf(r.pkhash).toString(),
+            address: Utils.toBase58Check([...r.pkhash]),
             amt: r.amt,
         }))
         // await redis.set(cacheKey, JSON.stringify(tokens), 'EX', 60);

@@ -8,6 +8,7 @@ import { Outpoint } from "../models/outpoint";
 import { BadRequest } from "http-errors";
 import { SortDirection } from '../models/sort-direction';
 import { Address } from '@ts-bitcoin/core';
+import { Utils } from '@bsv/sdk';
 
 const { INDEXER } = process.env;
 
@@ -115,7 +116,7 @@ export class InscriptionsController extends Controller {
         const txo = await Txo.getByOutpoint(Outpoint.fromString(outpoint));
         if (script) {
             const tx = await loadTx(txo.txid);
-            txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
+            txo.script = Utils.toBase64(tx.outputs[txo.vout].lockingScript.toBinary());
         }
         return txo
     }
@@ -165,7 +166,7 @@ export class InscriptionsController extends Controller {
         const txo = Txo.fromRow(latest);
         if (script) {
             const tx = await loadTx(txo.txid);
-            txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
+            txo.script = Utils.toBase64(tx.outputs[txo.vout].lockingScript.toBinary());
         }
         return txo;
     }

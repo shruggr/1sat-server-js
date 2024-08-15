@@ -5,6 +5,7 @@ import { loadTx, pool, redis } from "../db";
 import { TxoData } from "../models/txo";
 import { Outpoint } from '../models/outpoint';
 import { SortDirection } from '../models/sort-direction';
+import { Utils } from '@bsv/sdk';
 
 @Route("api/txos")
 export class TxosController extends Controller {
@@ -243,7 +244,7 @@ export class TxosController extends Controller {
         const txo = await Txo.getByOutpoint(Outpoint.fromString(outpoint));
         if (script) {
             const tx = await loadTx(txo.txid);
-            txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
+            txo.script = Utils.toBase64(tx.outputs[txo.vout].lockingScript.toBinary());
         }
         return txo
     }
@@ -265,7 +266,7 @@ export class TxosController extends Controller {
             const txo = Txo.fromRow(row)
             if (script) {
                 const tx = await loadTx(txo.txid);
-                txo.script = tx.txOuts[txo.vout].script.toBuffer().toString('base64');
+                txo.script = Utils.toBase64(tx.outputs[txo.vout].lockingScript.toBinary());
             }
             return txo;
         }));

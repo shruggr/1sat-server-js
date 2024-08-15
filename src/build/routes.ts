@@ -158,6 +158,16 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TxLog": {
+        "dataType": "refObject",
+        "properties": {
+            "txid": {"dataType":"string","required":true},
+            "height": {"dataType":"double"},
+            "idx": {"dataType":"double"},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ListingSort": {
         "dataType": "refEnum",
         "enums": ["recent","price","num"],
@@ -1153,6 +1163,73 @@ export function RegisterRoutes(app: Router) {
 
               templateService.apiHandler({
                 methodName: 'getOpnsMine',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/opns/:domain/since/:blockHeight',
+            ...(fetchMiddlewares<RequestHandler>(OpnsController)),
+            ...(fetchMiddlewares<RequestHandler>(OpnsController.prototype.getWalletTxs)),
+
+            function OpnsController_getWalletTxs(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    domain: {"in":"path","name":"domain","required":true,"dataType":"string"},
+                    blockHeight: {"in":"path","name":"blockHeight","required":true,"dataType":"double"},
+                    limit: {"default":100,"in":"query","name":"limit","dataType":"double"},
+                    offset: {"default":0,"in":"query","name":"offset","dataType":"double"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new OpnsController();
+
+              templateService.apiHandler({
+                methodName: 'getWalletTxs',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/opns/:domain/tx',
+            ...(fetchMiddlewares<RequestHandler>(OpnsController)),
+            ...(fetchMiddlewares<RequestHandler>(OpnsController.prototype.listBlocks)),
+
+            function OpnsController_listBlocks(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    domain: {"in":"path","name":"domain","required":true,"dataType":"string"},
+                    txbuf: {"in":"body","name":"txbuf","required":true,"dataType":"buffer"},
+                    tags: {"default":[],"in":"query","name":"tags","dataType":"array","array":{"dataType":"string"}},
+                    broadcast: {"default":false,"in":"query","name":"broadcast","dataType":"boolean"},
+                    format: {"default":"beef","in":"query","name":"format","dataType":"union","subSchemas":[{"dataType":"enum","enums":["tx"]},{"dataType":"enum","enums":["ef"]},{"dataType":"enum","enums":["beef"]}]},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new OpnsController();
+
+              templateService.apiHandler({
+                methodName: 'listBlocks',
                 controller,
                 response,
                 next,

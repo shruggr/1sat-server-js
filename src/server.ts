@@ -2,7 +2,6 @@ import * as cors from 'cors';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import axios from 'axios';
-import { Address } from '@ts-bitcoin/core';
 import * as express from 'express';
 import { Request, Response } from 'express';
 import { NotFound } from 'http-errors';
@@ -12,6 +11,7 @@ import { RegisterRoutes } from "./build/routes";
 import * as path from 'path';
 import { Redis } from 'ioredis';
 import * as responseTime from 'response-time'
+import { Utils } from '@bsv/sdk';
 // import { pool } from './db';
 
 const { PORT, REDIS } = process.env;
@@ -65,9 +65,9 @@ server.use("/api/subscribe", (req, res, next) => {
             addresses = [req.query['address']]
         }
         for (let a of addresses) {
-            const address = Address.fromString(a);
-            channels.push(`t:${address.hashBuf.toString('hex')}`)
-            channels.push(`s:${address.hashBuf.toString('hex')}`)
+            const pkhash = Utils.toHex(Utils.fromBase58(a));
+            channels.push(`t:${pkhash}`)
+            channels.push(`s:${pkhash}`)
         }
         if (Array.isArray(req.query['channel'])) {
             channels.push(...req.query['channel'] as string[]);
@@ -97,8 +97,8 @@ server.use("/api/subscribe", (req, res, next) => {
         subClient.on("message", async (channel, message) => {
             let id = ''
             if (channel.startsWith('t:') || channel.startsWith('s:')) {
-                const address = Address.fromPubKeyHashBuf(Buffer.from(channel.slice(2), 'hex'))
-                channel = channel.slice(0, 2) + address.toString()
+                const address = Utils.toBase58Check(Utils.toArray(channel.slice(2), 'hex'))
+                channel = channel.slice(0, 2) + address
             }
 
             res.write(`event: ${channel}\n`)

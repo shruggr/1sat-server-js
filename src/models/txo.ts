@@ -1,13 +1,13 @@
-import { Address, OpCode, Script} from '@ts-bitcoin/core';
 import { BadRequest } from 'http-errors';
 import { Outpoint } from "./outpoint";
 import { loadTx, pool } from "../db";
 import { Sigma } from "./sigma";
 import { NotFound } from 'http-errors';
 import { SortDirection } from './sort-direction';
+import { OP, Script, Utils } from '@bsv/sdk';
 
-const B = Buffer.from('19HxigV4QyBv3tHpQVcUEQyq1pzZVdoAut', 'utf8')
-const ORD = Buffer.from('ord', 'utf8')
+const B = '19HxigV4QyBv3tHpQVcUEQyq1pzZVdoAut'
+const ORD = 'ord'
 export interface InscriptionData {
     type?: string;
     data?: Buffer;
@@ -129,7 +129,7 @@ export class Txo {
         txo.outpoint = new Outpoint(row.txid, row.vout);
         txo.satoshis = parseInt(row.satoshis, 10);
         txo.accSats = row.outacc;
-        txo.owner = row.pkhash && Address.fromPubKeyHashBuf(row.pkhash).toString();
+        txo.owner = row.pkhash && Utils.toBase58Check([...row.pkhash]);
         txo.spend = row.spend?.toString('hex');
         txo.spend_height = row.spend_height;
         txo.spend_idx = row.spend_idx;
@@ -152,13 +152,13 @@ export class Txo {
 
     static async loadFileByOutpoint(outpoint: Outpoint) {
         const tx = await loadTx(outpoint.txid.toString('hex'));
-        return Txo.parseOutputScript(tx.txOuts[outpoint.vout].script);
+        return Txo.parseOutputScript(tx.outputs[outpoint.vout].lockingScript);
     }
 
     static async loadFileByTxid(txid: string): Promise<InscriptionData | undefined> {
         const tx = await loadTx(txid);
-        for (let txOut of tx.txOuts) {
-            const data = await this.parseOutputScript(txOut.script);
+        for (let txOut of tx.outputs) {
+            const data = await this.parseOutputScript(txOut.lockingScript);
             if (data) return data;
         }
         return;
@@ -168,31 +168,31 @@ export class Txo {
         let opFalse = 0;
         let opIf = 0;
         for (let [i, chunk] of script.chunks.entries()) {
-            if (chunk.opCodeNum === OpCode.OP_FALSE) {
+            if (chunk.op === OP.OP_FALSE) {
                 opFalse = i;
             }
-            if (chunk.opCodeNum === OpCode.OP_IF) {
+            if (chunk.op === OP.OP_IF) {
                 opIf = i;
             }
-            if (chunk.buf?.equals(ORD) && opFalse === i - 2 && opIf === i - 1) {
+            if (chunk.data && Utils.toUTF8(chunk.data) == ORD && opFalse === i - 2 && opIf === i - 1) {
                 let insData = {} as InscriptionData;
                 for (let j = i + 1; j < script.chunks.length; j += 2) {
-                    switch (script.chunks[j].opCodeNum) {
-                        case OpCode.OP_0:
-                            insData.data = script.chunks[j + 1].buf;
+                    switch (script.chunks[j].op) {
+                        case OP.OP_0:
+                            insData.data = Buffer.from(script.chunks[j + 1].data || []);
                             return insData;
-                        case OpCode.OP_1:
-                            insData.type = script.chunks[j + 1].buf?.toString('utf8');
+                        case OP.OP_1:
+                            insData.type = Utils.toUTF8(script.chunks[j + 1].data || []);
                             break;
-                        case OpCode.OP_ENDIF:
+                        case OP.OP_ENDIF:
                             break;
                     }
                 }
             }
-            if (chunk.buf?.equals(B)) {
+            if (Utils.toUTF8(chunk.data || []) == B) {
                 let insData = {} as InscriptionData;
-                insData.data = script.chunks[i+1]?.buf;
-                insData.type = script.chunks[i+2]?.buf?.toString()
+                insData.data = Buffer.from(script.chunks[i+1]?.data || []);
+                insData.type = Utils.toUTF8(script.chunks[i+2]?.data || []);
                 return insData;
             }
         }
