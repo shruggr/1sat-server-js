@@ -55,7 +55,8 @@ server.use('/api/swagger.json', async (_req, res) => {
     res.sendFile(path.join(__dirname, '/build/swagger.json'));
 });
 
-server.use("/api/subscribe", async (req, res, next) => {
+
+server.get("/api/subscribe", async (req, res, next) => {
     try {
         let channels: string[] = []
         
