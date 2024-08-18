@@ -300,6 +300,26 @@
 				],
 				"type": "string"
 			},
+			"TxLog": {
+				"properties": {
+					"txid": {
+						"type": "string"
+					},
+					"height": {
+						"type": "number",
+						"format": "double"
+					},
+					"idx": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"txid"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"OpnsResponse": {
 				"properties": {
 					"outpoint": {
@@ -353,26 +373,6 @@
 					"domain",
 					"pow",
 					"script"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"TxLog": {
-				"properties": {
-					"txid": {
-						"type": "string"
-					},
-					"height": {
-						"type": "number",
-						"format": "double"
-					},
-					"idx": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"required": [
-					"txid"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -1560,7 +1560,22 @@
 					}
 				},
 				"security": [],
-				"parameters": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "format",
+						"required": false,
+						"schema": {
+							"default": "tx",
+							"type": "string",
+							"enum": [
+								"tx",
+								"ef",
+								"beef"
+							]
+						}
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -1590,7 +1605,22 @@
 					}
 				},
 				"security": [],
-				"parameters": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "format",
+						"required": false,
+						"schema": {
+							"default": "tx",
+							"type": "string",
+							"enum": [
+								"tx",
+								"ef",
+								"beef"
+							]
+						}
+					}
+				],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -1761,8 +1791,30 @@
 			}
 		},
 		"/api/tx/batch": {
-			"post": {
+			"get": {
 				"operationId": "GetTxBatch",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "txids",
+						"required": true,
+						"schema": {
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "PostTxBatch",
 				"responses": {
 					"204": {
 						"description": "No content"
@@ -1779,6 +1831,149 @@
 									"type": "string"
 								},
 								"type": "array"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/tx/address/{address}/from/{blockHeight}": {
+			"get": {
+				"operationId": "GetAddressTxids",
+				"responses": {
+					"200": {
+						"description": "Ok",
+						"content": {
+							"application/json": {
+								"schema": {
+									"items": {
+										"$ref": "#/components/schemas/TxLog"
+									},
+									"type": "array"
+								}
+							}
+						}
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "blockHeight",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "header",
+						"name": "Authorization",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"required": false,
+						"schema": {
+							"default": 100,
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "offset",
+						"required": false,
+						"schema": {
+							"default": 0,
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
+		"/api/tx/address/{address}/{txid}": {
+			"post": {
+				"operationId": "SaveTxPost",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "address",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "path",
+						"name": "txid",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"in": "query",
+						"name": "format",
+						"required": false,
+						"schema": {
+							"default": "tx",
+							"type": "string",
+							"enum": [
+								"tx",
+								"ef",
+								"beef"
+							]
+						}
+					},
+					{
+						"in": "query",
+						"name": "tags",
+						"required": false,
+						"schema": {
+							"default": [],
+							"type": "array",
+							"items": {
+								"type": "string"
+							}
+						}
+					},
+					{
+						"in": "query",
+						"name": "broadcast",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
+					}
+				],
+				"requestBody": {
+					"required": false,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "string",
+								"format": "byte"
 							}
 						}
 					}
@@ -2016,141 +2211,6 @@
 						}
 					}
 				]
-			}
-		},
-		"/api/opns/{domain}/txns/since/{blockHeight}": {
-			"get": {
-				"operationId": "GetWalletTxs",
-				"responses": {
-					"200": {
-						"description": "Ok",
-						"content": {
-							"application/json": {
-								"schema": {
-									"items": {
-										"$ref": "#/components/schemas/TxLog"
-									},
-									"type": "array"
-								}
-							}
-						}
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "domain",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "path",
-						"name": "blockHeight",
-						"required": true,
-						"schema": {
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "limit",
-						"required": false,
-						"schema": {
-							"default": 100,
-							"format": "double",
-							"type": "number"
-						}
-					},
-					{
-						"in": "query",
-						"name": "offset",
-						"required": false,
-						"schema": {
-							"default": 0,
-							"format": "double",
-							"type": "number"
-						}
-					}
-				]
-			}
-		},
-		"/api/opns/{domain}/txns/{txid}": {
-			"post": {
-				"operationId": "ListBlocks",
-				"responses": {
-					"204": {
-						"description": "No content"
-					}
-				},
-				"security": [],
-				"parameters": [
-					{
-						"in": "path",
-						"name": "domain",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "path",
-						"name": "txid",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"in": "query",
-						"name": "format",
-						"required": false,
-						"schema": {
-							"default": "beef",
-							"type": "string",
-							"enum": [
-								"tx",
-								"ef",
-								"beef"
-							]
-						}
-					},
-					{
-						"in": "query",
-						"name": "tags",
-						"required": false,
-						"schema": {
-							"default": [],
-							"type": "array",
-							"items": {
-								"type": "string"
-							}
-						}
-					},
-					{
-						"in": "query",
-						"name": "broadcast",
-						"required": false,
-						"schema": {
-							"default": false,
-							"type": "boolean"
-						}
-					}
-				],
-				"requestBody": {
-					"required": false,
-					"content": {
-						"application/json": {
-							"schema": {
-								"type": "string",
-								"format": "byte"
-							}
-						}
-					}
-				}
 			}
 		},
 		"/api/market": {

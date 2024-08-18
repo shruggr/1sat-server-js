@@ -1,7 +1,7 @@
 import { NotFound } from 'http-errors';
 import * as createError from 'http-errors'
 import { Body, Controller, Get, Path, Post, Query, Route } from "tsoa";
-import { loadTx, pool, redis } from "../db";
+import { cache, loadTx, pool} from "../db";
 import { Txo } from "../models/txo";
 import { TxoData } from "../models/txo";
 import { Outpoint } from "../models/outpoint";
@@ -172,18 +172,18 @@ export class InscriptionsController extends Controller {
     }
 
     public async getLatest(origin: string): Promise<Buffer> {
-        let outpoint = await redis.hgetBuffer('latest', origin);
+        let outpoint = await cache.hgetBuffer('latest', origin);
         
         if (!outpoint) {
             console.log('Uncached latest', origin)
             outpoint = await this.callLatest(origin);
         } else {
-            const refresh = await redis.set(`origin:${origin}:fresh`, Date.now(), 'EX', 15, 'NX')
+            const refresh = await cache.set(`origin:${origin}:fresh`, Date.now(), 'EX', 15, 'NX')
             if (refresh == 'OK') {
-                console.log('Refreshing latest', origin, outpoint.toString('hex'))
-                this.callLatest(origin);
-            } else {
-                console.log('Using cached latest', origin, outpoint.toString('hex'))
+                // console.log('Refreshing latest', origin, outpoint.toString('hex'))
+                await this.callLatest(origin);
+            // } else {
+            //     console.log('Using cached latest', origin, outpoint.toString('hex'))
             }
         }
         
@@ -198,7 +198,7 @@ export class InscriptionsController extends Controller {
             throw createError(resp.status, resp.statusText)
         }
         const outpoint = Buffer.from(await resp.arrayBuffer())
-        redis.hset('latest', origin, outpoint);
+        cache.hset('latest', origin, outpoint);
         return outpoint;
     }
 

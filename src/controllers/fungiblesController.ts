@@ -1,7 +1,7 @@
 import { Address } from '@ts-bitcoin/core';
 import { BadRequest, NotFound } from 'http-errors';
 import { Controller, Get, Path, Query, Route } from "tsoa";
-import { pool, redis } from "../db";
+import { cache, pool, redis } from "../db";
 import { Outpoint } from '../models/outpoint';
 import { BSV20Txo } from '../models/bsv20Txo';
 import { Token } from '../models/token';
@@ -380,7 +380,7 @@ export class FungiblesController extends Controller {
         @Path() id: string,
     ): Promise<number> {
         const cacheId = `locked:${id}`
-        let cached = await redis.get(cacheId)
+        let cached = await cache.get(cacheId)
         if (cached) {
             return parseInt(cached, 10)
         }
@@ -393,7 +393,7 @@ export class FungiblesController extends Controller {
 
         // console.log(sql, params)
         const { rows: [stats] } = await pool.query(sql, params);
-        await redis.set(cacheId, stats.locked_amt, 'EX', 600)
+        await cache.set(cacheId, stats.locked_amt, 'EX', 600)
         return stats.locked_amt
     }
 
@@ -402,7 +402,7 @@ export class FungiblesController extends Controller {
         @Path() id: string,
     ): Promise<number> {
         const cacheId = `burned:${id}`
-        let cached = await redis.get(cacheId)
+        let cached = await cache.get(cacheId)
         if (cached) {
             return parseInt(cached, 10)
         }
@@ -413,7 +413,7 @@ export class FungiblesController extends Controller {
 
         // console.log(sql, params)
         const { rows: [stats] } = await pool.query(sql, params);
-        await redis.set(cacheId, stats.burned_amt, 'EX', 600)
+        await cache.set(cacheId, stats.burned_amt, 'EX', 600)
         return stats.burned_amt
     }
 
@@ -537,7 +537,7 @@ export class FungiblesController extends Controller {
 
         const token = Token.fromRow(row);
 
-        let accounts = await redis.get(`accts:${tick}`)
+        let accounts = await cache.get(`accts:${tick}`)
         if (!accounts) {
             const { rows: [row] } = await pool.query(`
                 SELECT COUNT(DISTINCT pkhash) as count
@@ -546,7 +546,7 @@ export class FungiblesController extends Controller {
                 [tick],
             )
             accounts = row.count
-            await redis.set(`accts:${tick}`, row.count, 'EX', 600)
+            await cache.set(`accts:${tick}`, row.count, 'EX', 600)
         }
         token.accounts = parseInt(accounts || '0', 10)
 
@@ -577,7 +577,7 @@ export class FungiblesController extends Controller {
         const cacheKey = `tick:${tick}:holders`
 
         // this.setHeader('Cache-Control', 'max-age=3600')
-        const status = await redis.get(cacheKey);
+        const status = await cache.get(cacheKey);
         if (status) {
             return JSON.parse(status).slice(offset, offset + limit);
         }
@@ -594,7 +594,7 @@ export class FungiblesController extends Controller {
             address: Address.fromPubKeyHashBuf(r.pkhash).toString(),
             amt: r.amt,
         }))
-        await redis.set(cacheKey, JSON.stringify(tokens), 'EX', 300);
+        await cache.set(cacheKey, JSON.stringify(tokens), 'EX', 300);
         return tokens.slice(offset, offset + limit);
     }
 
@@ -616,7 +616,7 @@ export class FungiblesController extends Controller {
         const token = Token.fromRow(row);
 
 
-        let accounts = await redis.get(`accts:${id}`)
+        let accounts = await cache.get(`accts:${id}`)
         if (!accounts) {
             const { rows: [row] } = await pool.query(`
                 SELECT COUNT(DISTINCT pkhash) as count
@@ -626,7 +626,7 @@ export class FungiblesController extends Controller {
             )
             if (row) {
                 accounts = row.count.toString()
-                await redis.set(`accts:${id}`, accounts || '0', 'EX', 60)
+                await cache.set(`accts:${id}`, accounts || '0', 'EX', 60)
             }
         }
         token.accounts = parseInt(accounts || '0', 10)
@@ -652,7 +652,7 @@ export class FungiblesController extends Controller {
         const cacheKey = `id:${id}:holders`
         this.setHeader('Cache-Control', 'max-age=300')
 
-        const status = await redis.get(cacheKey);
+        const status = await cache.get(cacheKey);
         if (status) {
             return JSON.parse(status).slice(offset, offset + limit);
         }
@@ -669,7 +669,7 @@ export class FungiblesController extends Controller {
             address: Address.fromPubKeyHashBuf(r.pkhash).toString(),
             amt: r.amt,
         }))
-        await redis.set(cacheKey, JSON.stringify(tokens), 'EX', 300);
+        await cache.set(cacheKey, JSON.stringify(tokens), 'EX', 300);
         return tokens.slice(offset, offset + limit);
     }
 

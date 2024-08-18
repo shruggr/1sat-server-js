@@ -11,10 +11,10 @@ import { RegisterRoutes } from "./build/routes";
 import * as path from 'path';
 import { Redis } from 'ioredis';
 import * as responseTime from 'response-time'
-import { Utils } from '@bsv/sdk';
+import { redis } from './db';
 // import { pool } from './db';
 
-const { PORT, REDIS } = process.env;
+const { PORT, REDISDB } = process.env;
 const server = express();
 
 async function main() {
@@ -55,20 +55,10 @@ server.use('/api/swagger.json', async (_req, res) => {
     res.sendFile(path.join(__dirname, '/build/swagger.json'));
 });
 
-server.use("/api/subscribe", (req, res, next) => {
+server.use("/api/subscribe", async (req, res, next) => {
     try {
         let channels: string[] = []
-        let addresses: string[] = [];
-        if (Array.isArray(req.query['address'])) {
-            addresses = req.query['address'] as string[];
-        } else if (typeof req.query['address'] == 'string') {
-            addresses = [req.query['address']]
-        }
-        for (let a of addresses) {
-            const pkhash = Utils.toHex(Utils.fromBase58(a));
-            channels.push(`t:${pkhash}`)
-            channels.push(`s:${pkhash}`)
-        }
+        
         if (Array.isArray(req.query['channel'])) {
             channels.push(...req.query['channel'] as string[]);
         } else if (typeof req.query['channel'] == 'string') {
@@ -81,39 +71,70 @@ server.use("/api/subscribe", (req, res, next) => {
             'Cache-Control': 'no-cache',
             'X-Accel-Buffering': 'no'
         });
-        const rparts = (REDIS || '').split(':')
+        const rparts = (REDISDB || '').split(':')
         const subClient = new Redis({
             port: rparts[1] ? parseInt(rparts[1]) : 6379,
             host: rparts[0],
         });
-        subClient.subscribe(...channels);
+        subClient.psubscribe(...channels.map(c => `evt:${c}:*`));
+        const lastEventId = parseInt(req.get('last-event-id') || '0');
+        if (lastEventId) {
+            console.log('\n\n*\n*\n*\n')
+            console.log('SSE Last-Event-ID:', lastEventId)
+            console.log('*\n*\n*\n\n')
+            for (let c of channels) {
+                const events = await redis.zrangebyscore(`evt:${c}`, lastEventId, '+inf', 'WITHSCORES')
+                for (let i = 0; i < events.length; i += 2) {
+                    const message = events[i ]
+                    const id = events[i + 1]
+                    publishMessage(res, c, message, id)
+                }
+            }
+        }
+        console.log(new Date(), 'SSE Subscribe:', ...channels)
         const interval = setInterval(() => res.write('event: ping\n'), 5000)
 
         res.on("close", () => {
             clearInterval(interval)
             subClient.quit()
+            console.log(new Date(), 'SSE Close')
         })
 
-        subClient.on("message", async (channel, message) => {
-            let id = ''
-            if (channel.startsWith('t:') || channel.startsWith('s:')) {
-                const address = Utils.toBase58Check(Utils.toArray(channel.slice(2), 'hex'))
-                channel = channel.slice(0, 2) + address
-            }
-
-            res.write(`event: ${channel}\n`)
-            res.write(`data: ${message}\n`)
-            if (id) {
-                res.write(`id: ${id}\n\n`)
-            } else {
-                res.write(`\n`)
-            }
+        subClient.on("message", async (pattern, channel, message) => {
+            console.log('SSE Message:', pattern, channel, message)
+            const [_, event, id] = channel.split(':')
+            // let id = ''
+            // if (channel.startsWith('t:') || channel.startsWith('s:')) {
+            //     const address = Utils.toBase58Check(Utils.toArray(channel.slice(2), 'hex'))
+            //     channel = channel.slice(0, 2) + address
+            // }
+            publishMessage(res, event, message, id)
+            // res.write(`event: ${event}\n`)
+            // res.write(`data: ${message}\n`)
+            // if (id) {
+            //     res.write(`id: ${id}\n\n`)
+            // } else {
+            //     res.write(`\n`)
+            // }
         });
         // setTimeout(() => res.end(), 60000)
     } catch (e: any) {
         return next(e);
     }
 });
+
+function publishMessage(res: Response, event: string, message: string, id?: string) {
+    console.log('\n\n*\n*\n*\n')
+    console.log(new Date(), 'SSE Message:', event, message, id)
+    console.log('*\n*\n*\n\n')
+    res.write(`event: ${event}\n`)
+    res.write(`data: ${message}\n`)
+    if (id) {
+        res.write(`id: ${id}\n\n`)
+    } else {
+        res.write(`\n`)
+    }
+}
 
 const { BITCOIN_HOST, BITCOIN_PORT } = process.env;
 server.get('/rest/*', async (req, res, next) => {

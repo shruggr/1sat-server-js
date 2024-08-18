@@ -1,7 +1,6 @@
 import { NotFound } from 'http-errors';
 import { Controller, Get, Path, Route } from "tsoa";
-import { pool } from "../db";
-import { redis } from '../db';
+import { cache, pool } from "../db";
 import { Utils } from '@bsv/sdk';
 
 
@@ -12,7 +11,7 @@ export class CollectionsController extends Controller {
         @Path() collectionId: string,
     ): Promise<{ count: number, max: number }> {
         const cacheKey = `stats:${collectionId}`;
-        const cached = await redis.get(cacheKey);
+        const cached = await cache.get(cacheKey);
         if(cached) {
             return JSON.parse(cached);
         }
@@ -27,7 +26,7 @@ export class CollectionsController extends Controller {
         this.setHeader('Cache-Control', 'max-age=600')
         if (!row) throw new NotFound();
         const value = { count: row.count, max: row.maxnum };
-        await redis.set(cacheKey, JSON.stringify(value), 'EX', 600);
+        await cache.set(cacheKey, JSON.stringify(value), 'EX', 600);
         return value;
     }
 
@@ -38,7 +37,7 @@ export class CollectionsController extends Controller {
         // const cacheKey = `coll:${collectionId}:holders`
 
         // this.setHeader('Cache-Control', 'max-age=3600')
-        // const status = await redis.get(cacheKey);
+        // const status = await cache.get(cacheKey);
         // if (status) {
         //     return JSON.parse(status).slice(0, limit);
         // }
@@ -65,7 +64,7 @@ export class CollectionsController extends Controller {
             address: Utils.toBase58Check([...r.pkhash]),
             amt: r.amt,
         }))
-        // await redis.set(cacheKey, JSON.stringify(tokens), 'EX', 60);
+        // await cache.set(cacheKey, JSON.stringify(tokens), 'EX', 60);
         return tokens;
     }
 }

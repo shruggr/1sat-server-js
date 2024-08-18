@@ -1,7 +1,7 @@
 import { Address } from '@ts-bitcoin/core';
 import { Body, Controller, Get, Path, Post, Query, Route } from "tsoa";
 import { Txo } from "../models/txo";
-import { loadTx, pool, redis } from "../db";
+import { cache, loadTx, pool } from "../db";
 import { TxoData } from "../models/txo";
 import { Outpoint } from '../models/outpoint';
 import { SortDirection } from '../models/sort-direction';
@@ -86,7 +86,7 @@ export class TxosController extends Controller {
         const { INDEXER } = process.env;
         const  start = Date.now();
         const cacheKey = `ad:${address}`
-        const updated = await redis.get(cacheKey)
+        const updated = await cache.get(cacheKey)
         if(!force && updated) {
             // console.log("Updated", updated, ". Skipping", address);
             return
@@ -94,7 +94,7 @@ export class TxosController extends Controller {
 
         console.log("Updating", address);
         try {
-            await redis.pipeline()
+            await cache.pipeline()
                 .set(cacheKey, Date.now())
                 .expire(cacheKey, 1800)
                 .exec();
@@ -102,11 +102,11 @@ export class TxosController extends Controller {
             if(resp.ok) {
                 console.log("Refreshed address:", address, `${Date.now() - start}ms`)
             } else {
-                redis.del(cacheKey)
+                cache.del(cacheKey)
                 console.log("Failed to refresh address:", address, resp.status, await resp.text())
             }
         } catch(e) {
-            redis.del(cacheKey)
+            cache.del(cacheKey)
             console.log("Refresh failed:", address)
         }
     }

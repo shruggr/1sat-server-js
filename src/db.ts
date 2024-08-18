@@ -4,20 +4,27 @@ import { Redis } from "ioredis";
 import { Pool } from 'pg';
 import { Transaction } from "@bsv/sdk";
 
-const { POSTGRES_FULL, BITCOIN_HOST, BITCOIN_PORT, JUNGLEBUS, REDIS } = process.env;
+const { POSTGRES_FULL, BITCOIN_HOST, BITCOIN_PORT, JUNGLEBUS, REDISDB, REDISCACHE } = process.env;
 export const jb = new JungleBusClient(JUNGLEBUS || 'https://junglebus.gorillapool.io');
-const rparts = (REDIS || '').split(':')
+const cparts = (REDISCACHE || '').split(':')
+export const cache = new Redis({
+    port: cparts[1] ? parseInt(cparts[1]) : 6379,
+    host: cparts[0],
+});
+
+const rparts = (REDISDB || '').split(':')
 export const redis = new Redis({
     port: rparts[1] ? parseInt(rparts[1]) : 6379,
     host: rparts[0],
 });
+
 const POSTGRES = POSTGRES_FULL
 console.log("POSTGRES", POSTGRES)
 
 export const pool = new Pool({ connectionString: POSTGRES });
 
 export async function loadRawtx(txid: string): Promise<Buffer> {
-    let rawtx = await redis.hgetBuffer('tx', txid).catch(console.error);
+    let rawtx = await cache.hgetBuffer('tx', txid).catch(console.error);
 
     if (!rawtx) {
         const url = `${JUNGLEBUS}/v1/transaction/get/${txid}/bin`
@@ -26,7 +33,7 @@ export async function loadRawtx(txid: string): Promise<Buffer> {
             const buf = await resp.arrayBuffer();
             if (buf.byteLength > 0) {
                 rawtx = Buffer.from(buf);
-                await redis.hset('tx', txid, rawtx);
+                await cache.hset('tx', txid, rawtx);
             }
         } else console.error('JB error:', txid, resp.status, resp.statusText)
     }
@@ -38,7 +45,7 @@ export async function loadRawtx(txid: string): Promise<Buffer> {
             const buf = await resp.arrayBuffer();
             if (buf.byteLength > 0) {
                 rawtx = Buffer.from(buf);
-                await redis.hset('tx', txid, rawtx);
+                await cache.hset('tx', txid, rawtx);
             }
         } else console.error('Node error:', txid, resp.status, resp.statusText)
     }
@@ -57,7 +64,7 @@ export async function loadProof(txid: string): Promise<Buffer> {
     let proof: Buffer | null = null
     // console.log("from cache", rawtx?.toString('hex'))
     try {
-        proof = await redis.hgetBuffer('proof', txid);
+        proof = await cache.hgetBuffer('proof', txid);
     } catch (e) {
         console.log('Fetch from redis error:', txid, e)
     }
@@ -73,7 +80,7 @@ export async function loadProof(txid: string): Promise<Buffer> {
         if (resp.status == 200) {
             proof = Buffer.from(await resp.arrayBuffer())
             if (proof.byteLength > 0) {
-                await redis.hset('proof', txid, proof)
+                await cache.hset('proof', txid, proof)
             }
         }
     } catch (e) {
