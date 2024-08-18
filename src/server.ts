@@ -76,12 +76,10 @@ server.use("/api/subscribe", async (req, res, next) => {
             port: rparts[1] ? parseInt(rparts[1]) : 6379,
             host: rparts[0],
         });
-        subClient.psubscribe(...channels.map(c => `evt:${c}:*`));
+        subClient.subscribe(...channels.map(c => `evt:${c}`));
         const lastEventId = parseInt(req.get('last-event-id') || '0');
         if (lastEventId) {
-            console.log('\n\n*\n*\n*\n')
             console.log('SSE Last-Event-ID:', lastEventId)
-            console.log('*\n*\n*\n\n')
             for (let c of channels) {
                 const events = await redis.zrangebyscore(`evt:${c}`, lastEventId, '+inf', 'WITHSCORES')
                 for (let i = 0; i < events.length; i += 2) {
@@ -100,15 +98,17 @@ server.use("/api/subscribe", async (req, res, next) => {
             console.log(new Date(), 'SSE Close')
         })
 
-        subClient.on("message", async (pattern, channel, message) => {
-            console.log('SSE Message:', pattern, channel, message)
-            const [_, event, id] = channel.split(':')
+        subClient.on("message", async (channel, message) => {
+            const [, event] = channel.split(':', 2)
+            const [id] = message.split(':', 2)
+            const data = message.slice(id.length + 1)
+
             // let id = ''
             // if (channel.startsWith('t:') || channel.startsWith('s:')) {
             //     const address = Utils.toBase58Check(Utils.toArray(channel.slice(2), 'hex'))
             //     channel = channel.slice(0, 2) + address
             // }
-            publishMessage(res, event, message, id)
+            publishMessage(res, event, data, id)
             // res.write(`event: ${event}\n`)
             // res.write(`data: ${message}\n`)
             // if (id) {
@@ -124,9 +124,7 @@ server.use("/api/subscribe", async (req, res, next) => {
 });
 
 function publishMessage(res: Response, event: string, message: string, id?: string) {
-    console.log('\n\n*\n*\n*\n')
     console.log(new Date(), 'SSE Message:', event, message, id)
-    console.log('*\n*\n*\n\n')
     res.write(`event: ${event}\n`)
     res.write(`data: ${message}\n`)
     if (id) {
