@@ -3,6 +3,7 @@ import createError, { NotFound } from 'http-errors';
 import { Redis } from "ioredis";
 import { Pool } from 'pg';
 import { Transaction } from "@bsv/sdk";
+import { BlockHeader } from "@ts-bitcoin/core";
 
 const { POSTGRES_FULL, BITCOIN_HOST, BITCOIN_PORT, JUNGLEBUS, REDISDB, REDISCACHE } = process.env;
 export const jb = new JungleBusClient(JUNGLEBUS || 'https://junglebus.gorillapool.io');
@@ -22,6 +23,16 @@ const POSTGRES = POSTGRES_FULL
 console.log("POSTGRES", POSTGRES)
 
 export const pool = new Pool({ connectionString: POSTGRES });
+
+export async function getChainTip(): Promise<BlockHeader> {
+    let chaintip = await cache.get('chaintip');
+    if (!chaintip) {
+        const resp = await fetch(`${JUNGLEBUS}/v1/block_header/tip`);
+        chaintip = await resp.text()
+        await cache.setex('chaintip', chaintip, 15);
+    }
+    return JSON.parse(chaintip) as BlockHeader;
+}
 
 export async function loadRawtx(txid: string): Promise<Buffer> {
     let rawtx = await cache.hgetBuffer('tx', txid).catch(console.error);

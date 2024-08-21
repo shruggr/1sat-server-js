@@ -1014,7 +1014,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.post('/api/tx/address/:address/:txid',
+        app.post('/api/tx/address/:address/:txid/$:ts',
             ...(fetchMiddlewares<RequestHandler>(TxController)),
             ...(fetchMiddlewares<RequestHandler>(TxController.prototype.SaveTxPost)),
 
@@ -1022,6 +1022,8 @@ export function RegisterRoutes(app: Router) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
                     address: {"in":"path","name":"address","required":true,"dataType":"string"},
                     txid: {"in":"path","name":"txid","required":true,"dataType":"string"},
+                    ts: {"in":"path","name":"ts","required":true,"dataType":"double"},
+                    auth: {"in":"header","name":"Authorization","required":true,"dataType":"string"},
                     txbuf: {"in":"body","name":"txbuf","dataType":"buffer"},
                     format: {"default":"tx","in":"query","name":"format","dataType":"union","subSchemas":[{"dataType":"enum","enums":["tx"]},{"dataType":"enum","enums":["ef"]},{"dataType":"enum","enums":["beef"]}]},
                     tags: {"default":[],"in":"query","name":"tags","dataType":"array","array":{"dataType":"string"}},
@@ -1811,6 +1813,66 @@ export function RegisterRoutes(app: Router) {
 
               templateService.apiHandler({
                 methodName: 'getTxoByOutpoint',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.get('/api/inscriptions/:outpoint/ancestors',
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getAncestorsByOutpoint)),
+
+            function InscriptionsController_getAncestorsByOutpoint(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    outpoint: {"in":"path","name":"outpoint","required":true,"dataType":"string"},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new InscriptionsController();
+
+              templateService.apiHandler({
+                methodName: 'getAncestorsByOutpoint',
+                controller,
+                response,
+                next,
+                validatedArgs,
+                successStatus: undefined,
+              });
+            } catch (err) {
+                return next(err);
+            }
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        app.post('/api/inscriptions/ancestors',
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController)),
+            ...(fetchMiddlewares<RequestHandler>(InscriptionsController.prototype.getAncestorsByOutpoints)),
+
+            function InscriptionsController_getAncestorsByOutpoints(request: ExRequest, response: ExResponse, next: any) {
+            const args: Record<string, TsoaRoute.ParameterSchema> = {
+                    outpoints: {"in":"body","name":"outpoints","required":true,"dataType":"array","array":{"dataType":"string"}},
+            };
+
+            // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+
+            let validatedArgs: any[] = [];
+            try {
+                validatedArgs = templateService.getValidatedArgs({ args, request, response });
+
+                const controller = new InscriptionsController();
+
+              templateService.apiHandler({
+                methodName: 'getAncestorsByOutpoints',
                 controller,
                 response,
                 next,

@@ -1,8 +1,8 @@
-import { Transaction, Utils } from "@bsv/sdk";
+import { Transaction } from "@bsv/sdk";
 import * as createError from "http-errors";
-import { cache, loadTx, redis } from "../db";
+import { cache, loadTx } from "../db";
 
-const { NETWORK, TAAL_TOKEN, ARC_TOKEN, ARC } = process.env;
+const { NETWORK, TAAL_TOKEN, ARC_TOKEN, ARC, INDEXER } = process.env;
 
 export async function broadcastTx(tx: Transaction): Promise<string> {
     let txid = tx.id('hex') as string;
@@ -32,7 +32,7 @@ export async function broadcastTx(tx: Transaction): Promise<string> {
 
         // await pubClient.set(txid, txbuf)
         console.timeLog('Broadcast: ' + txid, "Publishing to redis")
-        redis.publish('broadcast', Utils.toBase64(tx.toBinary()));
+        await fetch(`${INDEXER}/tx/${txid}/ingest`).catch((e) => console.error("Ingestion error:", e))
         return txid;
     } catch (e: any) {
         console.error("Broadcast Error:", e)

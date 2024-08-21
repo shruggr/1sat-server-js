@@ -140,13 +140,14 @@ export class TxController extends Controller {
                 loadRawtx(txid),
                 await loadProof(txid).catch(() => undefined)
             ])
-            const tx = Transaction.fromBinary([...rawtx]);
+            writer.writeVarIntNum(rawtx.length)
+            writer.write([...rawtx])
             if (proof) {
-                tx.merklePath = MerklePath.fromBinary([...proof]);
+                writer.writeVarIntNum(proof.length)
+                writer.write([...proof])
+            } else {
+                writer.writeVarIntNum(0)
             }
-            const beef = tx.toBEEF();
-            writer.writeVarIntNum(beef.length)
-            writer.write(beef)
         }
         req.res!.type('application/octet-stream').status(200).send(Buffer.from(writer.toArray()));
     }
@@ -165,18 +166,38 @@ export class TxController extends Controller {
     }
 
 
-    @Post("address/{address}/{txid}")
+    @Post("address/{address}/{txid}/${ts}")
     public async SaveTxPost(
         @Path() address: string,
         @Path() txid: string,
+        @Path() ts: number,
+        @Header('Authorization') auth: string,
         @Body() txbuf?: Buffer,
         @Query() format: 'tx' | 'ef' | 'beef' = 'tx',
         @Query() tags: string[] = [],
         @Query() broadcast = false,
+        // @Request() req: ExpRequest
     ): Promise<void> {
         if(!txid && (!txbuf || txbuf.length === 0)) {
-            throw new Error('txid or txbuf required')
+            throw new createError.BadRequest('txid or txbuf required')
         }
+        if(Date.now() - ts > 1000 * 60 * 5) {
+            throw new createError.Unauthorized('timestamp expired')
+        }
+        // const signature = Signature.fromDER(auth, "base64");
+		// let publicKey: PublicKey | undefined
+		// for (let recovery = 0; recovery < 4; recovery++) {
+		// 	try {
+		// 		publicKey = signature.RecoverPublicKey(recovery, new BigNumber(BSM.magicHash(msgHash)))
+		// 		const sigFitsPubkey = BSM.verify(msgHash, signature, publicKey);
+		// 		if (sigFitsPubkey && publicKey.toAddress() === this.sig.address) {
+		// 			return true
+		// 		}
+		// 	} catch (e) {
+		// 		continue
+		// 	}
+		// }
+
 
         if (txbuf && txbuf.length > 0) {
             const tx = parseRawTx([...txbuf], format);

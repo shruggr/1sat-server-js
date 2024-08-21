@@ -5,8 +5,7 @@ import { BlockHeader } from "../models/block";
 export class BlocksController extends Controller {
     @Get("tip")
     public async getChaintip(): Promise<BlockHeader> {
-        const resp = await fetch("https://junglebus.gorillapool.io/v1/block_header/tip")
-        return resp.json()
+        return this.getChaintip();
     }
 
     @Get("list/{id}")

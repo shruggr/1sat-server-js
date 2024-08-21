@@ -121,6 +121,50 @@ export class InscriptionsController extends Controller {
         return txo
     }
 
+    @Get("{outpoint}/ancestors")
+    public async getAncestorsByOutpoint(
+        @Path() outpoint: string,
+    ): Promise<TxidsResponse[]> {
+        this.setHeader('Cache-Control', 'public,max-age=86400')
+        const { rows } = await pool.query(`
+            SELECT o.txid, o.height, o.idx
+            FROM txos t
+            JOIN txos o ON o.origin = t.origin AND o.spend != '\\x'
+            WHERE t.outpoint = $1
+            ORDER BY o.height ASC, o.idx ASC`,
+            [Outpoint.fromString(outpoint).toBuffer()]
+        );
+
+        return rows.map(r => ({
+            txid: r.txid.toString('hex'),
+            height: r.height,
+            idx: r.idx
+        }));
+    }
+
+    @Post("ancestors")
+    public async getAncestorsByOutpoints(
+        @Body() outpoints: string[]
+    ): Promise<TxidsResponse[]> {
+        if (outpoints.length > 100) {
+            throw new BadRequest('Too many outpoints');
+        }
+        const { rows } = await pool.query(`
+            SELECT o.txid, o.height, o.idx
+            FROM txos t
+            JOIN txos o ON o.origin = t.origin AND o.spend != '\\x'
+            WHERE t.outpoint = ANY($1)
+            ORDER BY o.height ASC, o.idx ASC`,
+            [outpoints.map(o => Outpoint.fromString(o).toBuffer())]
+        );
+
+        return rows.map(r => ({
+            txid: r.txid.toString('hex'),
+            height: r.height,
+            idx: r.idx
+        }));
+    }
+
     @Get("num/{num}")
     public async getTxoByNum(
         @Path() num: string,
