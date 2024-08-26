@@ -1744,7 +1744,7 @@
 				]
 			}
 		},
-		"/api/tx/{txid}/rawtx": {
+		"/api/tx/{txid}/raw": {
 			"get": {
 				"operationId": "GetTxRawtx",
 				"responses": {
@@ -5251,7 +5251,7 @@
 				"parameters": []
 			}
 		},
-		"/api/blocks/list/{id}": {
+		"/api/blocks/list/{height}": {
 			"get": {
 				"operationId": "ListBlocks",
 				"responses": {
@@ -5273,10 +5273,11 @@
 				"parameters": [
 					{
 						"in": "path",
-						"name": "id",
+						"name": "height",
 						"required": true,
 						"schema": {
-							"type": "string"
+							"format": "double",
+							"type": "number"
 						}
 					},
 					{
@@ -5284,14 +5285,15 @@
 						"name": "limit",
 						"required": false,
 						"schema": {
-							"default": "100",
-							"type": "string"
+							"default": 1000,
+							"format": "double",
+							"type": "number"
 						}
 					}
 				]
 			}
 		},
-		"/api/blocks/get/{id}": {
+		"/api/blocks/get/height/{height}": {
 			"get": {
 				"operationId": "GetBlock",
 				"responses": {
@@ -5310,10 +5312,11 @@
 				"parameters": [
 					{
 						"in": "path",
-						"name": "id",
+						"name": "height",
 						"required": true,
 						"schema": {
-							"type": "string"
+							"format": "double",
+							"type": "number"
 						}
 					}
 				]

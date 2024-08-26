@@ -1,31 +1,32 @@
 import { Controller, Get, Path, Query, Route } from "tsoa";
+import { getChainTip, redis } from "../db";
+import { NotFound } from 'http-errors';
 import { BlockHeader } from "../models/block";
 
 @Route("api/blocks")
 export class BlocksController extends Controller {
     @Get("tip")
-    public async getChaintip(): Promise<BlockHeader> {
-        return this.getChaintip();
+    public async getChaintip() {
+        return getChainTip();
     }
 
-    @Get("list/{id}")
+    @Get("list/{height}")
     public async listBlocks(
-        @Path() id: string,
-        @Query() limit = '100',
+        @Path() height: number,
+        @Query() limit = 1000,
     ): Promise<BlockHeader[]> {
-        const url = `https://junglebus.gorillapool.io/v1/block_header/list/${id}?limit=${limit}`
-        console.log({url})
-        const resp = await fetch(url)
-        const data = await resp.json()
-        if(!data) return []
-        return data
+        const blocks = await redis.lrange('blocks', height, height + limit)
+        return blocks.map((b) => JSON.parse(b))
     }
 
-    @Get("get/{id}")
+    @Get("get/height/{height}")
     public async getBlock(
-        @Path() id: string,
+        @Path() height: number,
     ): Promise<BlockHeader> {
-        const resp = await fetch(`https://junglebus.gorillapool.io/v1/block_header/get/${id}`)
-        return resp.json()
+        const block = await redis.lindex(`blocks`, height)
+        if (!block) {
+            throw new NotFound()
+        }
+        return JSON.parse(block)
     }
 }

@@ -1,8 +1,8 @@
 import * as createError from "http-errors";
 import { Request as ExpRequest } from "express";
 import { Body, BodyProp, Controller, Get, Header, Path, Post, Query, Request, Route } from "tsoa";
-import { loadProof, loadRawtx, pool, redis } from "../db";
-import { MerklePath, Transaction, Utils } from "@bsv/sdk";
+import { loadProof, loadRawtx, loadTxWithProof, pool, redis } from "../db";
+import { Utils } from "@bsv/sdk";
 import { loadTxLogs, parseRawTx, refreshTxLogs, saveTxLog, TxLog } from "../models/tx";
 import { broadcastTx } from "../models/broadcast";
 
@@ -49,8 +49,10 @@ export class TxController extends Controller {
     public async getTxStatus(
         @Path() txid: string,
     ): Promise<{ height: number, idx: number, hash: string } | undefined> {
-        const { rows: [row] } = await pool.query(`SELECT height, block_id, idx 
-            FROM txns WHERE txid=$1`,
+        const { rows: [row] } = await pool.query(`
+            SELECT height, block_id, idx 
+            FROM txns 
+            WHERE txid=$1`,
             [Buffer.from(txid, 'hex')]
         );
         if (!row) {
@@ -67,7 +69,7 @@ export class TxController extends Controller {
         }
     }
 
-    @Get("{txid}/rawtx")
+    @Get("{txid}/raw")
     public async getTxRawtx(
         @Path() txid: string,
         @Request() req: ExpRequest
@@ -76,7 +78,10 @@ export class TxController extends Controller {
         if (!rawtx) {
             throw new createError.NotFound();
         }
-        req.res!.type('application/octet-stream').status(200).send(rawtx);
+        this.setStatus(200)
+        this.setHeader('Content-Type', 'application/octet-stream')
+        req.res!.write(rawtx);
+        req.res!.end();
     }
 
     @Get("{txid}/proof")
@@ -88,7 +93,10 @@ export class TxController extends Controller {
         if (!proof) {
             throw new createError.NotFound();
         }
-        req.res!.type('application/octet-stream').status(200).send(proof);
+        this.setStatus(200)
+        this.setHeader('Content-Type', 'application/octet-stream')
+        req.res!.write(Buffer.from(proof));
+        req.res!.end();
     }
 
     @Get("{txid}")
@@ -96,15 +104,11 @@ export class TxController extends Controller {
         @Path() txid: string,
         @Request() req: ExpRequest
     ): Promise<void> {
-        const [rawtx, proof] = await Promise.all([
-            loadRawtx(txid),
-            await loadProof(txid).catch(() => undefined)
-        ])
-        const tx = Transaction.fromBinary([...rawtx]);
-        if (proof) {
-            tx.merklePath = MerklePath.fromBinary([...proof]);
-        }
-        req.res!.type('application/octet-stream').status(200).send(Buffer.from(tx.toBEEF()));
+        const bin = await loadTxWithProof(txid);
+        this.setStatus(200)
+        this.setHeader('Content-Type', 'application/octet-stream')
+        req.res!.write(Buffer.from(bin));
+        req.res!.end();
     }
 
     @Get("batch")
@@ -112,21 +116,13 @@ export class TxController extends Controller {
         @Query() txids: string[],
         @Request() req: ExpRequest
     ): Promise<void> {
-        const writer = new Utils.Writer()
+        this.setStatus(200)
+        this.setHeader('Content-Type', 'application/octet-stream')
         for await (const txid of txids) {
-            const [rawtx, proof] = await Promise.all([
-                loadRawtx(txid),
-                await loadProof(txid).catch(() => undefined)
-            ])
-            const tx = Transaction.fromBinary([...rawtx]);
-            if (proof) {
-                tx.merklePath = MerklePath.fromBinary([...proof]);
-            }
-            const beef = tx.toBEEF();
-            writer.writeVarIntNum(beef.length)
-            writer.write(beef)
+            const bin = await loadTxWithProof(txid);
+            req.res!.write(Buffer.from(bin));
         }
-        req.res!.type('application/octet-stream').status(200).send(Buffer.from(writer.toArray()));
+        req.res!.end();
     }
 
     @Post("batch")
@@ -134,22 +130,7 @@ export class TxController extends Controller {
         @Body() txids: string[],
         @Request() req: ExpRequest
     ): Promise<void> {
-        const writer = new Utils.Writer()
-        for await (const txid of txids) {
-            const [rawtx, proof] = await Promise.all([
-                loadRawtx(txid),
-                await loadProof(txid).catch(() => undefined)
-            ])
-            writer.writeVarIntNum(rawtx.length)
-            writer.write([...rawtx])
-            if (proof) {
-                writer.writeVarIntNum(proof.length)
-                writer.write([...proof])
-            } else {
-                writer.writeVarIntNum(0)
-            }
-        }
-        req.res!.type('application/octet-stream').status(200).send(Buffer.from(writer.toArray()));
+        return this.getTxBatch(txids, req);
     }
 
     @Get("address/{address}/from/{blockHeight}")
@@ -161,7 +142,6 @@ export class TxController extends Controller {
         @Query() offset = 0,
     ): Promise<TxLog[]> {
         await refreshTxLogs(address);
-
         return loadTxLogs(address, blockHeight, offset, limit);
     }
 

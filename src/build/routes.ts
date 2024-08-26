@@ -825,7 +825,7 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/tx/:txid/rawtx',
+        app.get('/api/tx/:txid/raw',
             ...(fetchMiddlewares<RequestHandler>(TxController)),
             ...(fetchMiddlewares<RequestHandler>(TxController.prototype.getTxRawtx)),
 
@@ -3103,14 +3103,14 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/blocks/list/:id',
+        app.get('/api/blocks/list/:height',
             ...(fetchMiddlewares<RequestHandler>(BlocksController)),
             ...(fetchMiddlewares<RequestHandler>(BlocksController.prototype.listBlocks)),
 
             function BlocksController_listBlocks(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
-                    id: {"in":"path","name":"id","required":true,"dataType":"string"},
-                    limit: {"default":"100","in":"query","name":"limit","dataType":"string"},
+                    height: {"in":"path","name":"height","required":true,"dataType":"double"},
+                    limit: {"default":1000,"in":"query","name":"limit","dataType":"double"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
@@ -3134,13 +3134,13 @@ export function RegisterRoutes(app: Router) {
             }
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-        app.get('/api/blocks/get/:id',
+        app.get('/api/blocks/get/height/:height',
             ...(fetchMiddlewares<RequestHandler>(BlocksController)),
             ...(fetchMiddlewares<RequestHandler>(BlocksController.prototype.getBlock)),
 
             function BlocksController_getBlock(request: ExRequest, response: ExResponse, next: any) {
             const args: Record<string, TsoaRoute.ParameterSchema> = {
-                    id: {"in":"path","name":"id","required":true,"dataType":"string"},
+                    height: {"in":"path","name":"height","required":true,"dataType":"double"},
             };
 
             // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

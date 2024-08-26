@@ -2,8 +2,8 @@ import { JungleBusClient } from "@gorillapool/js-junglebus";
 import createError, { NotFound } from 'http-errors';
 import { Redis } from "ioredis";
 import { Pool } from 'pg';
-import { Transaction } from "@bsv/sdk";
-import { BlockHeader } from "@ts-bitcoin/core";
+import { MerklePath, Transaction, Utils } from "@bsv/sdk";
+import { BlockHeader } from "./models/block";
 
 const { POSTGRES_FULL, BITCOIN_HOST, BITCOIN_PORT, JUNGLEBUS, REDISDB, REDISCACHE } = process.env;
 export const jb = new JungleBusClient(JUNGLEBUS || 'https://junglebus.gorillapool.io');
@@ -25,13 +25,8 @@ console.log("POSTGRES", POSTGRES)
 export const pool = new Pool({ connectionString: POSTGRES });
 
 export async function getChainTip(): Promise<BlockHeader> {
-    let chaintip = await cache.get('chaintip');
-    if (!chaintip) {
-        const resp = await fetch(`${JUNGLEBUS}/v1/block_header/tip`);
-        chaintip = await resp.text()
-        await cache.setex('chaintip', chaintip, 15);
-    }
-    return JSON.parse(chaintip) as BlockHeader;
+    const chaintip = await redis.get('chaintip');
+    return JSON.parse(chaintip!) as BlockHeader;
 }
 
 export async function loadRawtx(txid: string): Promise<Buffer> {
@@ -70,32 +65,39 @@ export async function loadTx(txid: string): Promise<Transaction> {
     return Transaction.fromBinary([...rawtx]);
 }
 
+export async function loadTxWithProof(txid: string): Promise<number[]> {
+    const [rawtx, proof] = await Promise.all([
+        loadRawtx(txid).then(rawtx => [...rawtx] as number[]),
+        loadProof(txid).then(proof => [...proof] as number[]).catch(() => [] as number[])
+    ])
+    
+    const writer = new Utils.Writer();
+    writer.writeVarIntNum(rawtx.length)
+    writer.write(rawtx)
+    writer.writeVarIntNum(proof.length)
+    writer.write(proof)
+    const resp = writer.toArray();
+    console.log('GET TX:', txid, rawtx.length, proof.length, JSON.stringify(resp.slice(0, 10)))
+    return resp;
+}
+
 
 export async function loadProof(txid: string): Promise<Buffer> {
-    let proof: Buffer | null = null
-    // console.log("from cache", rawtx?.toString('hex'))
-    try {
-        proof = await cache.hgetBuffer('proof', txid);
-    } catch (e) {
-        console.log('Fetch from redis error:', txid, e)
-    }
-
-    try {
-        
-        let url = `${JUNGLEBUS}/v1/transaction/proof/${txid}/bin`
-        let resp = await fetch(url);
+    const cacheKey = `proof:${txid}`;
+    let proof = await cache.getBuffer(cacheKey);
+    if(!proof) {
+        const resp = await fetch(`${JUNGLEBUS}/v1/transaction/proof/${txid}/bin`);
         if (!resp.ok) {
             throw createError(resp.status, resp.statusText)
         }
-
-        if (resp.status == 200) {
-            proof = Buffer.from(await resp.arrayBuffer())
-            if (proof.byteLength > 0) {
-                await cache.hset('proof', txid, proof)
-            }
+        proof = Buffer.from(await resp.arrayBuffer())
+        const merklePath = MerklePath.fromBinary([...proof]);
+        const chaintip = await getChainTip();
+        if(merklePath.blockHeight < chaintip.height - 5) {
+            await cache.set(cacheKey, proof)
+        } else {
+            await cache.setex(cacheKey, 60, proof)
         }
-    } catch (e) {
-        console.log('Fetch from node error:', txid, e)
     }
 
     if (!proof) {
