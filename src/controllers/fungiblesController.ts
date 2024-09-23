@@ -103,13 +103,23 @@ export class FungiblesController extends Controller {
         @Path() address: string,
     ): Promise<TokenBalanceResponse[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        const hashBuf = Address.fromString(address).hashBuf
+        return this.calcBalance([address])
+    }
 
+    @Get("balance")
+    public async getBalanceByAddresses(
+        @Query() addresses: string[],
+    ): Promise<TokenBalanceResponse[]> {
+        this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        return this.calcBalance(addresses)
+    }
+
+    public async calcBalance(addresses: string[]) {
+        const hashBufs = addresses.map(a => Address.fromString(a).hashBuf)
         const sql = `SELECT txid, vout, op, tick, id, listing, status, amt
             FROM bsv20_txos
-            WHERE pkhash=$1 AND spend='\\x' AND status IN (0, 1) AND op != 'burn'`
-        const { rows } = await pool.query(sql, [hashBuf]);
-        // console.log(sql, hashBuf.toString('hex'))
+            WHERE pkhash=ANY($1) AND spend='\\x' AND status IN (0, 1) AND op != 'burn'`
+        const { rows } = await pool.query(sql, [hashBufs]);
 
         const results: { [ticker: string]: TokenBalance } = {};
         let ids = new Set<string>()
@@ -204,7 +214,6 @@ export class FungiblesController extends Controller {
 
             return o;
         })
-
     }
 
     @Get("{address}/tick/{tick}")

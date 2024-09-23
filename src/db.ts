@@ -1,5 +1,5 @@
 import { JungleBusClient } from "@gorillapool/js-junglebus";
-import createError, { NotFound } from 'http-errors';
+import { NotFound } from 'http-errors';
 import { Redis } from "ioredis";
 import { Pool } from 'pg';
 import { MerklePath, Transaction, Utils } from "@bsv/sdk";
@@ -88,7 +88,8 @@ export async function loadProof(txid: string): Promise<Buffer> {
     if(!proof) {
         const resp = await fetch(`${JUNGLEBUS}/v1/transaction/proof/${txid}/bin`);
         if (!resp.ok) {
-            throw createError(resp.status, resp.statusText)
+            // throw createError(resp.status, resp.statusText)
+            throw new NotFound(`${txid} not found`);
         }
         proof = Buffer.from(await resp.arrayBuffer())
         const merklePath = MerklePath.fromBinary([...proof]);

@@ -1,4 +1,4 @@
-import * as createError from "http-errors";
+import { BadRequest, NotFound, Unauthorized } from 'http-errors';
 import { Request as ExpRequest } from "express";
 import { Body, BodyProp, Controller, Get, Header, Path, Post, Query, Request, Route } from "tsoa";
 import { loadProof, loadRawtx, loadTxWithProof, pool, redis } from "../db";
@@ -56,7 +56,7 @@ export class TxController extends Controller {
             [Buffer.from(txid, 'hex')]
         );
         if (!row) {
-            throw new createError.NotFound();
+            throw new NotFound();
         } else if (!row.height) {
             this.setStatus(204);
             return;
@@ -76,7 +76,7 @@ export class TxController extends Controller {
     ): Promise<void> {
         const rawtx = await loadRawtx(txid);
         if (!rawtx) {
-            throw new createError.NotFound();
+            throw new NotFound();
         }
         this.setStatus(200)
         this.setHeader('Content-Type', 'application/octet-stream')
@@ -91,7 +91,7 @@ export class TxController extends Controller {
     ): Promise<void> {
         const proof = await loadProof(txid);
         if (!proof) {
-            throw new createError.NotFound();
+            throw new NotFound();
         }
         this.setStatus(200)
         this.setHeader('Content-Type', 'application/octet-stream')
@@ -159,10 +159,10 @@ export class TxController extends Controller {
         // @Request() req: ExpRequest
     ): Promise<void> {
         if(!txid && (!txbuf || txbuf.length === 0)) {
-            throw new createError.BadRequest('txid or txbuf required')
+            throw new BadRequest('txid or txbuf required')
         }
         if(Date.now() - ts > 1000 * 60 * 5) {
-            throw new createError.Unauthorized('timestamp expired')
+            throw new Unauthorized('timestamp expired')
         }
         // const signature = Signature.fromDER(auth, "base64");
 		// let publicKey: PublicKey | undefined
