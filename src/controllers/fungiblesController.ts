@@ -57,13 +57,15 @@ export class FungiblesController extends Controller {
         @Path() outpoint: string,
     ): Promise<BSV20Txo> {
         const op = Outpoint.fromString(outpoint)
-        let sql = `SELECT *
-            FROM bsv20_txos
-            WHERE txid=$1 AND vout=$2`
+        const sql = `SELECT t.*, v1.dec as b1dec, v2.sym, v2.icon, v2.dec as b2dec
+            FROM bsv20_txos t
+            LEFT JOIN bsv20 v1 ON v1.tick=t.tick
+            LEFT JOIN bsv20_v2 v2 ON v2.id=t.id
+            WHERE t.txid=$1 AND t.vout=$2`
         const params = [op.txid, op.vout]
 
         // console.log(sql, params)
-        const { rows: [row] } = await pool.query(sql, params);
+        let { rows: [row] } = await pool.query(sql, params);
         if (!row) {
             throw new NotFound();
         }
@@ -74,13 +76,15 @@ export class FungiblesController extends Controller {
     public async getBsv20ByTxid(
         @Path() txid: string,
     ): Promise<BSV20Txo[]> {
-        let sql = `SELECT *
-            FROM bsv20_txos
-            WHERE txid=$1`
+        const sql = `SELECT t.*, v1.dec as b1dec, v2.sym, v2.icon, v2.dec as b2dec
+            FROM bsv20_txos t
+            LEFT JOIN bsv20 v1 ON v1.tick=t.tick
+            LEFT JOIN bsv20_v2 v2 ON v2.id=t.id
+            WHERE t.txid=$1`
         const params = [Buffer.from(txid, 'hex')]
 
         // console.log(sql, params)
-        const { rows } = await pool.query(sql, params);
+        let { rows } = await pool.query(sql, params);
         return rows.map(row => BSV20Txo.fromRow(row));
     }
 
@@ -309,7 +313,7 @@ export class FungiblesController extends Controller {
         @Path() id: string,
         @Query() limit: number = 100,
         @Query() offset: number = 0,
-    ): Promise<{[txid: string]: string[]}> {
+    ): Promise<{ [txid: string]: string[] }> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf, Outpoint.fromString(id).toBuffer()];
         let sql = `SELECT DISTINCT encode(spend, 'hex') as txid, encode(txid, 'hex') || '_' || vout as dep
@@ -785,7 +789,7 @@ export class FungiblesController extends Controller {
     public async getBsv21Ancestors(
         @Path() address: string,
         @Path() id: string,
-    ): Promise<{[score: string]: string}> {
+    ): Promise<{ [score: string]: string }> {
         const add = Address.fromString(address);
         const params: any[] = [add.hashBuf, Outpoint.fromString(id).toBuffer()];
         let sql = `SELECT DISTINCT txid, height, idx
@@ -802,7 +806,7 @@ export class FungiblesController extends Controller {
             // processed.set(row.height + (parseInt(row.idx) * Math.pow(2, -31)), txid)
             await this.getAncestors(txid, processed)
         }
-        const response: {[score: string]: string} = {}
+        const response: { [score: string]: string } = {}
         for (let [score, txid] of processed.entries()) {
             response[score.toString()] = txid
         }
