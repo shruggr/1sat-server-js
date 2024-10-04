@@ -9,6 +9,13 @@ import { SortDirection } from '../models/sort-direction';
 import { Bsv20Status } from '../models/txo';
 import { BalanceUpdate } from '../models/balanceUpdate';
 
+export type TokenStatus = {
+    id?: string,
+    tick?: string,
+    status: Bsv20Status,
+    height: number,
+}
+
 const includeThreshold = 10000000
 @Route("api/bsv20")
 export class FungiblesController extends Controller {
@@ -59,7 +66,7 @@ export class FungiblesController extends Controller {
         const op = Outpoint.fromString(outpoint)
         const sql = `SELECT t.*, v1.dec as b1dec, v2.sym, v2.icon, v2.dec as b2dec
             FROM bsv20_txos t
-            LEFT JOIN bsv20 v1 ON v1.tick=t.tick
+            LEFT JOIN bsv20 v1 ON v1.tick=t.tick and v1.status=1
             LEFT JOIN bsv20_v2 v2 ON v2.id=t.id
             WHERE t.txid=$1 AND t.vout=$2`
         const params = [op.txid, op.vout]
@@ -78,7 +85,7 @@ export class FungiblesController extends Controller {
     ): Promise<BSV20Txo[]> {
         const sql = `SELECT t.*, v1.dec as b1dec, v2.sym, v2.icon, v2.dec as b2dec
             FROM bsv20_txos t
-            LEFT JOIN bsv20 v1 ON v1.tick=t.tick
+            LEFT JOIN bsv20 v1 ON v1.tick=t.tick and v1.status=1
             LEFT JOIN bsv20_v2 v2 ON v2.id=t.id
             WHERE t.txid=$1`
         const params = [Buffer.from(txid, 'hex')]
@@ -248,6 +255,28 @@ export class FungiblesController extends Controller {
         return rows.map((row: any) => BSV20Txo.fromRow(row));
     }
 
+    @Get("{address}/tick/{tick}/status")
+    public async getBsv20Status(
+        @Path() address: string,
+        @Path() tick: string,
+        @Query() since = 0,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+    ): Promise<TokenStatus[]> {
+        const add = Address.fromString(address);
+        const params: any[] = [add.hashBuf, tick, since];
+        let sql = `SELECT txid, vout, height, status
+            FROM bsv20_txos
+            WHERE pkhash=$1 AND status!=0 AND tick=$2 AND height >= $3
+            ORDER BY status, height, idx
+            LIMIT $${params.push(limit)}
+            OFFSET $${params.push(offset)}`
+
+        // console.log(sql, params)
+        const { rows } = await pool.query(sql, params);
+        return rows;
+    }
+
     @Get("{address}/tick/{tick}/history")
     public async getBsv20UtxoHistoryByTick(
         @Path() address: string,
@@ -305,6 +334,29 @@ export class FungiblesController extends Controller {
         // console.log(sql, params)
         const { rows } = await pool.query(sql, params);
         return rows.map((row: any) => BSV20Txo.fromRow(row));
+    }
+
+    @Get("{address}/id/{id}/status")
+    public async getBsv21Status(
+        @Path() address: string,
+        @Path() id: string,
+        @Query() limit: number = 100,
+        @Query() offset: number = 0,
+        @Query() since = 0,
+    ): Promise<BSV20Txo[]> {
+        const add = Address.fromString(address);
+        const params: any[] = [add.hashBuf, Outpoint.fromString(id).toBuffer(), since];
+        let sql = `SELECT txid, vout, height, status
+            FROM bsv20_txos
+            WHERE pkhash=$1 AND status!=0 AND id=$2 AND height>=$3 
+            ORDER BY status, height, idx
+            LIMIT $${params.push(limit)}
+            OFFSET $${params.push(offset)}`
+
+
+        // console.log(sql, params)
+        const { rows } = await pool.query(sql, params);
+        return rows;
     }
 
     @Get("{address}/id/{id}/deps")

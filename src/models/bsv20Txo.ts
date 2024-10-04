@@ -51,7 +51,7 @@ export class BSV20Txo {
         txo.id = row.id && Outpoint.fromBuffer(row.id);
         txo.sym = row.sym;
         txo.icon = row.icon && Outpoint.fromBuffer(row.icon);
-        txo.dec = Number.isInteger(row.b1dec) ? row.b1dec : row.b2dec;
+        txo.dec = Number.isInteger(row.b2dec) ? row.b2dec : row.b1dec;
         txo.amt = row.amt;
         txo.status = row.status;
         txo.reason = row.reason;

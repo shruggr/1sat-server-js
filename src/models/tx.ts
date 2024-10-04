@@ -65,11 +65,14 @@ export async function refreshTxLogs(address: string): Promise<void> {
             toUpdate.add(tx.transaction_id)
         }
     }
+    for (const txid of await redis.zrangebyscore(key, 9999999, '+inf')) {
+        toUpdate.add(txid)
+    }
 
     const { rows } = await pool.query(`
-            SELECT txid, height, idx, created
-            FROM txns
-            WHERE txid = ANY($1)`,
+        SELECT txid, height, idx, created
+        FROM txns
+        WHERE txid = ANY($1)`,
         [Array.from(toUpdate).map(txid => Buffer.from(txid, 'hex'))]
     );
     const pipe = redis.pipeline()
