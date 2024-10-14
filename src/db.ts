@@ -30,7 +30,8 @@ export async function getChainTip(): Promise<BlockHeader> {
 }
 
 export async function loadRawtx(txid: string): Promise<Buffer> {
-    let rawtx = await cache.hgetBuffer('tx', txid).catch(console.error);
+    const cacheKey = `tx:${txid}`;
+    let rawtx = await cache.getBuffer(cacheKey);
 
     if (!rawtx) {
         const url = `${JUNGLEBUS}/v1/transaction/get/${txid}/bin`
@@ -39,7 +40,7 @@ export async function loadRawtx(txid: string): Promise<Buffer> {
             const buf = await resp.arrayBuffer();
             if (buf.byteLength > 0) {
                 rawtx = Buffer.from(buf);
-                await cache.hset('tx', txid, rawtx);
+                await cache.set(cacheKey, rawtx);
             }
         } else console.error('JB error:', txid, resp.status, resp.statusText)
     }
@@ -51,7 +52,7 @@ export async function loadRawtx(txid: string): Promise<Buffer> {
             const buf = await resp.arrayBuffer();
             if (buf.byteLength > 0) {
                 rawtx = Buffer.from(buf);
-                await cache.hset('tx', txid, rawtx);
+                await cache.set(cacheKey, rawtx);
             }
         } else console.error('Node error:', txid, resp.status, resp.statusText)
     }
