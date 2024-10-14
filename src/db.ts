@@ -83,7 +83,7 @@ export async function loadTxWithProof(txid: string): Promise<number[]> {
 
 
 export async function loadProof(txid: string): Promise<Buffer> {
-    const cacheKey = `proof:${txid}`;
+    const cacheKey = `prf:${txid}`;
     let proof = await cache.getBuffer(cacheKey);
     if(!proof) {
         const resp = await fetch(`${JUNGLEBUS}/v1/transaction/proof/${txid}/bin`);
