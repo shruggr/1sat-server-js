@@ -8,7 +8,8 @@ import { BlockHeader } from "./models/block";
 const { POSTGRES_FULL, BITCOIN_HOST, BITCOIN_PORT, JUNGLEBUS, REDISDB, REDISCACHE } = process.env;
 export const jb = new JungleBusClient(JUNGLEBUS || 'https://junglebus.gorillapool.io');
 const cparts = (REDISCACHE || '').split(':')
-export const cache = new Redis({
+
+export let cache: Redis = new Redis({
     port: cparts[1] ? parseInt(cparts[1]) : 6379,
     host: cparts[0],
 });
