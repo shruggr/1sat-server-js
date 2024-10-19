@@ -1,5 +1,5 @@
 import { Controller, Get, Path, Query, Route } from "tsoa";
-import { getChainTip, redis } from "../db";
+import { cache, getChainTip } from "../db";
 import { NotFound } from 'http-errors';
 import { BlockHeader } from "../models/block";
 
@@ -15,15 +15,17 @@ export class BlocksController extends Controller {
         @Path() height: number,
         @Query() limit = 1000,
     ): Promise<BlockHeader[]> {
-        const blocks = await redis.lrange('blocks', height, height + limit)
-        return blocks.map((b) => JSON.parse(b))
+        const hashes = await cache.zrangebyscore('blk:height', height, '+inf', 'LIMIT', 0, limit)
+        const blocks = await cache.hmget('blk:headers', ...hashes)
+        return blocks.filter(b => b).map((b) => JSON.parse(b!))
     }
 
     @Get("get/height/{height}")
     public async getBlock(
         @Path() height: number,
     ): Promise<BlockHeader> {
-        const block = await redis.lindex(`blocks`, height)
+        const hashes = await cache.zrangebyscore('blk:height', height, height, 'LIMIT', 0, 1)
+        const [block] = await cache.hmget('blk:headers', ...hashes)
         if (!block) {
             throw new NotFound()
         }

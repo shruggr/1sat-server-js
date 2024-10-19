@@ -26,7 +26,7 @@ console.log("POSTGRES", POSTGRES)
 export const pool = new Pool({ connectionString: POSTGRES });
 
 export async function getChainTip(): Promise<BlockHeader> {
-    const chaintip = await redis.get('chaintip');
+    const chaintip = await cache.get('blk:tip');
     return JSON.parse(chaintip!) as BlockHeader;
 }
 
