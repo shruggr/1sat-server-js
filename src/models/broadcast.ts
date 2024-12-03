@@ -9,7 +9,7 @@ export async function broadcastTx(tx: Transaction): Promise<string> {
     console.time('Broadcast: ' + txid)
     // console.timeLog('Broadcast: ' + txid, txbuf.toString('hex'))
     const txbuf = Buffer.from(tx.toBinary())
-    await cache.hset('tx', txid, txbuf)
+    await cache.set(`tx:${txid}`, txbuf)
     try {
         if (NETWORK == 'testnet') {
             try {
