@@ -1190,6 +1190,15 @@
 						"schema": {
 							"type": "string"
 						}
+					},
+					{
+						"in": "query",
+						"name": "unspent",
+						"required": false,
+						"schema": {
+							"default": false,
+							"type": "boolean"
+						}
 					}
 				]
 			}
@@ -2069,7 +2078,7 @@
 		},
 		"/api/stats": {
 			"get": {
-				"operationId": "GetOpenListings",
+				"operationId": "GetStats",
 				"responses": {
 					"200": {
 						"description": "Ok",
@@ -2398,6 +2407,14 @@
 							"format": "double",
 							"type": "number"
 						}
+					},
+					{
+						"in": "query",
+						"name": "address",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
 					}
 				]
 			},
@@ -2489,6 +2506,14 @@
 						"schema": {
 							"format": "double",
 							"type": "number"
+						}
+					},
+					{
+						"in": "query",
+						"name": "address",
+						"required": false,
+						"schema": {
+							"type": "string"
 						}
 					}
 				],

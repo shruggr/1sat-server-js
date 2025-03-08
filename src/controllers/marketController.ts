@@ -35,13 +35,14 @@ export class MarketController extends Controller {
         @Query() text = '',
         @Query() minPrice?: number,
         @Query() maxPrice?: number,
+        @Query() address?: string,
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         let data: {[key: string]: any} | undefined;
         if (q) {
             data = JSON.parse(Buffer.from(q, 'base64').toString('utf8'));
         }
-        return this.searchListings({sort, dir, type, data, text, minPrice, maxPrice, limit, offset});
+        return this.searchListings({sort, dir, type, data, text, minPrice, maxPrice, limit, offset, address});
     }
 
     @Post("")
@@ -55,13 +56,14 @@ export class MarketController extends Controller {
         @Query() text = '',
         @Query() minPrice?: number,
         @Query() maxPrice?: number,
+        @Query() address?: string,
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
-        return this.searchListings({sort, dir, type, data, text, minPrice, maxPrice, limit, offset});
+        return this.searchListings({sort, dir, type, data, text, minPrice, maxPrice, limit, offset, address});
     }
 
     public async searchListings(search: MarketSearch): Promise<Txo[]> {
-        const { sort, dir, type, data, text, minPrice, maxPrice, limit, offset } = search;
+        const { sort, dir, type, data, text, minPrice, maxPrice, limit, offset, address } = search;
         const params: any[] = [];
 
         // let sql = [`SELECT t.*, l.data as odata, l.oheight, l.oidx, l.sale
@@ -83,6 +85,12 @@ export class MarketController extends Controller {
         if(data) {
             params.push(data);
             sql.push(`AND l.data @> $${params.length}`)
+        }
+
+        if (address) {
+            const add = Address.fromString(address);
+            params.push(add.hashBuf);
+            sql.push(`AND l.pkhash = $${params.length}`)
         }
 
         if(text) {

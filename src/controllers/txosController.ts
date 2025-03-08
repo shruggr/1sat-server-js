@@ -85,20 +85,20 @@ export class TxosController extends Controller {
     @Get("address/{address}/sync")
     public async syncAddress(
         @Path() address: string,
+        @Query() unspent: boolean = false
     ): Promise<Txo[]> {
         this.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         await TxosController.refreshAddress(address, true);
         const add = Address.fromString(address);
-        const params: any[] = [add.hashBuf];
-        let sql = [`SELECT txid, vout, height, idx, spend
+        const sql = `SELECT txid, vout, height, idx, spend
             FROM txos
-            WHERE pkhash = $1`]
+            WHERE pkhash = $1 ${unspent ? "AND spend = '\\x'" : ''}
+            ORDER BY height DESC, idx DESC`
 
-        sql.push(`ORDER BY height DESC, idx DESC`)
-
-        const { rows } = await pool.query(sql.join(' '), params);
+        const { rows } = await pool.query(sql, [add.hashBuf]);
         return rows.map((row: any) => Txo.fromRow(row));
     }
+
 
     static async refreshAddress(address: string, force = false) {
         const { INDEXER } = process.env;

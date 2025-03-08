@@ -38,5 +38,4 @@ export class SPendsController extends Controller {
         };
         return spend.toString('hex');
     }
-
 }

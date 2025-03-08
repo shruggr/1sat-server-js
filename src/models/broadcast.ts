@@ -1,6 +1,6 @@
 import { Transaction } from "@bsv/sdk";
 import * as createError from "http-errors";
-import { cache, loadTx } from "../db";
+import { cache, loadTx, redis } from "../db";
 
 const { NETWORK, TAAL_TOKEN, ARC_TOKEN, ARC, INDEXER } = process.env;
 
@@ -30,9 +30,9 @@ export async function broadcastTx(tx: Transaction): Promise<string> {
             await broadcastArc(tx);
         }
 
-        // await pubClient.set(txid, txbuf)
         console.timeLog('Broadcast: ' + txid, "Publishing to redis")
         await fetch(`${INDEXER}/tx/${txid}/ingest`).catch((e) => console.error("Ingestion error:", e))
+        await redis.publish("broadcast", txbuf.toString('base64'))
         return txid;
     } catch (e: any) {
         console.error("Broadcast Error:", e)
