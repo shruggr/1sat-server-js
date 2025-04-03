@@ -5,7 +5,7 @@ import { Pool } from 'pg';
 import { MerklePath, Transaction, Utils } from "@bsv/sdk";
 import { BlockHeader } from "./models/block";
 
-const { POSTGRES_FULL, BITCOIN_HOST, BITCOIN_PORT, JUNGLEBUS, REDISDB, REDISCACHE } = process.env;
+const { POSTGRES_FULL, BITCOIN_HOST, BITCOIN_PORT, JUNGLEBUS, REDISDB, REDISCACHE, HEADERS } = process.env;
 export const jb = new JungleBusClient(JUNGLEBUS || 'https://junglebus.gorillapool.io');
 const cparts = (REDISCACHE || '').split(':')
 
@@ -26,8 +26,21 @@ console.log("POSTGRES", POSTGRES)
 export const pool = new Pool({ connectionString: POSTGRES });
 
 export async function getChainTip(): Promise<BlockHeader> {
-    const chaintip = await cache.get('blk:tip');
-    return JSON.parse(chaintip!) as BlockHeader;
+    const resp = await fetch(`${HEADERS}/api/v1/chain/tip/longest`);
+    if (!resp.ok) {
+        throw new Error(`Failed to fetch chain tip: ${resp.status} ${resp.statusText}`);
+    }
+    const data = await resp.json();
+    return {
+        hash: data.header.hash,
+        height: data.height,
+        version: data.header.version,
+        prevHash: data.header.prevBlockHash,
+        merkleroot: data.header.merkleRoot,
+        time: data.header.creationTimestamp,
+        bits: data.header.difficultyTarget,
+        nonce: data.header.nonce,
+    } as BlockHeader;
 }
 
 export async function loadRawtx(txid: string): Promise<Buffer> {
