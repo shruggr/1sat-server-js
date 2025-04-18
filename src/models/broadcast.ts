@@ -108,7 +108,7 @@ export async function broadcastArc(tx: Transaction) {
     const headers: { [key: string]: string } = {
         'Content-Type': 'application/octet-stream',
         // 'X-SkipTxValidation': '1',
-        'X-WaitForStatus': '7'
+        'X-WaitFor': 'ACCEPTED_BY_NETWORK'
     }
     if (ARC_TOKEN) {
         headers['Authorization'] = `Bearer ${ARC_TOKEN}`
