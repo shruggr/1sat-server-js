@@ -2,7 +2,7 @@ import { Transaction } from "@bsv/sdk";
 import * as createError from "http-errors";
 import { cache, loadTx, redis } from "../db";
 
-const { NETWORK, TAAL_TOKEN, ARC_TOKEN, ARC, INDEXER } = process.env;
+const { NETWORK, ARC_TOKEN, ARC, INDEXER } = process.env;
 
 export async function broadcastTx(tx: Transaction): Promise<string> {
     let txid = tx.id('hex') as string;
@@ -21,11 +21,6 @@ export async function broadcastTx(tx: Transaction): Promise<string> {
                 }
                 await broadcastArc(tx);
             }
-        } else if (TAAL_TOKEN) {
-            // console.timeLog('Broadcast: ' + txid, "Broadcasting to TAAL")
-            // await broadcastTaal(tx);
-            console.timeLog('Broadcast: ' + txid, "Broadcasting to ARC")
-            broadcastArc(tx).catch(console.error)
         } else {
             await broadcastArc(tx);
         }
