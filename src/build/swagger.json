@@ -62,6 +62,9 @@
 					"vin": {
 						"type": "number",
 						"format": "double"
+					},
+					"valid": {
+						"type": "boolean"
 					}
 				},
 				"type": "object",

@@ -61,30 +61,6 @@ export async function broadcastWOC(tx: Transaction) {
     }
 }
 
-export async function broadcastTaal(tx: Transaction) {
-    // const resp = await fetch('https://api.taal.com/api/v1/broadcast', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/octet-stream',
-    //         'Authorization': TAAL_TOKEN!
-    //     },
-    //     body: Buffer.from(tx.toBinary())
-    // });
-
-    // const respText = await resp.text();
-    // console.log("TAAL Response:", tx.id('hex'), resp.status, respText, new Date().toISOString());
-    // if (!resp.ok) {
-    //     try {
-    //         const { status, error } = JSON.parse(respText);
-    //         if (!error.includes('txn-already-known')) {
-    //             throw createError(status || resp.status || 500, `Broadcast failed: ${error}`);
-    //         }
-    //     } catch (e: any) {
-    //         throw e;
-    //     }
-    // }
-}
-
 export async function broadcastArc(tx: Transaction) {
     let txbuf: Buffer
     try {
@@ -93,8 +69,6 @@ export async function broadcastArc(tx: Transaction) {
             txIn.sourceTransaction = await loadTx(txIn.sourceTXID!)
         }))
         txbuf = Buffer.from(tx.toEF());
-        // txbuf = StandardToExtended(tx.toBuffer(), parents) as Buffer
-        // console.error("ARC EXT:", txbuf.toString('hex'), parents)
     } catch (e) {
         console.error("Error loading txos", tx.id('hex'), e)
         txbuf = Buffer.from(tx.toBinary());

@@ -3,4 +3,5 @@ export interface Sigma {
     address?: string;
     signature?: string;
     vin?: number;
+    valid?: boolean;
 }

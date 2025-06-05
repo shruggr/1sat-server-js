@@ -71,6 +71,7 @@ const models: TsoaRoute.Models = {
             "address": {"dataType":"string"},
             "signature": {"dataType":"string"},
             "vin": {"dataType":"double"},
+            "valid": {"dataType":"boolean"},
         },
         "additionalProperties": false,
     },
