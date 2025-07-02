@@ -1,6 +1,6 @@
 import { Transaction } from "@bsv/sdk";
 import * as createError from "http-errors";
-import { cache, redis } from "../db";
+import { cache, redis } from "./db";
 
 const { NETWORK, ARC, ARC_AUTH_TOKEN, ARC_CALLBACK_URL, ARC_CALLBACK_TOKEN, INDEXER } = process.env;
 

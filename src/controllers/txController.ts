@@ -4,7 +4,7 @@ import { Body, BodyProp, Controller, Get, Header, Path, Post, Query, Request, Ro
 import { loadProof, loadRawtx, loadTxWithProof, pool, redis } from "../db";
 import { Utils } from "@bsv/sdk";
 import { loadTxLogs, parseRawTx, refreshTxLogs, saveTxLog, TxLog } from "../models/tx";
-import { broadcastTx } from "../models/broadcast";
+import { broadcastTx } from "../broadcast";
 
 
 // const SIG_EXPIRY = 1000 * 60 * 300;
