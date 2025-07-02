@@ -30,6 +30,14 @@ export class TxController extends Controller {
         return broadcastTx(tx);
     }
 
+    @Post("callback")
+    public async postTxCallback(
+        @Body() body: any
+    ): Promise<void> {
+        console.log("ARC Callback:", JSON.stringify(body));
+        return
+    }
+
     @Get("{txid}/submit")
     public async getTxSubmit(
         @Path() txid: string,

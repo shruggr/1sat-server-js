@@ -1723,6 +1723,26 @@
 				}
 			}
 		},
+		"/api/tx/callback": {
+			"post": {
+				"operationId": "PostTxCallback",
+				"responses": {
+					"204": {
+						"description": "No content"
+					}
+				},
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {}
+						}
+					}
+				}
+			}
+		},
 		"/api/tx/{txid}/submit": {
 			"get": {
 				"operationId": "GetTxSubmit",
