@@ -34,8 +34,32 @@ export class TxController extends Controller {
     public async postTxCallback(
         @Body() body: any
     ): Promise<void> {
-        console.log("ARC Callback:", JSON.stringify(body));
-        return
+        // Validate callback payload
+        if (!body.txid || !body.txStatus) {
+            throw new BadRequest('Invalid callback payload - missing txid or txStatus');
+        }
+        
+        const txid = body.txid;
+        const channel = `stat:${txid}`;
+        
+        // Publish status update to transaction-specific status channel
+        const message = {
+            txStatus: body.txStatus,
+            blockHash: body.blockHash,
+            blockHeight: body.blockHeight,
+            timestamp: body.timestamp || new Date().toISOString(),
+            extraInfo: body.extraInfo
+        };
+        
+        await redis.publish(channel, JSON.stringify(message));
+        
+        console.log(`Arc callback: ${txid} -> ${body.txStatus}`);
+        
+        // Optional: Store status history in Redis for debugging
+        if (body.txStatus) {
+            await redis.hset(`tx-history:${txid}`, body.txStatus, JSON.stringify(message));
+            await redis.expire(`tx-history:${txid}`, 86400); // 24 hour TTL
+        }
     }
 
     @Get("{txid}/submit")
